@@ -13,8 +13,10 @@ import { API_BASE } from "@/lib/api";
  * @param {string} props.domain - Domain to visualize
  * @param {number} [props.refreshTrigger] - Incrementing value to trigger reload
  * @param {Function} [props.onRefresh] - Callback when the reload button is clicked
+ * @param {string} [props.userId] - ID of the logged in user
+ * @param {string} [props.selectedDate] - Date selected from the timeline slider
  */
-const SampleGraph = ({ domain, refreshTrigger, onRefresh }) => {
+const SampleGraph = ({ domain, refreshTrigger, onRefresh, userId, selectedDate }) => {
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
@@ -200,9 +202,14 @@ const SampleGraph = ({ domain, refreshTrigger, onRefresh }) => {
 
     try {
       setLoading(true);
-      const res = await fetch(
-        `http://127.0.0.1:8000/chain/${encodeURIComponent(domain)}`
-      );
+      let url = `http://127.0.0.1:8000/chain/${encodeURIComponent(domain)}`;
+      const params = [];
+      if (userId) params.push(`user_id=${encodeURIComponent(userId)}`);
+      if (selectedDate) params.push(`date=${encodeURIComponent(selectedDate)}`);
+      if (params.length) {
+        url += `?${params.join("&")}`;
+      }
+      const res = await fetch(url);
       const json = await res.json();
       setDot(buildDot(json));
       setSummary(json.chain_summary || null);
@@ -213,7 +220,7 @@ const SampleGraph = ({ domain, refreshTrigger, onRefresh }) => {
     } finally {
       setLoading(false);
     }
-  }, [domain, buildDot]);
+  }, [domain, buildDot, userId, selectedDate]);
 
   useEffect(() => {
     fetchData();
