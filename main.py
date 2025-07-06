@@ -22,11 +22,31 @@ import hashlib
 import base64
 
 app = FastAPI()
-app.add_middleware(CORSMiddleware,allow_origins=["*"],allow_credentials=True,allow_methods=["*"],allow_headers=["*"])
-data=[]
-with open("C:\\Users\\ahmad\\Desktop\\lockedin\\src\\data.txt", "r") as file:
-    data =[line.strip().split(":") for line in file.readlines()]
-    print(data)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+DATA_FILE_PATH = os.path.join(os.path.dirname(__file__), "src", "data.txt")
+data = []
+next_user_id = 1
+with open(DATA_FILE_PATH, "r") as file:
+    for line in file:
+        parts = line.strip().split(":")
+        if len(parts) == 4:
+            uid, name, email, password = parts
+            data.append([uid, name, email, password])
+            next_user_id = max(next_user_id, int(uid) + 1)
+        elif len(parts) == 3:
+            name, email, password = parts
+            uid = str(next_user_id)
+            next_user_id += 1
+            data.append([uid, name, email, password])
+        # Ignore malformed lines
+print(data)
 GOOGLE_CLIENT_ID = '376144524625-v49q48ldo2lm4q6nvtoumehm1s4m7gdr.apps.googleusercontent.com'
 print(GOOGLE_CLIENT_ID)
 class DNSSECAnalyzer:
@@ -664,22 +684,19 @@ def get_item(domain:str):
 
 @app.get("/login/{user}/{passw}")
 def login(user:str,passw:str):
-    entry=f"{user}:{passw}"
-    print(entry)
-    print(data)
-    correct=False
     for i in data:
-        if user in i and passw in i:
-            print("ok")
-            return {"success":i[0]}
-    print("no")
-    return {"success":"no"}
+        if len(i) >= 4 and i[2] == user and i[3] == passw:
+            return {"success": i[1], "id": i[0]}
+    return {"success": "no"}
 @app.get("/signup/{user}/{passw}/{name}")
 def signup(user:str,passw:str,name:str):
-    file_entry=f"{name}:{user}:{passw}"
-    array_entry=[name,user,passw]
+    global next_user_id
+    uid = str(next_user_id)
+    next_user_id += 1
+    file_entry = f"{uid}:{name}:{user}:{passw}"
+    array_entry = [uid, name, user, passw]
     data.append(array_entry)
-    with open("C:\\Users\\ahmad\\Desktop\\lockedin\\src\\data.txt", "a") as file:
+    with open(DATA_FILE_PATH, "a") as file:
         file.write(f"\n{file_entry}")
 
 class TokenPayload(BaseModel):
@@ -704,16 +721,24 @@ def google_auth(payload: TokenPayload):
         raise HTTPException(status_code=400, detail="Invalid token")
 
     for entry in data:
-        if len(entry) > 1 and entry[1] == email:
-            return {"success": entry[0], "email": email, "picture": picture}
+        if len(entry) >= 3 and entry[2] == email:
+            return {
+                "success": entry[1],
+                "id": entry[0],
+                "email": email,
+                "picture": picture,
+            }
 
-    file_entry = f"{name}:{email}:"
-    array_entry = [name, email, ""]
+    global next_user_id
+    uid = str(next_user_id)
+    next_user_id += 1
+    file_entry = f"{uid}:{name}:{email}:"
+    array_entry = [uid, name, email, ""]
     data.append(array_entry)
-    with open("C:\\Users\\ahmad\\Desktop\\lockedin\\src\\data.txt", "a") as file:
+    with open(DATA_FILE_PATH, "a") as file:
         file.write(f"\n{file_entry}")
 
-    return {"success": name, "email": email, "picture": picture}
+    return {"success": name, "id": uid, "email": email, "picture": picture}
 
 
 #uvicorn main:app --reload
