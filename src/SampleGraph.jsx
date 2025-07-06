@@ -200,7 +200,9 @@ const SampleGraph = ({ domain, refreshTrigger, onRefresh }) => {
 
     try {
       setLoading(true);
-      const res = await fetch(`/chain/${encodeURIComponent(domain)}`);
+      const res = await fetch(
+        `http://127.0.0.1:8000/chain/${encodeURIComponent(domain)}`
+      );
       const json = await res.json();
       setDot(buildDot(json));
       setSummary(json.chain_summary || null);
