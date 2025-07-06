@@ -30,6 +30,7 @@ export default function App() {
   const [loginError, setLoginError] = useState("");
   const [username, setUsername] = useState("");
   const [profilePic, setProfilePic] = useState(null);
+  const [userId, setUserId] = useState(null);
   const [rememberMe, setRememberMe] = useState(false);
 
   // Load stored credentials if remember me was enabled
@@ -41,6 +42,7 @@ export default function App() {
         if (data.expiry && Date.now() < data.expiry) {
           setUsername(data.username || "");
           setProfilePic(data.profilePic || null);
+          setUserId(data.userId || null);
           setLoginOpen(false);
           setRememberMe(true);
         } else {
@@ -104,6 +106,7 @@ export default function App() {
         const data = await res.json();
         setUsername(data.success);
         setProfilePic(data.picture || null);
+        setUserId(data.id || null);
         setLoginOpen(false);
         setSignupOpen(false);
         if (rememberMe) {
@@ -112,6 +115,7 @@ export default function App() {
             JSON.stringify({
               username: data.success,
               profilePic: data.picture || null,
+              userId: data.id || null,
               expiry: Date.now() + 24 * 60 * 60 * 1000,
             })
           );
@@ -139,6 +143,7 @@ export default function App() {
       if (successVal !== "no") {
         setUsername(successVal);
         setProfilePic(null);
+        setUserId(data.id || null);
         setLoginError("");
         setLoginOpen(false);
         if (rememberMe) {
@@ -147,6 +152,7 @@ export default function App() {
             JSON.stringify({
               username: successVal,
               profilePic: null,
+              userId: data.id || null,
               expiry: Date.now() + 24 * 60 * 60 * 1000,
             })
           );
@@ -157,6 +163,7 @@ export default function App() {
         setLoginError("Invalid email or password.");
       }
     } catch (err) {
+      console.error(err);
       setLoginError("Error verifying credentials.");
     }
   };
@@ -180,6 +187,7 @@ export default function App() {
         setSignupMessage("Signup failed. Please try again.");
       }
     } catch (err) {
+      console.error(err);
       setSignupMessageType("error");
       setSignupMessage("Error during signup. Please try later.");
     }
@@ -212,8 +220,12 @@ export default function App() {
     if (window.google?.accounts?.id) {
       window.google.accounts.id.disableAutoSelect();
     }
+    if (userId) {
+      fetch(`http://127.0.0.1:8000/logout/${userId}`).catch(() => {});
+    }
     setUsername("");
     setProfilePic(null);
+    setUserId(null);
     setLoginEmail("");
     setLoginPassword("");
     setLoginOpen(true);
@@ -431,6 +443,8 @@ export default function App() {
             refreshTrigger={refreshTrigger}
             theme={theme}
             onRefresh={handleRefresh}
+            userId={userId}
+            selectedDate={selectedDate.toISOString().split("T")[0]}
           />
         </div>
       </main>
