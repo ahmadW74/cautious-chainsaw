@@ -31,8 +31,20 @@ app.add_middleware(
 )
 
 DATA_FILE_PATH = os.path.join(os.path.dirname(__file__), "src", "data.txt")
+LOG_FILE_PATH = os.path.join(os.path.dirname(__file__), "chain_logs.txt")
 data = []
 next_user_id = 1
+
+
+def append_log(event: str, user_id: Optional[str] = "", domain: str = "", date: str = "") -> None:
+    """Append a timestamped log entry to the log file."""
+    timestamp = datetime.datetime.utcnow().isoformat()
+    log_entry = f"{timestamp},{event},{user_id},{domain},{date}\n"
+    try:
+        with open(LOG_FILE_PATH, "a") as log_file:
+            log_file.write(log_entry)
+    except Exception:
+        pass
 with open(DATA_FILE_PATH, "r") as file:
     for line in file:
         parts = line.strip().split(":")
@@ -46,9 +58,8 @@ with open(DATA_FILE_PATH, "r") as file:
             next_user_id += 1
             data.append([uid, name, email, password])
         # Ignore malformed lines
-print(data)
+
 GOOGLE_CLIENT_ID = '376144524625-v49q48ldo2lm4q6nvtoumehm1s4m7gdr.apps.googleusercontent.com'
-print(GOOGLE_CLIENT_ID)
 class DNSSECAnalyzer:
     def __init__(self):
         self.resolver = dns.resolver.Resolver()
@@ -679,15 +690,25 @@ def analyze_dnssec_chain(domain: str) -> Dict[str, Any]:
             "domain": domain
         }
 @app.get("/chain/{domain}")
-def get_item(domain:str):
-    return analyze_dnssec_chain(domain)
+def get_item(domain: str, user_id: Optional[str] = None, date: Optional[str] = None):
+    result = analyze_dnssec_chain(domain)
+    if user_id and date:
+        append_log("chain", user_id, domain, date)
+    return result
 
 @app.get("/login/{user}/{passw}")
 def login(user:str,passw:str):
     for i in data:
         if len(i) >= 4 and i[2] == user and i[3] == passw:
+            append_log("login", i[0])
             return {"success": i[1], "id": i[0]}
     return {"success": "no"}
+
+
+@app.get("/logout/{user_id}")
+def logout(user_id: str):
+    append_log("logout", user_id)
+    return {"success": True}
 @app.get("/signup/{user}/{passw}/{name}")
 def signup(user:str,passw:str,name:str):
     global next_user_id
@@ -707,7 +728,6 @@ def google_auth(payload: TokenPayload):
     if not GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=500, detail="Google client ID not configured")
     try:
-        print("ssx")
         idinfo = id_token.verify_oauth2_token(
             payload.token,
             google_requests.Request(),
@@ -717,11 +737,11 @@ def google_auth(payload: TokenPayload):
         name = idinfo.get("name", email)
         picture = idinfo.get("picture")
     except Exception:
-        print("ss")
         raise HTTPException(status_code=400, detail="Invalid token")
 
     for entry in data:
         if len(entry) >= 3 and entry[2] == email:
+            append_log("login", entry[0])
             return {
                 "success": entry[1],
                 "id": entry[0],
@@ -737,8 +757,6 @@ def google_auth(payload: TokenPayload):
     data.append(array_entry)
     with open(DATA_FILE_PATH, "a") as file:
         file.write(f"\n{file_entry}")
-
+    append_log("login", uid)
     return {"success": name, "id": uid, "email": email, "picture": picture}
 
-
-#uvicorn main:app --reload
