@@ -30,36 +30,24 @@ const SampleGraph = ({ domain, refreshTrigger, onRefresh, userId, selectedDate }
   const buildDot = useCallback((data) => {
     if (!data || !Array.isArray(data.levels)) return "digraph{}";
 
-    const palette = {
-      root: { border: "#FB8C00", apex: "#FB8C00", apexFill: "#FFF3E0" },
-      tld: { border: "#FF9800", apex: "#FF9800", apexFill: "#FFE0B2" },
-      target: { border: "#4CAF50", apex: "#2E7D32", apexFill: "#C8E6C9" },
-      subdomain: { border: "#4CAF50", apex: "#2E7D32", apexFill: "#C8E6C9" },
-      unsigned: { border: "#9E9E9E", apex: "#9E9E9E", apexFill: "#F5F5F5" },
-    };
+    const escape = (s) =>
+      String(s || "")
+        .replace(/\n/g, "\\n")
+        .replace(/"/g, '\\"');
 
     let dotStr =
       "digraph DNSSEC_Chain {\n" +
-      "  rankdir=LR;\n" +
-      '  fontname="Helvetica";\n' +
-      '  node [fontname="Helvetica", style=filled];\n';
+      "  rankdir=TB;\n" +
+      "  compound=true;\n" +
+      "  splines=curved;\n" +
+      "  nodesep=1.5;\n" +
+      "  ranksep=1.5;\n" +
+      '  fontname="Arial";\n' +
+      '  node [shape=ellipse, style=filled, fontname="Arial", fontsize=14, width=1.5, height=0.9];\n' +
+      '  edge [color=black, penwidth=2, fontname="Arial", fontsize=12];\n';
 
     // Render each zone cluster
     data.levels.forEach((level, idx) => {
-      const type =
-        level.domain_type ||
-        (idx === 0
-          ? "root"
-          : idx === data.levels.length - 1
-          ? "target"
-          : "tld");
-      let colors = palette[type] || palette.target;
-      if (level.dnssec_status?.status !== "signed") {
-        colors = palette.unsigned;
-      }
-      if (level.chain_break_info?.has_chain_break) {
-        colors = { border: "#D32F2F", apex: "#D32F2F", apexFill: "#FFCDD2" };
-      }
       const ksk =
         level.records?.dnskey_records?.find((k) => k.is_ksk) ||
         level.key_hierarchy?.ksk_keys?.[0] ||
@@ -72,123 +60,60 @@ const SampleGraph = ({ domain, refreshTrigger, onRefresh, userId, selectedDate }
         (Array.isArray(level.records?.dnskey_records)
           ? level.records.dnskey_records.find((k) => k.role === "ZSK")
           : null);
-      const kskInfo = ksk
-        ? `Key ID ${ksk.key_tag} | Algo ${ksk.algorithm_name || ksk.algorithm}`
-        : "";
-      const zskInfo = zsk
-        ? `Key ID ${zsk.key_tag} | Algo ${zsk.algorithm_name || zsk.algorithm}`
-        : "";
+      const kskTooltip = ksk
+        ? `Key ID: ${ksk.key_tag}\nAlg: ${ksk.algorithm_name || ksk.algorithm}\nSize: ${ksk.key_size}`
+        : "No KSK";
+      const zskTooltip = zsk
+        ? `Key ID: ${zsk.key_tag}\nAlg: ${zsk.algorithm_name || zsk.algorithm}\nSize: ${zsk.key_size}`
+        : "No ZSK";
+      const nsTooltip = escape((level.records?.ns_records || []).join("\n"));
 
       dotStr += `  subgraph cluster_${idx} {\n`;
-      const zoneLabel =
-        idx === 0
-          ? `Root Zone (${level.display_name})`
-          : idx === data.levels.length - 1
-          ? level.display_name
-          : `${level.display_name} Zone`;
-      dotStr += `    label="${zoneLabel}";\n`;
-      dotStr += `    style="rounded,dashed";\n`;
-      dotStr += `    color="${colors.border}";\n\n`;
+      dotStr += `    label="${level.display_name}";\n`;
+      dotStr += "    labelloc=t;\n";
+      dotStr += "    labeljust=l;\n";
+      dotStr += "    style=dotted;\n";
+      dotStr += "    penwidth=2;\n";
+      dotStr += "    color=green;\n";
+      dotStr += "    fillcolor=\"#e6ffe6\";\n\n";
 
-      dotStr += `    apex_${idx} [label="${level.display_name}" shape=rect fillcolor="${colors.apexFill}" color="${colors.apex}"];\n`;
-
-      dotStr += `    keyset_${idx} [shape=record fillcolor="#E3F2FD" color="#2196F3" label="{ {<ksk> KSK | ${kskInfo} } | {<zsk> ZSK | ${zskInfo} } }"];\n`;
-
-      const hasDNSKEY =
-        Array.isArray(level.records?.dnskey_records) &&
-        level.records.dnskey_records.length > 0;
-
-      if (idx !== 0) {
-        if (hasDNSKEY) {
-          dotStr += `    dnskey_rrset_${idx} [label="DNSKEY Records" shape=ellipse fillcolor="#BBDEFB" color="#1976D2"];\n`;
-          dotStr += `    {rank=same; dnskey_rrset_${idx}; keyset_${idx};}\n`;
-        } else {
-          dotStr += `    dnskey_rrset_${idx} [label="No DNSKEY" shape=ellipse style=dashed color="#D32F2F"];\n`;
-        }
-      }
-
-      dotStr += `    ds_rrset_${idx} [label="DS Records" shape=ellipse fillcolor="#E1BEE7" color="#8E24AA"];\n`;
+      dotStr += `    apex_${idx} [label="${level.display_name}" fillcolor="#e6ffe6" tooltip="${nsTooltip}"];\n`;
+      dotStr += `    ksk_${idx} [label="KSK" fillcolor="#ffcccc" tooltip="${escape(kskTooltip)}"];\n`;
+      dotStr += `    zsk_${idx} [label="ZSK" fillcolor="#ffdddd" tooltip="${escape(zskTooltip)}"];\n`;
 
       if (idx < data.levels.length - 1) {
         const child = data.levels[idx + 1];
         const ds = child.records?.ds_records?.[0];
-        const childBreak = child.chain_break_info?.has_chain_break;
-        const breakReason = child.chain_break_info?.break_reason || "";
-
+        const dsTooltip = ds
+          ? `Key ID: ${ds.key_tag}\nAlg: ${ds.algorithm_name || ds.algorithm}\nDigest: ${ds.digest}`
+          : "No DS";
         if (ds) {
-          const digest = ds.digest ? ds.digest.slice(0, 8) + "…" : "";
-          const fill =
-            childBreak && breakReason.toLowerCase().includes("dnskey")
-              ? "#FFCDD2"
-              : "#EDE7F6";
-          const col =
-            childBreak && breakReason.toLowerCase().includes("dnskey")
-              ? "#D32F2F"
-              : "#673AB7";
-          dotStr += `    ds_for_${idx}_${idx + 1} [label=< <b>DS for ${
-            child.display_name
-          }</b><br/>Key ID ${ds.key_tag}<br/>Digest Type ${
-            ds.digest_type
-          }<br/>Digest: ${digest} >, shape=box style="rounded,filled" fillcolor="${fill}" color="${col}"];\n`;
+          dotStr += `    ds_${idx}_${idx + 1} [label="DS" fillcolor="#ccccff" tooltip="${escape(dsTooltip)}"];\n`;
         } else {
-          dotStr += `    ds_for_${idx}_${idx + 1} [label=< <b>No DS for ${
-            child.display_name
-          }</b> >, shape=box style="rounded,filled" fillcolor="#FFEBEE" color="#C62828"];\n`;
+          dotStr += `    ds_${idx}_${idx + 1} [label="No DS" fillcolor="#ffe6e6" tooltip="No DS record" style=dashed];\n`;
         }
       }
 
-      if (idx === 0) {
-        if (hasDNSKEY) {
-          dotStr += `    apex_${idx} -> keyset_${idx}:ksk [label="has DNSKEYs" color="#1976D2"];\n`;
-        }
-      } else {
-        if (hasDNSKEY) {
-          dotStr += `    apex_${idx} -> dnskey_rrset_${idx} [label="has" color="#1976D2"];\n`;
-          dotStr += `    dnskey_rrset_${idx} -> keyset_${idx}:ksk [color="#1976D2"];\n`;
-          dotStr += `    dnskey_rrset_${idx} -> keyset_${idx}:zsk [color="#1976D2"];\n`;
-        } else {
-          dotStr += `    apex_${idx} -> keyset_${idx} [style=dashed color="#D32F2F"];\n`;
-        }
-      }
-      dotStr += `    apex_${idx} -> ds_rrset_${idx} [label="has" color="#8E24AA"];\n`;
+      dotStr += `    apex_${idx} -> ksk_${idx} [label="signs"];\n`;
+      dotStr += `    ksk_${idx} -> zsk_${idx} [label="signs"];\n`;
       if (idx < data.levels.length - 1) {
-        const child = data.levels[idx + 1];
-        const ds = child.records?.ds_records?.[0];
-        const childBreak = child.chain_break_info?.has_chain_break;
-        const breakReason = child.chain_break_info?.break_reason || "";
-
-        if (ds) {
-          dotStr += `    ds_rrset_${idx} -> ds_for_${idx}_${
-            idx + 1
-          } [color="#8E24AA"];\n`;
-          dotStr += `    keyset_${idx}:zsk -> ds_for_${idx}_${
-            idx + 1
-          } [label="signs" color="#4CAF50"];\n`;
-          const edgeStyle =
-            childBreak && breakReason.toLowerCase().includes("dnskey")
-              ? 'color="#D32F2F" style=dashed'
-              : 'color="#4CAF50" penwidth=2';
-          dotStr += `    ds_for_${idx}_${idx + 1} -> keyset_${
-            idx + 1
-          }:ksk [label="validates" ${edgeStyle}];\n`;
-        } else {
-          dotStr += `    ds_rrset_${idx} -> ds_for_${idx}_${
-            idx + 1
-          } [style=dashed color="#C62828"];\n`;
-        }
+        dotStr += `    zsk_${idx} -> ds_${idx}_${idx + 1} [label="delegates"];\n`;
       }
-      dotStr += `    keyset_${idx}:ksk -> keyset_${idx}:zsk [style=dotted arrowhead=none color="#424242"];\n`;
 
       dotStr += "  }\n";
     });
 
-    // Delegation edges between zones
     for (let i = 0; i < data.levels.length - 1; i++) {
-      dotStr += `  apex_${i} -> apex_${
-        i + 1
-      } [label="delegates to" color="#FF9800" style=dashed];\n`;
+      const child = data.levels[i + 1];
+      const ds = child.records?.ds_records?.[0];
+      if (ds) {
+        dotStr += `  ds_${i}_${i + 1} -> ksk_${i + 1} [ltail=cluster_${i}, lhead=cluster_${i + 1}, label="delegates"];\n`;
+      } else {
+        dotStr += `  zsk_${i} -> ksk_${i + 1} [ltail=cluster_${i}, lhead=cluster_${i + 1}, style=dashed, label="unsigned"];\n`;
+      }
     }
 
+    // Delegation edges between zones
     dotStr += "}";
     return dotStr;
   }, []);
