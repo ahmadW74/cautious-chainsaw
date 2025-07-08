@@ -16,7 +16,13 @@ import { API_BASE } from "@/lib/api";
  * @param {string} [props.userId] - ID of the logged in user
  * @param {string} [props.selectedDate] - Date selected from the timeline slider
  */
-const SampleGraph = ({ domain, refreshTrigger, onRefresh, userId, selectedDate }) => {
+const SampleGraph = ({
+  domain,
+  refreshTrigger,
+  onRefresh,
+  userId,
+  selectedDate,
+}) => {
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
@@ -61,10 +67,14 @@ const SampleGraph = ({ domain, refreshTrigger, onRefresh, userId, selectedDate }
           ? level.records.dnskey_records.find((k) => k.role === "ZSK")
           : null);
       const kskTooltip = ksk
-        ? `Key ID: ${ksk.key_tag}\nAlg: ${ksk.algorithm_name || ksk.algorithm}\nSize: ${ksk.key_size}`
+        ? `Key ID: ${ksk.key_tag}\nAlg: ${
+            ksk.algorithm_name || ksk.algorithm
+          }\nSize: ${ksk.key_size}`
         : "No KSK";
       const zskTooltip = zsk
-        ? `Key ID: ${zsk.key_tag}\nAlg: ${zsk.algorithm_name || zsk.algorithm}\nSize: ${zsk.key_size}`
+        ? `Key ID: ${zsk.key_tag}\nAlg: ${
+            zsk.algorithm_name || zsk.algorithm
+          }\nSize: ${zsk.key_size}`
         : "No ZSK";
       const nsTooltip = escape((level.records?.ns_records || []).join("\n"));
 
@@ -75,29 +85,41 @@ const SampleGraph = ({ domain, refreshTrigger, onRefresh, userId, selectedDate }
       dotStr += "    style=dotted;\n";
       dotStr += "    penwidth=2;\n";
       dotStr += "    color=green;\n";
-      dotStr += "    fillcolor=\"#e6ffe6\";\n\n";
+      dotStr += '    fillcolor="#e6ffe6";\n\n';
 
       dotStr += `    apex_${idx} [label="${level.display_name}" fillcolor="#e6ffe6" tooltip="${nsTooltip}"];\n`;
-      dotStr += `    ksk_${idx} [label="KSK" fillcolor="#ffcccc" tooltip="${escape(kskTooltip)}"];\n`;
-      dotStr += `    zsk_${idx} [label="ZSK" fillcolor="#ffdddd" tooltip="${escape(zskTooltip)}"];\n`;
+      dotStr += `    ksk_${idx} [label="KSK" fillcolor="#ffcccc" tooltip="${escape(
+        kskTooltip
+      )}"];\n`;
+      dotStr += `    zsk_${idx} [label="ZSK" fillcolor="#ffdddd" tooltip="${escape(
+        zskTooltip
+      )}"];\n`;
 
       if (idx < data.levels.length - 1) {
         const child = data.levels[idx + 1];
         const ds = child.records?.ds_records?.[0];
         const dsTooltip = ds
-          ? `Key ID: ${ds.key_tag}\nAlg: ${ds.algorithm_name || ds.algorithm}\nDigest: ${ds.digest}`
+          ? `Key ID: ${ds.key_tag}\nAlg: ${
+              ds.algorithm_name || ds.algorithm
+            }\nDigest: ${ds.digest}`
           : "No DS";
         if (ds) {
-          dotStr += `    ds_${idx}_${idx + 1} [label="DS" fillcolor="#ccccff" tooltip="${escape(dsTooltip)}"];\n`;
+          dotStr += `    ds_${idx}_${
+            idx + 1
+          } [label="DS" fillcolor="#ccccff" tooltip="${escape(dsTooltip)}"];\n`;
         } else {
-          dotStr += `    ds_${idx}_${idx + 1} [label="No DS" fillcolor="#ffe6e6" tooltip="No DS record" style=dashed];\n`;
+          dotStr += `    ds_${idx}_${
+            idx + 1
+          } [label="No DS" fillcolor="#ffe6e6" tooltip="No DS record" style=dashed];\n`;
         }
       }
 
       dotStr += `    apex_${idx} -> ksk_${idx} [label="signs"];\n`;
       dotStr += `    ksk_${idx} -> zsk_${idx} [label="signs"];\n`;
       if (idx < data.levels.length - 1) {
-        dotStr += `    zsk_${idx} -> ds_${idx}_${idx + 1} [label="delegates"];\n`;
+        dotStr += `    zsk_${idx} -> ds_${idx}_${
+          idx + 1
+        } [label="delegates"];\n`;
       }
 
       dotStr += "  }\n";
@@ -107,9 +129,15 @@ const SampleGraph = ({ domain, refreshTrigger, onRefresh, userId, selectedDate }
       const child = data.levels[i + 1];
       const ds = child.records?.ds_records?.[0];
       if (ds) {
-        dotStr += `  ds_${i}_${i + 1} -> ksk_${i + 1} [ltail=cluster_${i}, lhead=cluster_${i + 1}, label="delegates"];\n`;
+        dotStr += `  ds_${i}_${i + 1} -> ksk_${
+          i + 1
+        } [ltail=cluster_${i}, lhead=cluster_${i + 1}, label="delegates"];\n`;
       } else {
-        dotStr += `  zsk_${i} -> ksk_${i + 1} [ltail=cluster_${i}, lhead=cluster_${i + 1}, style=dashed, label="unsigned"];\n`;
+        dotStr += `  zsk_${i} -> ksk_${
+          i + 1
+        } [ltail=cluster_${i}, lhead=cluster_${
+          i + 1
+        }, style=dashed, label="unsigned"];\n`;
       }
     }
 
