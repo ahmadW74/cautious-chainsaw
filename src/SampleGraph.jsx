@@ -46,8 +46,8 @@ const SampleGraph = ({
       "  rankdir=TB;\n" +
       "  compound=true;\n" +
       "  splines=curved;\n" +
-      "  nodesep=1.5;\n" +
-      "  ranksep=1.5;\n" +
+      "  nodesep=0.6;\n" +
+      "  ranksep=0.6;\n" +
       '  fontname="Arial";\n' +
       '  node [shape=ellipse, style=filled, fontname="Arial", fontsize=14, width=1.5, height=0.9];\n' +
       '  edge [color=black, penwidth=2, fontname="Arial", fontsize=12];\n';
@@ -78,8 +78,13 @@ const SampleGraph = ({
         : "No ZSK";
       const nsTooltip = escape((level.records?.ns_records || []).join("\n"));
 
+      const securityTooltip =
+        level.dnssec_status?.status === "signed" ? "SECURE" : "INSECURE";
+
       dotStr += `  subgraph cluster_${idx} {\n`;
       dotStr += `    label="${level.display_name}";\n`;
+      dotStr += `    labeltooltip="${nsTooltip}";\n`;
+      dotStr += `    tooltip="${securityTooltip}";\n`;
       dotStr += "    labelloc=t;\n";
       dotStr += "    labeljust=l;\n";
       dotStr += "    style=dotted;\n";
@@ -87,7 +92,6 @@ const SampleGraph = ({
       dotStr += "    color=green;\n";
       dotStr += '    fillcolor="#e6ffe6";\n\n';
 
-      dotStr += `    apex_${idx} [label="${level.display_name}" fillcolor="#e6ffe6" tooltip="${nsTooltip}"];\n`;
       dotStr += `    ksk_${idx} [label="KSK" fillcolor="#ffcccc" tooltip="${escape(
         kskTooltip
       )}"];\n`;
@@ -114,7 +118,6 @@ const SampleGraph = ({
         }
       }
 
-      dotStr += `    apex_${idx} -> ksk_${idx} [label="signs"];\n`;
       dotStr += `    ksk_${idx} -> zsk_${idx} [label="signs"];\n`;
       if (idx < data.levels.length - 1) {
         dotStr += `    zsk_${idx} -> ds_${idx}_${
@@ -132,6 +135,9 @@ const SampleGraph = ({
         dotStr += `  ds_${i}_${i + 1} -> ksk_${
           i + 1
         } [ltail=cluster_${i}, lhead=cluster_${i + 1}, label="delegates"];\n`;
+        dotStr += `  ds_${i}_${i + 1} -> zsk_${
+          i + 1
+        } [ltail=cluster_${i}, lhead=cluster_${i + 1}];\n`;
       } else {
         dotStr += `  zsk_${i} -> ksk_${
           i + 1
