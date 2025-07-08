@@ -1,128 +1,107 @@
-digraph DNSSEC_Chain_of_Trust {
-    rankdir=LR
-    fontname="Helvetica"
-    node [fontname="Helvetica", style=filled]
+digraph DNS_Hierarchy {
+    rankdir=TB;
+    compound=true;
+    splines=curved;
+    nodesep=1.5;
+    ranksep=1.5;
 
-    /*****************  ROOT ZONE  *****************/
-    subgraph cluster_root {
-        label="Root Zone (.)"
-        style="rounded,dashed"
-        color="#FB8C00"
+    // default styling
+    node [
+        shape=ellipse,
+        style=filled,
+        fontname="Arial",
+        fontsize=14,
+        fontweight="bold",
+        width=1.5,
+        height=0.9
+    ];
+    edge [
+        color=black,
+        penwidth=2,
+        fontname="Arial",
+        fontsize=12,
+        fontweight="bold"
+    ];
 
-        root_apex [label=".", shape=rect, fillcolor="#FFF3E0", color="#FB8C00"]
+    // -------- ROOT ZONE (.) --------
+    subgraph cluster_top {
+        label=".";
+        labelloc=t;
+        labeljust=l;
+        fontname="Arial";
+        fontsize=16;
+        fontweight="bold";
+        style=dotted;
+        penwidth=2;
+        color=green;
+        fillcolor="#e6ffe6";
 
-        /* Root key set (trust anchor) */
-        root_keyset [shape=record, fillcolor="#E3F2FD", color="#2196F3",
-            label="{ {<ksk> KSK | Key ID 20326 | Algo 8 | Flags 257 } | {<zsk> ZSK | Key ID 14219 | Algo 8 | Flags 256 } }"]
+        root [label="KSK", fillcolor="#ffcccc"];
+        dns1 [label="ZSK", fillcolor="#ffdddd"];
+        dns2 [label="ZSK", fillcolor="#ffdddd"];
+        dns3 [label="ZSK", fillcolor="#ffdddd"];
+        ds1  [label="DS",  fillcolor="#ccccff"];
 
-        /* Root DS RRset and the DS for com. */
-        root_ds_rrset [label="DS Records", shape=ellipse, fillcolor="#E1BEE7", color="#8E24AA"]
-        ds_for_com    [label=< <b>DS for com.</b><br/>Key ID 12345<br/>Digest Type 2<br/>Digest: ab… >,
-                       shape=box, style="rounded,filled",
-                       fillcolor="#EDE7F6", color="#673AB7"]
-
-        /* Internal edges */
-        root_apex      -> root_keyset:ksk [label="has DNSKEYs", color="#1976D2"]
-        root_apex      -> root_ds_rrset   [label="has", color="#8E24AA"]
-        root_ds_rrset  -> ds_for_com      [color="#8E24AA"]
-        ds_for_com     -> com_keyset:ksk  [label="validates", color="#4CAF50", penwidth=2]
-        root_keyset:ksk -> root_keyset:zsk [style=dotted, arrowhead=none, color="#424242"]
+        root -> dns1 [label="signs"];
+        root -> dns2 [label="signs"];
+        root -> dns3 [label="signs"];
+        dns1 -> ds1  [label="delegates"];
     }
 
-    /*****************  COM ZONE  *****************/
-    subgraph cluster_com {
-        label="com. Zone"
-        style="rounded,dashed"
-        color="#FF9800"
+    // connect root DS to .net KSK
+    ds1 -> middle_root [ltail=cluster_top, lhead=cluster_middle, label="delegates"];
 
-        com_apex [label="com.", shape=rect, fillcolor="#FFE0B2", color="#FF9800"]
+    // -------- TLD ZONE (.net) --------
+    subgraph cluster_middle {
+        label=".net";
+        labelloc=t;
+        labeljust=l;
+        fontname="Arial";
+        fontsize=16;
+        fontweight="bold";
+        style=dotted;
+        penwidth=2;
+        color=green;
+        fillcolor="#e6ffe6";
 
-        /* com. key set */
-        com_keyset [shape=record, fillcolor="#E3F2FD", color="#2196F3",
-            label="{ {<ksk> KSK | Key ID 54952 | Algo 8 | Flags 257 } | {<zsk> ZSK | Key ID 41583 | Algo 8 | Flags 256 } }"]
+        middle_root [label="KSK", fillcolor="#ffcccc"];
+        middle_dns  [label="ZSK", fillcolor="#ffdddd"];
+        ds2          [label="DS",  fillcolor="#ccccff"];
 
-        /* DNSKEY & DS RRsets */
-        com_dnskey_rrset [label="DNSKEY Records", shape=ellipse, fillcolor="#BBDEFB", color="#1976D2"]
-        com_ds_rrset     [label="DS Records",     shape=ellipse, fillcolor="#E1BEE7", color="#8E24AA"]
-        ds_for_cf        [label=< <b>DS for cloudflare.com</b><br/>Key ID 2371<br/>Digest Type 2<br/>Digest: bZx9h… >,
-                          shape=box, style="rounded,filled",
-                          fillcolor="#EDE7F6", color="#673AB7"]
-
-        /* Internal edges */
-        com_apex          -> com_dnskey_rrset          [label="has", color="#1976D2"]
-        com_dnskey_rrset  -> com_keyset:ksk            [color="#1976D2"]
-        com_dnskey_rrset  -> com_keyset:zsk            [color="#1976D2"]
-        com_keyset:ksk    -> com_keyset:zsk            [style=dotted, arrowhead=none, color="#424242"]
-
-        com_apex          -> com_ds_rrset              [label="has", color="#8E24AA"]
-        com_ds_rrset      -> ds_for_cf                 [color="#8E24AA"]
-        ds_for_cf         -> keyset_cf:ksk             [label="validates", color="#4CAF50", penwidth=2]
-
-        /* Delegation from com. downwards */
-        com_apex -> cf_domain [label="delegates to", color="#FF9800", style=dashed]
+        middle_root -> middle_dns [label="signs"];
+        middle_dns  -> ds2        [label="delegates"];
     }
 
-    /* Delegation from root down to com. */
-    root_apex -> com_apex [label="delegates to", color="#FF9800", style=dashed]
+    // connect .net DS to dnsviz.net KSK
+    ds2 -> bottom_root [ltail=cluster_middle, lhead=cluster_bottom, label="delegates"];
 
-    /*****************  CLOUDFLARE.COM ZONE  *****************/
-    subgraph cluster_cloudflare {
-        label="cloudflare.com"
-        style="rounded,dashed"
-        color="#4CAF50"
+    // -------- AUTHORITATIVE ZONE (dnsviz.net) --------
+    subgraph cluster_bottom {
+        label="dnsviz.net";
+        labelloc=t;
+        labeljust=l;
+        fontname="Arial";
+        fontsize=16;
+        fontweight="bold";
+        style=dotted;
+        penwidth=2;
+        color=green;
+        fillcolor="#e6ffe6";
 
-        cf_domain [label="cloudflare.com", shape=rect, fillcolor="#C8E6C9", color="#2E7D32"]
+        bottom_root [label="KSK", fillcolor="#ffcccc"];
+        bottom_dns  [label="ZSK", fillcolor="#ffdddd"];
 
-        /* DS side inside cloudflare.com (already validated in COM) */
-        ds_rrset_cf [label="DS Records", shape=ellipse, fillcolor="#E1BEE7", color="#8E24AA"]
-        ds_rr_cf    [label=< <b>DS</b><br/>Key ID 2371<br/>Digest Type 2<br/>Digest: bZx9h… >,
-                     shape=box, style="rounded,filled",
-                     fillcolor="#EDE7F6", color="#673AB7"]
+        soa   [label="dnsviz.net/SOA",   shape=rectangle, fillcolor=white];
+        a     [label="dnsviz.net/A",     shape=rectangle, fillcolor=white];
+        aaaa  [label="dnsviz.net/AAAA",  shape=rectangle, fillcolor=white];
+        mx    [label="dnsviz.net/MX",    shape=rectangle, fillcolor=white];
+        ns    [label="dnsviz.net/NS",    shape=rectangle, fillcolor=white];
 
-        /* Key set (KSK + ZSK in one node) */
-        keyset_cf [shape=record, fillcolor="#E3F2FD", color="#2196F3",
-                   label="{ {<ksk> KSK | Key ID 2371 | Algo 13 | Flags 257 } | {<zsk> ZSK | Key ID 34505 | Algo 13 | Flags 256 } }"]
-
-        /* Resource-record sets */
-        dnskey_cf [label="DNSKEY Records", shape=ellipse, fillcolor="#BBDEFB", color="#1976D2"]
-        rrsig_a        [label="RRSIG for A",    shape=ellipse, fillcolor="#FFF9C4", color="#FBC02D"]
-        soa_rr         [label="SOA",            shape=ellipse, fillcolor="#ECEFF1", color="#607D8B"]
-        a_rr           [label="A Records",      shape=ellipse, fillcolor="#D7CCC8", color="#5D4037"]
-
-        /* RR-detail boxes */
-        soa_details [label=<
-            <b>SOA Details</b><br/>
-            Primary: ns3.cloudflare.com<br/>
-            Admin: dns.cloudflare.com.<br/>
-            Serial: 2371820187
-        >, shape=box, style="rounded,filled", fillcolor="#CFD8DC", color="#455A64"]
-
-        a1 [label="A: 104.16.132.229", shape=box, style="rounded,filled", fillcolor="#EFEBE9", color="#8D6E63"]
-        a2 [label="A: 104.16.133.229", shape=box, style="rounded,filled", fillcolor="#EFEBE9", color="#8D6E63"]
-
-        /* Error/notice */
-        no_rrsig [label="No RRSIG records\nfound for A", shape=tab,
-                  style="rounded,filled", fillcolor="#FFEFD5", color="#FFB300"]
-
-        /* Internal edges */
-        cf_domain       -> ds_rrset_cf     [label="has", color="#8E24AA"]
-        ds_rrset_cf     -> ds_rr_cf        [color="#8E24AA"]
-
-        cf_domain       -> dnskey_cf       [label="has", color="#1976D2"]
-        dnskey_cf       -> keyset_cf:ksk   [color="#1976D2"]
-        dnskey_cf       -> keyset_cf:zsk   [color="#1976D2"]
-
-        keyset_cf:ksk   -> keyset_cf:zsk   [style=dotted, arrowhead=none, color="#424242"]
-
-        cf_domain       -> rrsig_a         [label="has", color="#FBC02D"]
-        cf_domain       -> soa_rr          [label="has", color="#607D8B"]
-        cf_domain       -> a_rr            [label="has", color="#5D4037"]
-
-        keyset_cf:zsk   -> no_rrsig        [label="signs", color="#1976D2"]
-        rrsig_a         -> no_rrsig        [style=dotted, color="#424242"]
-
-        soa_rr -> soa_details [color="#607D8B"]
-        a_rr   -> a1          [color="#5D4037"]
-        a_rr   -> a2          [color="#5D4037"]
+        bottom_root -> bottom_dns [label="signs"];
+        bottom_dns  -> soa        [label="signs"];
+        bottom_dns  -> a          [label="signs"];
+        bottom_dns  -> aaaa       [label="signs"];
+        bottom_dns  -> mx         [label="signs"];
+        bottom_dns  -> ns         [label="signs"];
     }
 }
