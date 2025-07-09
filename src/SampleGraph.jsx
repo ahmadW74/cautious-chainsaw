@@ -3,7 +3,7 @@ import Graphviz from "graphviz-react";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { API_BASE } from "@/lib/api";
 
@@ -216,17 +216,31 @@ const SampleGraph = ({
                 </p>
               </div>
             )}
-            <TransformWrapper
-            initialScale={GRAPH_SCALE}
-            wheel={{ step: 0.1 }}
-            doubleClick={{ disabled: true }}
-          >
-            <TransformComponent wrapperClass="w-full h-full overflow-hidden flex justify-center">
-              <ErrorBoundary>
-                <Graphviz dot={dot} options={graphvizOptions} />
-              </ErrorBoundary>
-            </TransformComponent>
-          </TransformWrapper>
+            <div className="relative w-full h-96 md:h-[60vh] border border-border rounded flex items-center justify-center">
+              <TransformWrapper
+                initialScale={GRAPH_SCALE}
+                wheel={{ step: 0.1 }}
+                doubleClick={{ disabled: true }}
+              >
+                {({ zoomIn, zoomOut }) => (
+                  <>
+                    <div className="absolute top-2 right-2 z-10 flex flex-col gap-2">
+                      <Button size="icon" variant="secondary" onClick={zoomIn}>
+                        <ZoomIn className="h-4 w-4" />
+                      </Button>
+                      <Button size="icon" variant="secondary" onClick={zoomOut}>
+                        <ZoomOut className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <TransformComponent wrapperClass="w-full h-full flex items-center justify-center">
+                      <ErrorBoundary>
+                        <Graphviz dot={dot} options={graphvizOptions} />
+                      </ErrorBoundary>
+                    </TransformComponent>
+                  </>
+                )}
+              </TransformWrapper>
+            </div>
           </div>
         </CardContent>
       </Card>
