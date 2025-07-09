@@ -216,28 +216,29 @@ const SampleGraph = ({
                 </p>
               </div>
             )}
-            <div className="relative w-full h-96 md:h-[60vh] border border-border rounded flex items-center justify-center">
+            <div className="relative w-full max-w-4xl h-96 border border-border rounded overflow-hidden">
               <TransformWrapper
                 initialScale={GRAPH_SCALE}
                 wheel={{ step: 0.1 }}
                 doubleClick={{ disabled: true }}
-                // Ensure the transform area matches the parent div
-                // Adjust width and height here if needed
-                wrapperStyle={{ width: "100%", height: "100%" }}
+                wrapperStyle={{ width: "200%", height: "100%" }}
+                contentStyle={{ width: "200%", height: "100%" }}
               >
                 {({ zoomIn, zoomOut }) => (
                   <>
                     <div className="absolute top-2 right-2 z-10 flex flex-col gap-2">
-                      <Button size="icon" variant="secondary" onClick={zoomIn}>
-                        <ZoomIn className="h-4 w-4" />
-                      </Button>
-                      <Button size="icon" variant="secondary" onClick={zoomOut}>
-                        <ZoomOut className="h-4 w-4" />
-                      </Button>
+                      {/* …buttons… */}
                     </div>
                     <TransformComponent wrapperClass="w-full h-full flex items-center justify-center">
                       <ErrorBoundary>
-                        <Graphviz dot={dot} options={graphvizOptions} />
+                        <Graphviz
+                          dot={dot}
+                          options={graphvizOptions}
+                          style={{
+                            width: "100%!important",
+                            height: "100%!important",
+                          }}
+                        />
                       </ErrorBoundary>
                     </TransformComponent>
                   </>
