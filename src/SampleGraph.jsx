@@ -3,7 +3,13 @@ import Graphviz from "graphviz-react";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RotateCcw } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import { RotateCcw, Maximize2 } from "lucide-react";
 import { API_BASE } from "@/lib/api";
 
 /**
@@ -26,6 +32,7 @@ const SampleGraph = ({
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const graphvizOptions = useMemo(() => ({ engine: "dot" }), []);
   const GRAPH_SCALE = 2;
   /**
@@ -228,6 +235,29 @@ const SampleGraph = ({
           </div>
         </CardContent>
       </Card>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogTrigger asChild>
+          <Button
+            size="icon"
+            variant="secondary"
+            disabled={!domain}
+            className="absolute -right-16 top-20 h-12 w-12"
+          >
+            <Maximize2 className="h-6 w-6" />
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-5xl p-4">
+          <div className="w-full h-full overflow-hidden">
+            <TransformWrapper initialScale={1} wheel={{ step: 0.1 }} doubleClick={{ disabled: true }}>
+              <TransformComponent wrapperClass="w-full h-full">
+                <ErrorBoundary>
+                  <Graphviz dot={dot} options={graphvizOptions} />
+                </ErrorBoundary>
+              </TransformComponent>
+            </TransformWrapper>
+          </div>
+        </DialogContent>
+      </Dialog>
       <Button
         size="icon"
         variant="secondary"
