@@ -285,13 +285,14 @@ export default function App() {
                 Remember me
               </label>
             </div>
-            <Button className="w-full h-12 text-lg" onClick={handleLogin}>
+            <Button className="w-full h-12 text-lg" onClick={handleLogin} type="button">
               Log in
             </Button>
             <div id="googleSignIn" className="flex justify-center"></div>
             <p className="text-sm text-center text-muted-foreground">
               Don't have an account?{" "}
               <button
+                type="button"
                 className="text-blue-400 hover:underline"
                 onClick={() => {
                   setLoginOpen(false);
@@ -346,13 +347,14 @@ export default function App() {
               value={signupPassword}
               onChange={(e) => setSignupPassword(e.target.value)}
             />
-            <Button className="w-full h-12 text-lg" onClick={handleSignup}>
+            <Button className="w-full h-12 text-lg" onClick={handleSignup} type="button">
               Sign up
             </Button>
             <div id="googleSignup" className="flex justify-center"></div>
             <p className="text-sm text-center text-muted-foreground">
               Already have an account?{" "}
               <button
+                type="button"
                 className="text-blue-400 hover:underline"
                 onClick={() => {
                   setSignupOpen(false);
@@ -382,11 +384,11 @@ export default function App() {
             )}
             <p className="text-lg text-foreground">{username}</p>
             {username && (
-              <Button variant="secondary" size="sm" onClick={handleLogout}>
+              <Button variant="secondary" size="sm" onClick={handleLogout} type="button">
                 Log out
               </Button>
             )}
-            <Button size="icon" variant="secondary" onClick={toggleTheme}>
+            <Button size="icon" variant="secondary" onClick={toggleTheme} type="button">
               {theme === "dark" && <div className="text-primary">🌙</div>}
               {theme === "high-contrast" && (
                 <div className="text-primary">⚡</div>
@@ -414,6 +416,7 @@ export default function App() {
               onClick={handleAnalyze}
               disabled={!domain.trim()}
               className="rounded-r-full rounded-l-none border-l-0 h-12 lg:h-14"
+              type="button"
             >
               <Search className="h-6 w-6" />
             </Button>
