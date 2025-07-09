@@ -4,6 +4,7 @@ import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RotateCcw } from "lucide-react";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { API_BASE } from "@/lib/api";
 
 /**
@@ -215,16 +216,17 @@ const SampleGraph = ({
                 </p>
               </div>
             )}
-            <div
-              className=" overflow-hidden flex justify-center"
-              style={{
-                transform: `scale(2)`,
-              }}
-            >
+            <TransformWrapper
+            initialScale={GRAPH_SCALE}
+            wheel={{ step: 0.1 }}
+            doubleClick={{ disabled: true }}
+          >
+            <TransformComponent wrapperClass="w-full h-full overflow-hidden flex justify-center">
               <ErrorBoundary>
                 <Graphviz dot={dot} options={graphvizOptions} />
               </ErrorBoundary>
-            </div>
+            </TransformComponent>
+          </TransformWrapper>
           </div>
         </CardContent>
       </Card>
