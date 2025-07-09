@@ -224,7 +224,7 @@ const SampleGraph = ({
                 wrapperStyle={{ width: "200%", height: "100%" }}
                 contentStyle={{ width: "200%", height: "100%" }}
               >
-                {({ zoomIn, zoomOut }) => (
+                {() => (
                   <>
                     <div className="absolute top-2 right-2 z-10 flex flex-col gap-2">
                       {/* …buttons… */}
@@ -254,6 +254,7 @@ const SampleGraph = ({
         onClick={onRefresh}
         disabled={!domain}
         className="absolute -right-16 top-4 h-12 w-12"
+        type="button"
       >
         <RotateCcw className="h-6 w-6" />
       </Button>
