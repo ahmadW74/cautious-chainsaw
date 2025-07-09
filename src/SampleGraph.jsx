@@ -221,6 +221,9 @@ const SampleGraph = ({
                 initialScale={GRAPH_SCALE}
                 wheel={{ step: 0.1 }}
                 doubleClick={{ disabled: true }}
+                // Ensure the transform area matches the parent div
+                // Adjust width and height here if needed
+                wrapperStyle={{ width: "100%", height: "100%" }}
               >
                 {({ zoomIn, zoomOut }) => (
                   <>
