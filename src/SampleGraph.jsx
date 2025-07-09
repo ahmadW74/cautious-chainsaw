@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Graphviz from "graphviz-react";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,6 +26,7 @@ const SampleGraph = ({
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
+  const graphvizOptions = useMemo(() => ({ engine: "dot" }), []);
   const GRAPH_SCALE = 2;
   /**
    * Build a Graphviz dot string from API data.
@@ -221,7 +222,7 @@ const SampleGraph = ({
               }}
             >
               <ErrorBoundary>
-                <Graphviz dot={dot} options={{ engine: "dot" }} />
+                <Graphviz dot={dot} options={graphvizOptions} />
               </ErrorBoundary>
             </div>
           </div>
