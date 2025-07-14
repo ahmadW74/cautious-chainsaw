@@ -1,4 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useLayoutEffect,
+} from "react";
 import Graphviz from "graphviz-react";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,9 +34,33 @@ const SampleGraph = ({
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
+  const containerRef = useRef(null);
+  const [graphSize, setGraphSize] = useState({ width: 0, height: 0 });
+
+  useLayoutEffect(() => {
+    const updateSize = () => {
+      if (containerRef.current) {
+        setGraphSize({
+          width: containerRef.current.clientWidth,
+          height: containerRef.current.clientHeight,
+        });
+      }
+    };
+    updateSize();
+    window.addEventListener("resize", updateSize);
+    return () => {
+      window.removeEventListener("resize", updateSize);
+    };
+  }, []);
+
   const graphvizOptions = useMemo(
-    () => ({ engine: "dot", width: "100%", height: "100%" }),
-    []
+    () => ({
+      engine: "dot",
+      width: graphSize.width || 500,
+      height: graphSize.height || 500,
+      fit: false,
+    }),
+    [graphSize]
   );
   const GRAPH_SCALE = 2;
   /**
@@ -219,7 +250,10 @@ const SampleGraph = ({
                 </p>
               </div>
             )}
-            <div className="relative w-full max-w-4xl h-96 border border-border rounded overflow-hidden">
+            <div
+              ref={containerRef}
+              className="relative w-full max-w-4xl h-96 border border-border rounded overflow-hidden"
+            >
               <TransformWrapper
                 initialScale={GRAPH_SCALE}
                 wheel={{ step: 0.1 }}
@@ -234,14 +268,7 @@ const SampleGraph = ({
                     </div>
                     <TransformComponent wrapperClass="w-full h-full flex items-center justify-center">
                       <ErrorBoundary>
-                        <Graphviz
-                          dot={dot}
-                          options={graphvizOptions}
-                          style={{
-                            width: "100%!important",
-                            height: "100%!important",
-                          }}
-                        />
+                        <Graphviz dot={dot} options={graphvizOptions} />
                       </ErrorBoundary>
                     </TransformComponent>
                   </>
