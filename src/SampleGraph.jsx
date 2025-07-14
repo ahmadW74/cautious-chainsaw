@@ -16,13 +16,17 @@ import { API_BASE } from "@/lib/api";
  * @param {Function} [props.onRefresh] - Callback when the reload button is clicked
  * @param {string} [props.userId] - ID of the logged in user
  * @param {string} [props.selectedDate] - Date selected from the timeline slider
- */
+ * @param {string} [props.maxWidth="56rem"] - Max width of the graph container
+ * @param {string} [props.height="24rem"] - Height of the graph container
+*/
 const SampleGraph = ({
   domain,
   refreshTrigger,
   onRefresh,
   userId,
   selectedDate,
+  maxWidth = "56rem",
+  height = "24rem",
 }) => {
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
@@ -219,7 +223,10 @@ const SampleGraph = ({
                 </p>
               </div>
             )}
-            <div className="relative w-full max-w-4xl h-96 border border-border rounded overflow-hidden">
+            <div
+              className="relative w-full border border-border rounded overflow-hidden"
+              style={{ maxWidth, height }}
+            >
               <TransformWrapper
                 initialScale={GRAPH_SCALE}
                 wheel={{ step: 0.1 }}
