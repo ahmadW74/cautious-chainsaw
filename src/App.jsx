@@ -382,7 +382,19 @@ export default function App() {
             ) : (
               <User className="h-6 w-6 text-foreground" />
             )}
-            <p className="text-lg text-foreground">{username}</p>
+            {username && (
+              <p className="text-lg text-foreground">{username}</p>
+            )}
+            {!username && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setLoginOpen(true)}
+                type="button"
+              >
+                Sign in
+              </Button>
+            )}
             {username && (
               <Button variant="secondary" size="sm" onClick={handleLogout} type="button">
                 Log out
@@ -451,6 +463,20 @@ export default function App() {
           />
         </div>
       </main>
+        <footer className="border-t border-border bg-card text-card-foreground p-4 text-sm">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between gap-4">
+            <div>
+              <p className="font-semibold">DNSCAP</p>
+              <p className="text-xs">Demo dashboard for domain analysis.</p>
+            </div>
+            <div className="flex space-x-4">
+              <a href="#" className="hover:underline">Docs</a>
+              <a href="#" className="hover:underline">API</a>
+              <a href="#" className="hover:underline">Support</a>
+            </div>
+            <p className="text-xs sm:text-sm">&copy; 2024 DNSCAP. All rights reserved.</p>
+          </div>
+        </footer>
     </div>
   );
 }
