@@ -27,10 +27,7 @@ const SampleGraph = ({
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
-  const graphvizOptions = useMemo(
-    () => ({ engine: "dot", width: "100%", height: "100%" }),
-    []
-  );
+  const graphvizOptions = useMemo(() => ({ engine: "dot" }), []);
   const GRAPH_SCALE = 2;
   /**
    * Build a Graphviz dot string from API data.
@@ -224,8 +221,8 @@ const SampleGraph = ({
                 initialScale={GRAPH_SCALE}
                 wheel={{ step: 0.1 }}
                 doubleClick={{ disabled: true }}
-                wrapperStyle={{ width: "100%", height: "100%" }}
-                contentStyle={{ width: "100%", height: "100%" }}
+                wrapperStyle={{ width: "200%", height: "100%" }}
+                contentStyle={{ width: "200%", height: "100%" }}
               >
                 {() => (
                   <>
