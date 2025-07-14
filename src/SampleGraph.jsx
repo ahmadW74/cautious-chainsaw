@@ -3,8 +3,7 @@ import Graphviz from "graphviz-react";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
-import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import { RotateCcw } from "lucide-react";
 import { API_BASE } from "@/lib/api";
 
 /**
@@ -32,10 +31,9 @@ const SampleGraph = ({
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
   const graphvizOptions = useMemo(
-    () => ({ engine: "dot", width: "100%", height: "100%" }),
+    () => ({ engine: "dot", width: "100%", height: "100%", zoom: true }),
     []
   );
-  const GRAPH_SCALE = 2;
   /**
    * Build a Graphviz dot string from API data.
    * The graph places each DNS level in a cluster box and connects
@@ -227,33 +225,15 @@ const SampleGraph = ({
               className="relative w-full border border-border rounded overflow-hidden"
               style={{ maxWidth, height }}
             >
-              <TransformWrapper
-                initialScale={GRAPH_SCALE}
-                wheel={{ step: 0.1 }}
-                doubleClick={{ disabled: true }}
-                wrapperStyle={{ width: "100%", height: "100%" }}
-                contentStyle={{ width: "100%", height: "100%" }}
-              >
-                {() => (
-                  <>
-                    <div className="absolute top-2 right-2 z-10 flex flex-col gap-2">
-                      {/* …buttons… */}
-                    </div>
-                    <TransformComponent wrapperClass="w-full h-full flex items-center justify-center">
-                      <ErrorBoundary>
-                        <Graphviz
-                          dot={dot}
-                          options={graphvizOptions}
-                          style={{
-                            width: "100%!important",
-                            height: "100%!important",
-                          }}
-                        />
-                      </ErrorBoundary>
-                    </TransformComponent>
-                  </>
-                )}
-              </TransformWrapper>
+              <div className="w-full h-full">
+                <ErrorBoundary>
+                  <Graphviz
+                    dot={dot}
+                    options={graphvizOptions}
+                    style={{ width: "100%", height: "100%" }}
+                  />
+                </ErrorBoundary>
+              </div>
             </div>
           </div>
         </CardContent>
