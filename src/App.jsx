@@ -285,7 +285,11 @@ export default function App() {
                 Remember me
               </label>
             </div>
-            <Button className="w-full h-12 text-lg" onClick={handleLogin} type="button">
+            <Button
+              className="w-full h-12 text-lg"
+              onClick={handleLogin}
+              type="button"
+            >
               Log in
             </Button>
             <div id="googleSignIn" className="flex justify-center"></div>
@@ -347,7 +351,11 @@ export default function App() {
               value={signupPassword}
               onChange={(e) => setSignupPassword(e.target.value)}
             />
-            <Button className="w-full h-12 text-lg" onClick={handleSignup} type="button">
+            <Button
+              className="w-full h-12 text-lg"
+              onClick={handleSignup}
+              type="button"
+            >
               Sign up
             </Button>
             <div id="googleSignup" className="flex justify-center"></div>
@@ -382,9 +390,7 @@ export default function App() {
             ) : (
               <User className="h-6 w-6 text-foreground" />
             )}
-            {username && (
-              <p className="text-lg text-foreground">{username}</p>
-            )}
+            {username && <p className="text-lg text-foreground">{username}</p>}
             {!username && (
               <Button
                 variant="secondary"
@@ -396,11 +402,21 @@ export default function App() {
               </Button>
             )}
             {username && (
-              <Button variant="secondary" size="sm" onClick={handleLogout} type="button">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleLogout}
+                type="button"
+              >
                 Log out
               </Button>
             )}
-            <Button size="icon" variant="secondary" onClick={toggleTheme} type="button">
+            <Button
+              size="icon"
+              variant="secondary"
+              onClick={toggleTheme}
+              type="button"
+            >
               {theme === "dark" && <div className="text-primary">🌙</div>}
               {theme === "high-contrast" && (
                 <div className="text-primary">⚡</div>
@@ -463,20 +479,28 @@ export default function App() {
           />
         </div>
       </main>
-        <footer className="border-t border-border bg-card text-card-foreground p-4 text-sm">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between gap-4">
-            <div>
-              <p className="font-semibold">DNSCAP</p>
-              <p className="text-xs">Demo dashboard for domain analysis.</p>
-            </div>
-            <div className="flex space-x-4">
-              <a href="#" className="hover:underline">Docs</a>
-              <a href="#" className="hover:underline">API</a>
-              <a href="#" className="hover:underline">Support</a>
-            </div>
-            <p className="text-xs sm:text-sm">&copy; 2024 DNSCAP. All rights reserved.</p>
+      <footer className="border-t border-border bg-card text-card-foreground p-4 text-sm">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between gap-4">
+          <div>
+            <p className="font-semibold">DNSCAP</p>
+            <p className="text-xs">Demo dashboard for domain analysis.</p>
           </div>
-        </footer>
+          <div className="flex space-x-4">
+            <a href="#" className="hover:underline">
+              Docs
+            </a>
+            <a href="#" className="hover:underline">
+              API
+            </a>
+            <a href="#" className="hover:underline">
+              Support
+            </a>
+          </div>
+          <p className="text-xs sm:text-sm">
+            &copy; 2025 EUNOMATIX. All rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
