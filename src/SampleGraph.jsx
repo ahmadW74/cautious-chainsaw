@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Graphviz from "graphviz-react";
+import { graphviz } from "d3-graphviz";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import { API_BASE } from "@/lib/api";
 
 /**
@@ -30,10 +31,26 @@ const SampleGraph = ({
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
+  const graphContainerRef = useRef(null);
   const graphvizOptions = useMemo(
     () => ({ engine: "dot", width: "100%", height: "100%", zoom: true }),
     []
   );
+
+  const handleZoom = useCallback((factor) => {
+    if (!graphContainerRef.current) return;
+    const el = graphContainerRef.current.querySelector("[id^='graphviz']");
+    if (!el) return;
+    const gv = graphviz(`#${el.id}`);
+    const behavior = gv.zoomBehavior();
+    const selection = gv.zoomSelection();
+    if (behavior && selection) {
+      behavior.scaleBy(selection, factor);
+    }
+  }, []);
+
+  const zoomIn = useCallback(() => handleZoom(1.2), [handleZoom]);
+  const zoomOut = useCallback(() => handleZoom(0.8), [handleZoom]);
   /**
    * Build a Graphviz dot string from API data.
    * The graph places each DNS level in a cluster box and connects
@@ -222,9 +239,18 @@ const SampleGraph = ({
               </div>
             )}
             <div
-              className="relative w-full border border-border rounded overflow-hidden"
+              ref={graphContainerRef}
+              className="relative w-full border border-border rounded overflow-hidden mx-auto"
               style={{ maxWidth, height }}
             >
+              <div className="absolute -top-12 right-0 flex gap-2">
+                <Button size="icon" variant="secondary" onClick={zoomIn} type="button">
+                  <ZoomIn className="h-4 w-4" />
+                </Button>
+                <Button size="icon" variant="secondary" onClick={zoomOut} type="button">
+                  <ZoomOut className="h-4 w-4" />
+                </Button>
+              </div>
               <div className="w-full h-full">
                 <ErrorBoundary>
                   <Graphviz
