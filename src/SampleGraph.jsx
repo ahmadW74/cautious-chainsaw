@@ -17,7 +17,7 @@ import { API_BASE } from "@/lib/api";
  * @param {string} [props.userId] - ID of the logged in user
  * @param {string} [props.selectedDate] - Date selected from the timeline slider
  * @param {string} [props.maxWidth="56rem"] - Max width of the graph container
- * @param {string} [props.height="24rem"] - Height of the graph container
+ * @param {string} [props.height="28rem"] - Height of the graph container
 */
 const SampleGraph = ({
   domain,
@@ -26,7 +26,7 @@ const SampleGraph = ({
   userId,
   selectedDate,
   maxWidth = "56rem",
-  height = "24rem",
+  height = "28rem",
 }) => {
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
@@ -243,14 +243,6 @@ const SampleGraph = ({
               className="relative w-full border border-border rounded overflow-hidden mx-auto"
               style={{ maxWidth, height }}
             >
-              <div className="absolute -top-12 right-0 flex gap-2">
-                <Button size="icon" variant="secondary" onClick={zoomIn} type="button">
-                  <ZoomIn className="h-4 w-4" />
-                </Button>
-                <Button size="icon" variant="secondary" onClick={zoomOut} type="button">
-                  <ZoomOut className="h-4 w-4" />
-                </Button>
-              </div>
               <div className="w-full h-full">
                 <ErrorBoundary>
                   <Graphviz
@@ -264,6 +256,14 @@ const SampleGraph = ({
           </div>
         </CardContent>
       </Card>
+      <div className="absolute -right-16 top-20 flex flex-col gap-2">
+        <Button size="icon" variant="secondary" onClick={zoomIn} type="button">
+          <ZoomIn className="h-4 w-4" />
+        </Button>
+        <Button size="icon" variant="secondary" onClick={zoomOut} type="button">
+          <ZoomOut className="h-4 w-4" />
+        </Button>
+      </div>
       <Button
         size="icon"
         variant="secondary"
