@@ -30,17 +30,8 @@ const SampleGraph = ({
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
-  const [zoomLevel, setZoomLevel] = useState(1);
   const graphvizOptions = useMemo(
     () => ({ engine: "dot", width: "100%", height: "100%", zoom: true }),
-    []
-  );
-  const handleZoomIn = useCallback(
-    () => setZoomLevel((z) => Math.min(z * 1.2, 5)),
-    []
-  );
-  const handleZoomOut = useCallback(
-    () => setZoomLevel((z) => Math.max(z / 1.2, 0.2)),
     []
   );
   /**
@@ -231,13 +222,10 @@ const SampleGraph = ({
               </div>
             )}
             <div
-              className="relative mx-auto border border-border rounded overflow-hidden"
+              className="relative w-full border border-border rounded overflow-hidden"
               style={{ maxWidth, height }}
             >
-              <div
-                className="w-full h-full"
-                style={{ transform: `scale(${zoomLevel})`, transformOrigin: "center" }}
-              >
+              <div className="w-full h-full">
                 <ErrorBoundary>
                   <Graphviz
                     dot={dot}
@@ -245,14 +233,6 @@ const SampleGraph = ({
                     style={{ width: "100%", height: "100%" }}
                   />
                 </ErrorBoundary>
-              </div>
-              <div className="absolute bottom-2 right-2 flex flex-col gap-1">
-                <Button size="icon" variant="secondary" type="button" onClick={handleZoomIn}>
-                  +
-                </Button>
-                <Button size="icon" variant="secondary" type="button" onClick={handleZoomOut}>
-                  -
-                </Button>
               </div>
             </div>
           </div>
