@@ -245,6 +245,7 @@ export default function App() {
         theme !== "light" ? theme : ""
       } bg-background text-foreground min-h-screen flex flex-col text-base lg:text-lg`}
     >
+      <div className="bg-gradient-animate" />
       {/* Login dialog */}
       <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
         <DialogContent className="sm:max-w-lg text-base space-y-6">

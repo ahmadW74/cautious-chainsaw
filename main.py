@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 import os
+import tempfile
 import dns.resolver
 import dns.name
 import dns.rdatatype
@@ -31,7 +32,8 @@ app.add_middleware(
 )
 
 DATA_FILE_PATH = os.path.join(os.path.dirname(__file__), "src", "data.txt")
-LOG_FILE_PATH = os.path.join(os.path.dirname(__file__), "chain_logs.txt")
+# Store logs outside the project directory to avoid triggering frontend hot reloads
+LOG_FILE_PATH = os.path.join(tempfile.gettempdir(), "dnscap_chain_logs.txt")
 data = []
 next_user_id = 1
 
