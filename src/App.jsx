@@ -97,7 +97,7 @@ export default function App() {
 
   const handleGoogleCredential = async (credential) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/google-auth`, {
+      const res = await fetch(`/google-auth`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: credential }),
@@ -131,9 +131,7 @@ export default function App() {
   const handleLogin = async () => {
     setLoginError("");
     try {
-      const res = await fetch(
-        `http://127.0.0.1:8000/login/${loginEmail}/${loginPassword}`
-      );
+      const res = await fetch(`/login/${loginEmail}/${loginPassword}`);
       if (!res.ok) {
         setLoginError("Unable to verify credentials.");
         return;
@@ -172,7 +170,7 @@ export default function App() {
     setSignupMessage("");
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/signup/${signupEmail}/${signupPassword}/${signupName}`
+        `/signup/${signupEmail}/${signupPassword}/${signupName}`
       );
       if (res.ok) {
         setSignupMessageType("success");
@@ -221,7 +219,7 @@ export default function App() {
       window.google.accounts.id.disableAutoSelect();
     }
     if (userId) {
-      fetch(`http://127.0.0.1:8000/logout/${userId}`).catch(() => {});
+      fetch(`/logout/${userId}`).catch(() => {});
     }
     setUsername("");
     setProfilePic(null);

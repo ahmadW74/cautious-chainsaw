@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Graphviz from "graphviz-react";
 import { graphviz } from "d3-graphviz";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
@@ -18,7 +24,7 @@ import { API_BASE } from "@/lib/api";
  * @param {string} [props.selectedDate] - Date selected from the timeline slider
  * @param {string} [props.maxWidth="56rem"] - Max width of the graph container
  * @param {string} [props.height="28rem"] - Height of the graph container
-*/
+ */
 const SampleGraph = ({
   domain,
   refreshTrigger,
@@ -31,7 +37,12 @@ const SampleGraph = ({
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
-  const [tooltip, setTooltip] = useState({ visible: false, text: "", x: 0, y: 0 });
+  const [tooltip, setTooltip] = useState({
+    visible: false,
+    text: "",
+    x: 0,
+    y: 0,
+  });
   const cleanupRef = useRef(null);
   const graphContainerRef = useRef(null);
   const graphvizOptions = useMemo(
@@ -61,31 +72,38 @@ const SampleGraph = ({
     const attach = () => {
       const el = container.querySelector('[id^="graphviz"]');
       if (!el) return;
-      const titles = el.querySelectorAll('title');
+      const titles = el.querySelectorAll("title");
       const listeners = [];
       titles.forEach((title) => {
         const parent = title.parentElement;
-        const text = title.textContent || '';
+        const text = title.textContent || "";
         title.remove();
         if (parent) {
           const show = (e) => {
-            setTooltip({ visible: true, text, x: e.clientX + 10, y: e.clientY + 10 });
+            setTooltip({
+              visible: true,
+              text,
+              x: e.clientX + 10,
+              y: e.clientY + 10,
+            });
           };
           const move = (e) => {
-            setTooltip((t) => (t.visible ? { ...t, x: e.clientX + 10, y: e.clientY + 10 } : t));
+            setTooltip((t) =>
+              t.visible ? { ...t, x: e.clientX + 10, y: e.clientY + 10 } : t
+            );
           };
           const hide = () => setTooltip((t) => ({ ...t, visible: false }));
-          parent.addEventListener('mouseenter', show);
-          parent.addEventListener('mousemove', move);
-          parent.addEventListener('mouseleave', hide);
+          parent.addEventListener("mouseenter", show);
+          parent.addEventListener("mousemove", move);
+          parent.addEventListener("mouseleave", hide);
           listeners.push({ parent, show, move, hide });
         }
       });
       cleanupRef.current = () => {
         listeners.forEach(({ parent, show, move, hide }) => {
-          parent.removeEventListener('mouseenter', show);
-          parent.removeEventListener('mousemove', move);
-          parent.removeEventListener('mouseleave', hide);
+          parent.removeEventListener("mouseenter", show);
+          parent.removeEventListener("mousemove", move);
+          parent.removeEventListener("mouseleave", hide);
         });
       };
     };
@@ -128,8 +146,7 @@ const SampleGraph = ({
       const allZsk =
         (level.records?.dnskey_records || []).filter((k) => k.is_zsk) || [];
 
-      const ksk =
-        allKsk[0] || level.key_hierarchy?.ksk_keys?.[0] || null;
+      const ksk = allKsk[0] || level.key_hierarchy?.ksk_keys?.[0] || null;
 
       const zskNodes = idx === 0 ? allZsk.slice(0, 3) : [allZsk[0]];
       const kskTooltip = ksk
@@ -234,7 +251,7 @@ const SampleGraph = ({
 
     try {
       setLoading(true);
-      let url = `http://127.0.0.1:8000/chain/${encodeURIComponent(domain)}`;
+      let url = `/chain/${encodeURIComponent(domain)}`;
       const params = [];
       if (userId) params.push(`user_id=${encodeURIComponent(userId)}`);
       if (selectedDate) params.push(`date=${encodeURIComponent(selectedDate)}`);
