@@ -31,6 +31,8 @@ const SampleGraph = ({
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
+  const [tooltip, setTooltip] = useState({ visible: false, text: "", x: 0, y: 0 });
+  const cleanupRef = useRef(null);
   const graphContainerRef = useRef(null);
   const graphvizOptions = useMemo(
     () => ({ engine: "dot", width: "100%", height: "100%", zoom: true }),
@@ -51,6 +53,49 @@ const SampleGraph = ({
 
   const zoomIn = useCallback(() => handleZoom(1.2), [handleZoom]);
   const zoomOut = useCallback(() => handleZoom(0.8), [handleZoom]);
+
+  useEffect(() => {
+    const container = graphContainerRef.current;
+    if (!container) return;
+
+    const attach = () => {
+      const el = container.querySelector('[id^="graphviz"]');
+      if (!el) return;
+      const titles = el.querySelectorAll('title');
+      const listeners = [];
+      titles.forEach((title) => {
+        const parent = title.parentElement;
+        const text = title.textContent || '';
+        title.remove();
+        if (parent) {
+          const show = (e) => {
+            setTooltip({ visible: true, text, x: e.clientX + 10, y: e.clientY + 10 });
+          };
+          const move = (e) => {
+            setTooltip((t) => (t.visible ? { ...t, x: e.clientX + 10, y: e.clientY + 10 } : t));
+          };
+          const hide = () => setTooltip((t) => ({ ...t, visible: false }));
+          parent.addEventListener('mouseenter', show);
+          parent.addEventListener('mousemove', move);
+          parent.addEventListener('mouseleave', hide);
+          listeners.push({ parent, show, move, hide });
+        }
+      });
+      cleanupRef.current = () => {
+        listeners.forEach(({ parent, show, move, hide }) => {
+          parent.removeEventListener('mouseenter', show);
+          parent.removeEventListener('mousemove', move);
+          parent.removeEventListener('mouseleave', hide);
+        });
+      };
+    };
+
+    const id = setTimeout(attach, 0);
+    return () => {
+      clearTimeout(id);
+      if (cleanupRef.current) cleanupRef.current();
+    };
+  }, [dot]);
   /**
    * Build a Graphviz dot string from API data.
    * The graph places each DNS level in a cluster box and connects
@@ -260,6 +305,14 @@ const SampleGraph = ({
           </div>
         </CardContent>
       </Card>
+      {tooltip.visible && (
+        <div
+          className="pointer-events-none fixed z-50 bg-primary text-primary-foreground rounded-md px-2 py-1 text-xs"
+          style={{ left: tooltip.x, top: tooltip.y }}
+        >
+          {tooltip.text}
+        </div>
+      )}
       <div className="absolute -right-16 top-20 flex flex-col gap-2">
         <Button size="icon" variant="secondary" onClick={zoomIn} type="button">
           <ZoomIn className="h-4 w-4" />
