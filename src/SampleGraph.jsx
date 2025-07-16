@@ -78,28 +78,27 @@ const SampleGraph = ({
 
     // Render each zone cluster
     data.levels.forEach((level, idx) => {
+      const allKsk =
+        (level.records?.dnskey_records || []).filter((k) => k.is_ksk) || [];
+      const allZsk =
+        (level.records?.dnskey_records || []).filter((k) => k.is_zsk) || [];
+
       const ksk =
-        level.records?.dnskey_records?.find((k) => k.is_ksk) ||
-        level.key_hierarchy?.ksk_keys?.[0] ||
-        (Array.isArray(level.records?.dnskey_records)
-          ? level.records.dnskey_records.find((k) => k.role === "KSK")
-          : null);
-      const zsk =
-        level.records?.dnskey_records?.find((k) => k.is_zsk) ||
-        level.key_hierarchy?.zsk_keys?.[0] ||
-        (Array.isArray(level.records?.dnskey_records)
-          ? level.records.dnskey_records.find((k) => k.role === "ZSK")
-          : null);
+        allKsk[0] || level.key_hierarchy?.ksk_keys?.[0] || null;
+
+      const zskNodes = idx === 0 ? allZsk.slice(0, 3) : [allZsk[0]];
       const kskTooltip = ksk
         ? `Key ID: ${ksk.key_tag}\nAlg: ${
             ksk.algorithm_name || ksk.algorithm
           }\nSize: ${ksk.key_size}`
         : "No KSK";
-      const zskTooltip = zsk
-        ? `Key ID: ${zsk.key_tag}\nAlg: ${
-            zsk.algorithm_name || zsk.algorithm
-          }\nSize: ${zsk.key_size}`
-        : "No ZSK";
+      const zskTooltips = zskNodes.map((z) =>
+        z
+          ? `Key ID: ${z.key_tag}\nAlg: ${
+              z.algorithm_name || z.algorithm
+            }\nSize: ${z.key_size}`
+          : "No ZSK"
+      );
       const nsTooltip = escape((level.records?.ns_records || []).join("\n"));
 
       const securityTooltip =
@@ -119,9 +118,12 @@ const SampleGraph = ({
       dotStr += `    ksk_${idx} [label="KSK" fillcolor="#ffcccc" tooltip="${escape(
         kskTooltip
       )}"];\n`;
-      dotStr += `    zsk_${idx} [label="ZSK" fillcolor="#ffdddd" tooltip="${escape(
-        zskTooltip
-      )}"];\n`;
+
+      zskNodes.forEach((z, j) => {
+        dotStr += `    zsk_${idx}_${j} [label="ZSK" fillcolor="#ffdddd" tooltip="${escape(
+          zskTooltips[j]
+        )}"];\n`;
+      });
 
       if (idx < data.levels.length - 1) {
         const child = data.levels[idx + 1];
@@ -142,9 +144,11 @@ const SampleGraph = ({
         }
       }
 
-      dotStr += `    ksk_${idx} -> zsk_${idx} [label="signs"];\n`;
+      zskNodes.forEach((_, j) => {
+        dotStr += `    ksk_${idx} -> zsk_${idx}_${j} [label="signs"];\n`;
+      });
       if (idx < data.levels.length - 1) {
-        dotStr += `    zsk_${idx} -> ds_${idx}_${
+        dotStr += `    zsk_${idx}_0 -> ds_${idx}_${
           idx + 1
         } [label="delegates"];\n`;
       }
@@ -161,9 +165,9 @@ const SampleGraph = ({
         } [ltail=cluster_${i}, lhead=cluster_${i + 1}, label="delegates"];\n`;
         dotStr += `  ds_${i}_${i + 1} -> zsk_${
           i + 1
-        } [ltail=cluster_${i}, lhead=cluster_${i + 1}];\n`;
+        }_0 [ltail=cluster_${i}, lhead=cluster_${i + 1}];\n`;
       } else {
-        dotStr += `  zsk_${i} -> ksk_${
+        dotStr += `  zsk_${i}_0 -> ksk_${
           i + 1
         } [ltail=cluster_${i}, lhead=cluster_${
           i + 1
