@@ -49,6 +49,7 @@ const SampleGraph = ({
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
+  const [renderTime, setRenderTime] = useState(null);
   const [tooltip, setTooltip] = useState({
     visible: false,
     text: "",
@@ -300,6 +301,7 @@ const SampleGraph = ({
     } finally {
       setLoading(false);
       const elapsed = Math.round(performance.now() - start);
+      setRenderTime(elapsed);
       console.log(`Chain data for ${domain} loaded in ${elapsed} ms from ${source}`);
     }
   }, [domain, buildDot, userId, selectedDate]);
@@ -335,6 +337,11 @@ const SampleGraph = ({
                   {summary.signed_levels + 1} • Breaks:{" "}
                   {summary.chain_breaks?.length - 1 || 0}
                 </p>
+                {renderTime !== null && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Loaded in {renderTime} ms
+                  </p>
+                )}
               </div>
             )}
             <div
