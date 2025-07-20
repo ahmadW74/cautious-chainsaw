@@ -21,6 +21,7 @@ from typing import List, Dict, Any, Optional, Tuple
 import binascii
 import hashlib
 import base64
+import time
 
 app = FastAPI()
 app.add_middleware(
@@ -34,6 +35,7 @@ app.add_middleware(
 DATA_FILE_PATH = os.path.join(os.path.dirname(__file__), "src", "data.txt")
 # Store logs outside the project directory to avoid triggering frontend hot reloads
 LOG_FILE_PATH = os.path.join(tempfile.gettempdir(), "dnscap_chain_logs.txt")
+CACHE_FILE_PATH = os.path.join(os.path.dirname(__file__), "chain_cache.txt")
 data = []
 next_user_id = 1
 
@@ -126,6 +128,26 @@ def append_log(event: str, user_id: Optional[str] = "", domain: str = "", date: 
     try:
         with open(LOG_FILE_PATH, "a") as log_file:
             log_file.write(log_entry)
+    except Exception:
+        pass
+
+
+def load_cache() -> Dict[str, Any]:
+    """Load cached chain data from disk."""
+    if not os.path.exists(CACHE_FILE_PATH):
+        return {}
+    try:
+        with open(CACHE_FILE_PATH, "r") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def save_cache(cache: Dict[str, Any]) -> None:
+    """Persist cache dictionary to disk."""
+    try:
+        with open(CACHE_FILE_PATH, "w") as f:
+            json.dump(cache, f)
     except Exception:
         pass
 with open(DATA_FILE_PATH, "r") as file:
@@ -780,9 +802,20 @@ def analyze_dnssec_chain(domain: str) -> Dict[str, Any]:
         }
 @app.get("/chain/{domain}")
 def get_item(domain: str, user_id: Optional[str] = None, date: Optional[str] = None):
-    result = analyze_dnssec_chain(domain)
+    start = time.time()
+    cache = load_cache()
+    from_cache = False
+    if domain in cache:
+        result = cache[domain]
+        from_cache = True
+    else:
+        result = analyze_dnssec_chain(domain)
+        cache[domain] = result
+        save_cache(cache)
     if user_id and date:
         append_log("chain", user_id, domain, date)
+    elapsed = int((time.time() - start) * 1000)
+    print(f"Chain fetch for {domain} took {elapsed}ms (cached={from_cache})")
     return result
 
 @app.get("/login/{user}/{passw}")
