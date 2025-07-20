@@ -13,16 +13,20 @@ import { Button } from "@/components/ui/button";
 import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import { API_BASE } from "@/lib/api";
 
-const getCookie = (name) => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(";").shift();
-  return null;
+const getCache = (key) => {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
 };
 
-const setCookie = (name, value, days = 1) => {
-  const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
-  document.cookie = `${name}=${value}; expires=${expires}; path=/`;
+const setCache = (key, value) => {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // ignore write errors
+  }
 };
 
 /**
@@ -270,11 +274,11 @@ const SampleGraph = ({
     try {
       setLoading(true);
 
-      const cookieData = getCookie(`chain_${domain}`);
-      if (cookieData) {
+      const cached = getCache(`chain_${domain}`);
+      if (cached) {
         try {
-          json = JSON.parse(cookieData);
-          source = "cookie";
+          json = JSON.parse(cached);
+          source = "cache";
         } catch {
           json = null;
         }
@@ -290,7 +294,7 @@ const SampleGraph = ({
         }
         const res = await fetch(url);
         json = await res.json();
-        setCookie(`chain_${domain}`, JSON.stringify(json));
+        setCache(`chain_${domain}`, JSON.stringify(json));
       }
 
       setDot(buildDot(json));

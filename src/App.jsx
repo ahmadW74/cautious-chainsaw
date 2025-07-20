@@ -22,14 +22,12 @@ export default function App() {
   const dateOptions = useMemo(() => {
     const dates = [];
     const now = new Date();
-    for (let i = 0; i < 8; i++) {
-      const monthsAgo = Math.floor(Math.random() * 60);
+    for (let i = 11; i >= 0; i--) {
       const d = new Date(now);
       d.setDate(1);
-      d.setMonth(now.getMonth() - monthsAgo);
+      d.setMonth(now.getMonth() - i);
       dates.push(d);
     }
-    dates.sort((a, b) => a - b);
     return dates;
   }, []);
 
@@ -493,7 +491,7 @@ export default function App() {
                 <div
                   key={i}
                   style={{ left: `${(i / (dateOptions.length - 1)) * 100}%` }}
-                  className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 size-2 rounded-full bg-border"
+                  className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-full bg-border/50 pointer-events-none"
                 />
               ))}
             </div>
