@@ -13,6 +13,18 @@ import { Button } from "@/components/ui/button";
 import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import { API_BASE } from "@/lib/api";
 
+const getCookie = (name) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+  return null;
+};
+
+const setCookie = (name, value, days = 1) => {
+  const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+  document.cookie = `${name}=${value}; expires=${expires}; path=/`;
+};
+
 /**
  * Renders a DNSSEC chain as a Graphviz diagram.
  *
@@ -249,17 +261,36 @@ const SampleGraph = ({
       return;
     }
 
+    const start = performance.now();
+    let json = null;
+    let source = "network";
+
     try {
       setLoading(true);
-      let url = `http://127.0.0.1:8000/chain/${encodeURIComponent(domain)}`;
-      const params = [];
-      if (userId) params.push(`user_id=${encodeURIComponent(userId)}`);
-      if (selectedDate) params.push(`date=${encodeURIComponent(selectedDate)}`);
-      if (params.length) {
-        url += `?${params.join("&")}`;
+
+      const cookieData = getCookie(`chain_${domain}`);
+      if (cookieData) {
+        try {
+          json = JSON.parse(cookieData);
+          source = "cookie";
+        } catch {
+          json = null;
+        }
       }
-      const res = await fetch(url);
-      const json = await res.json();
+
+      if (!json) {
+        let url = `http://127.0.0.1:8000/chain/${encodeURIComponent(domain)}`;
+        const params = [];
+        if (userId) params.push(`user_id=${encodeURIComponent(userId)}`);
+        if (selectedDate) params.push(`date=${encodeURIComponent(selectedDate)}`);
+        if (params.length) {
+          url += `?${params.join("&")}`;
+        }
+        const res = await fetch(url);
+        json = await res.json();
+        setCookie(`chain_${domain}`, JSON.stringify(json));
+      }
+
       setDot(buildDot(json));
       setSummary(json.chain_summary || null);
     } catch (err) {
@@ -268,6 +299,8 @@ const SampleGraph = ({
       setSummary(null);
     } finally {
       setLoading(false);
+      const elapsed = Math.round(performance.now() - start);
+      console.log(`Chain data for ${domain} loaded in ${elapsed} ms from ${source}`);
     }
   }, [domain, buildDot, userId, selectedDate]);
 
