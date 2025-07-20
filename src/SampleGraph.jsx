@@ -251,7 +251,7 @@ const SampleGraph = ({
 
     try {
       setLoading(true);
-      let url = `/chain/${encodeURIComponent(domain)}`;
+      let url = `http://127.0.0.1:8000/chain/${encodeURIComponent(domain)}`;
       const params = [];
       if (userId) params.push(`user_id=${encodeURIComponent(userId)}`);
       if (selectedDate) params.push(`date=${encodeURIComponent(selectedDate)}`);
