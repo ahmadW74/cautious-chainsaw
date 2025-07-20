@@ -7,6 +7,8 @@ import React, {
 } from "react";
 import Graphviz from "graphviz-react";
 import { graphviz } from "d3-graphviz";
+import ReactFlow, { Background, Controls } from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -61,6 +63,8 @@ const SampleGraph = ({
     x: 0,
     y: 0,
   });
+  const [viewMode, setViewMode] = useState("graphviz");
+  const [flow, setFlow] = useState({ nodes: [], edges: [] });
   const cleanupRef = useRef(null);
   const graphContainerRef = useRef(null);
   const graphvizOptions = useMemo(
@@ -260,6 +264,39 @@ const SampleGraph = ({
     return dotStr;
   }, []);
 
+  const dotToFlow = useCallback((dotStr) => {
+    const nodes = [];
+    const edges = [];
+    const nodeRegex = /([a-zA-Z0-9_]+)\s*\[([^\]]+)\];/g;
+    let m;
+    let idx = 0;
+    while ((m = nodeRegex.exec(dotStr)) !== null) {
+      const id = m[1];
+      const attrs = m[2];
+      const labelMatch = attrs.match(/label="([^"]+)"/);
+      const fillMatch = attrs.match(/fillcolor="([^"]+)"/);
+      nodes.push({
+        id,
+        data: { label: labelMatch ? labelMatch[1] : id },
+        position: { x: (idx % 4) * 150, y: Math.floor(idx / 4) * 100 },
+        style: fillMatch ? { background: fillMatch[1] } : undefined,
+      });
+      idx += 1;
+    }
+
+    const edgeRegex = /([a-zA-Z0-9_]+)\s*->\s*([a-zA-Z0-9_]+)(?:\s*\[([^\]]*)\])?;/g;
+    while ((m = edgeRegex.exec(dotStr)) !== null) {
+      const labelMatch = m[3] ? m[3].match(/label="([^"]+)"/) : null;
+      edges.push({
+        id: `${m[1]}-${m[2]}`,
+        source: m[1],
+        target: m[2],
+        label: labelMatch ? labelMatch[1] : undefined,
+      });
+    }
+    return { nodes, edges };
+  }, []);
+
   const fetchData = useCallback(async () => {
     if (!domain) {
       setDot("digraph DNSSEC {}");
@@ -316,6 +353,10 @@ const SampleGraph = ({
     fetchData();
   }, [fetchData, refreshTrigger]);
 
+  useEffect(() => {
+    setFlow(dotToFlow(dot));
+  }, [dot, dotToFlow]);
+
   if (!domain) {
     return (
       <div className="text-center text-gray-500">
@@ -357,11 +398,23 @@ const SampleGraph = ({
             >
               <div className="w-full h-full">
                 <ErrorBoundary>
-                  <Graphviz
-                    dot={dot}
-                    options={graphvizOptions}
-                    style={{ width: "100%", height: "100%" }}
-                  />
+                  {viewMode === "graphviz" ? (
+                    <Graphviz
+                      dot={dot}
+                      options={graphvizOptions}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  ) : (
+                    <ReactFlow
+                      nodes={flow.nodes}
+                      edges={flow.edges}
+                      fitView
+                      style={{ width: "100%", height: "100%" }}
+                    >
+                      <Background />
+                      <Controls />
+                    </ReactFlow>
+                  )}
                 </ErrorBoundary>
               </div>
             </div>
@@ -376,14 +429,25 @@ const SampleGraph = ({
           {tooltip.text}
         </div>
       )}
-      <div className="absolute -right-16 top-20 flex flex-col gap-2">
-        <Button size="icon" variant="secondary" onClick={zoomIn} type="button">
-          <ZoomIn className="h-4 w-4" />
-        </Button>
-        <Button size="icon" variant="secondary" onClick={zoomOut} type="button">
-          <ZoomOut className="h-4 w-4" />
-        </Button>
-      </div>
+      {viewMode === "graphviz" && (
+        <div className="absolute -right-16 top-20 flex flex-col gap-2">
+          <Button size="icon" variant="secondary" onClick={zoomIn} type="button">
+            <ZoomIn className="h-4 w-4" />
+          </Button>
+          <Button size="icon" variant="secondary" onClick={zoomOut} type="button">
+            <ZoomOut className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+      <Button
+        size="icon"
+        variant="secondary"
+        onClick={() => setViewMode(viewMode === "graphviz" ? "reactflow" : "graphviz")}
+        className="absolute -right-16 top-36 h-12 w-12"
+        type="button"
+      >
+        {viewMode === "graphviz" ? "RF" : "GV"}
+      </Button>
       <Button
         size="icon"
         variant="secondary"
