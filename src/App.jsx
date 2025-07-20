@@ -253,7 +253,10 @@ export default function App() {
   const tooltipLabel =
     timelineIndex === dateOptions.length - 1
       ? "Today"
-      : selectedDate.toLocaleDateString();
+      : selectedDate.toLocaleDateString(undefined, {
+          month: "long",
+          year: "numeric",
+        });
 
   return (
     <div
@@ -490,7 +493,7 @@ export default function App() {
                 <div
                   key={i}
                   style={{ left: `${(i / (dateOptions.length - 1)) * 100}%` }}
-                  className="absolute top-1/2 h-2 w-0.5 -translate-x-1/2 bg-border"
+                  className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 size-2 rounded-full bg-border"
                 />
               ))}
             </div>
@@ -501,7 +504,7 @@ export default function App() {
             theme={theme}
             onRefresh={handleRefresh}
             userId={userId}
-            selectedDate={selectedDate.toISOString().split("T")[0]}
+            selectedDate={selectedDate.toISOString().slice(0, 7)}
           />
         </div>
       </main>
