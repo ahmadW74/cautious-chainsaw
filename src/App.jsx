@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,8 +19,23 @@ export default function App() {
   const [domain, setDomain] = useState("");
   const [currentDomain, setCurrentDomain] = useState("");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const MAX_DAYS = 1825;
-  const [timeline, setTimeline] = useState(MAX_DAYS);
+  const dateOptions = useMemo(() => {
+    const dates = [];
+    const now = new Date();
+    for (let i = 0; i < 8; i++) {
+      const monthsAgo = Math.floor(Math.random() * 60);
+      const d = new Date(now);
+      d.setDate(1);
+      d.setMonth(now.getMonth() - monthsAgo);
+      dates.push(d);
+    }
+    dates.sort((a, b) => a - b);
+    return dates;
+  }, []);
+
+  const [timelineIndex, setTimelineIndex] = useState(
+    dateOptions.length - 1
+  );
   const [loginOpen, setLoginOpen] = useState(true);
   const [signupOpen, setSignupOpen] = useState(false);
 
@@ -55,7 +70,7 @@ export default function App() {
   }, []);
 
   // Theme state
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState("light");
 
   // Signup state
   const [signupName, setSignupName] = useState("");
@@ -234,10 +249,11 @@ export default function App() {
   };
 
   //tooltip
-  const selectedDate = new Date();
-  selectedDate.setDate(selectedDate.getDate() - (MAX_DAYS - timeline));
+  const selectedDate = dateOptions[timelineIndex] || new Date();
   const tooltipLabel =
-    timeline === MAX_DAYS ? "Today" : selectedDate.toLocaleDateString();
+    timelineIndex === dateOptions.length - 1
+      ? "Today"
+      : selectedDate.toLocaleDateString();
 
   return (
     <div
@@ -455,20 +471,29 @@ export default function App() {
           <div className="relative mb-6 h-6 lg:h-8">
             <div className="absolute -top-10 left-0 w-full pointer-events-none">
               <div
-                style={{ left: `${(timeline / MAX_DAYS) * 100}%` }}
+                style={{ left: `${(timelineIndex / (dateOptions.length - 1)) * 100}%` }}
                 className="absolute transform -translate-x-1/2 bg-popover text-popover-foreground text-sm lg:text-base px-3 py-2 rounded shadow"
               >
                 {tooltipLabel}
               </div>
             </div>
-            <Slider
-              min={0}
-              max={MAX_DAYS}
-              step={1}
-              value={[timeline]}
-              onValueChange={(v) => setTimeline(v[0])}
-              className="h-full"
-            />
+            <div className="relative h-full">
+              <Slider
+                min={0}
+                max={dateOptions.length - 1}
+                step={1}
+                value={[timelineIndex]}
+                onValueChange={(v) => setTimelineIndex(v[0])}
+                className="h-full"
+              />
+              {dateOptions.map((_, i) => (
+                <div
+                  key={i}
+                  style={{ left: `${(i / (dateOptions.length - 1)) * 100}%` }}
+                  className="absolute top-1/2 h-2 w-0.5 -translate-x-1/2 bg-border"
+                />
+              ))}
+            </div>
           </div>
           <SampleGraph
             domain={currentDomain}
