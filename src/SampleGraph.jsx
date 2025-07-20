@@ -33,7 +33,7 @@ const setCookie = (name, value, days = 1) => {
  * @param {number} [props.refreshTrigger] - Incrementing value to trigger reload
  * @param {Function} [props.onRefresh] - Callback when the reload button is clicked
  * @param {string} [props.userId] - ID of the logged in user
- * @param {string} [props.selectedDate] - Date selected from the timeline slider
+ * @param {string} [props.selectedDate] - Month selected from the timeline slider (YYYY-MM)
  * @param {string} [props.maxWidth="56rem"] - Max width of the graph container
  * @param {string} [props.height="28rem"] - Height of the graph container
  */
@@ -50,6 +50,7 @@ const SampleGraph = ({
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
   const [renderTime, setRenderTime] = useState(null);
+  const [dataSource, setDataSource] = useState(null);
   const [tooltip, setTooltip] = useState({
     visible: false,
     text: "",
@@ -302,6 +303,7 @@ const SampleGraph = ({
       setLoading(false);
       const elapsed = Math.round(performance.now() - start);
       setRenderTime(elapsed);
+      setDataSource(source);
       console.log(`Chain data for ${domain} loaded in ${elapsed} ms from ${source}`);
     }
   }, [domain, buildDot, userId, selectedDate]);
@@ -339,7 +341,7 @@ const SampleGraph = ({
                 </p>
                 {renderTime !== null && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Loaded in {renderTime} ms
+                    Loaded in {renderTime} ms{dataSource ? ` from ${dataSource}` : ""}
                   </p>
                 )}
               </div>
