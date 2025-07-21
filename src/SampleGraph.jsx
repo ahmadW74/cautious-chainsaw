@@ -7,14 +7,14 @@ import React, {
 } from "react";
 import Graphviz from "graphviz-react";
 import { graphviz } from "d3-graphviz";
-import { ReactFlow, Background, Controls } from "@xyflow/react";
+import { ReactFlow, Background, Controls, useNodesState, useEdgesState } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import dagre from "dagre";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
-import { API_BASE } from "@/lib/api";
 
 const getCache = (key) => {
   try {
@@ -67,6 +67,8 @@ const SampleGraph = ({
     y: 0,
   });
   const [flow, setFlow] = useState({ nodes: [], edges: [] });
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const cleanupRef = useRef(null);
   const graphContainerRef = useRef(null);
   const graphvizOptions = useMemo(
@@ -272,82 +274,83 @@ const SampleGraph = ({
 
     const nodes = [];
     const edges = [];
-    const levelGap = 250;
-    const groupWidth = 400;
-    const groupHeight = 200;
 
     data.levels.forEach((level, idx) => {
-      const groupId = `group_${idx}`;
-      nodes.push({
-        id: groupId,
-        type: 'group',
-        position: { x: 0, y: idx * levelGap },
-        style: { width: groupWidth, height: groupHeight },
-        data: { label: level.display_name },
-      });
-
       const kskId = `ksk_${idx}`;
       nodes.push({
         id: kskId,
-        position: { x: 20, y: 20 },
-        parentNode: groupId,
-        extent: 'parent',
         data: { label: 'KSK' },
+        style: { background: '#ffcccc' },
       });
 
-      const numZsk = idx === 0 ? 3 : 1;
+      const zskRecords = (level.records?.dnskey_records || []).filter((r) => r.is_zsk);
+      const numZsk = idx === 0 ? Math.min(3, zskRecords.length) : 1;
+      const firstZskId = `zsk_${idx}_0`;
       for (let j = 0; j < numZsk; j++) {
         const zskId = `zsk_${idx}_${j}`;
         nodes.push({
           id: zskId,
-          position: { x: 150 + j * 80, y: 80 },
-          parentNode: groupId,
-          extent: 'parent',
           data: { label: 'ZSK' },
+          style: { background: '#ffdddd' },
         });
-        edges.push({
-          id: `${kskId}-${zskId}`,
-          source: kskId,
-          target: zskId,
-          label: 'signs',
-        });
+        edges.push({ id: `${kskId}-${zskId}`, source: kskId, target: zskId, label: 'signs' });
       }
 
       if (idx < data.levels.length - 1) {
         const dsId = `ds_${idx}_${idx + 1}`;
         nodes.push({
           id: dsId,
-          position: { x: 20, y: 140 },
-          parentNode: groupId,
-          extent: 'parent',
           data: { label: 'DS' },
+          style: { background: '#ccccff' },
         });
+        edges.push({ id: `zsk_${idx}_0-${dsId}`, source: firstZskId, target: dsId, label: 'delegates' });
         edges.push({
-          id: `zsk_${idx}_0-${dsId}`,
-          source: `zsk_${idx}_0`,
-          target: dsId,
+          id: `${dsId}-ksk_${idx + 1}`,
+          source: dsId,
+          target: `ksk_${idx + 1}`,
           label: 'delegates',
+          animated: true,
+          style: { stroke: '#ff0000' },
         });
       }
     });
 
-    for (let i = 0; i < data.levels.length - 1; i++) {
-      const dsId = `ds_${i}_${i + 1}`;
-      edges.push({
-        id: `${dsId}-ksk_${i + 1}`,
-        source: dsId,
-        target: `ksk_${i + 1}`,
-        label: 'delegates',
-      });
-    }
+    const dagreGraph = new dagre.graphlib.Graph();
+    dagreGraph.setDefaultEdgeLabel(() => ({}));
+    dagreGraph.setGraph({ rankdir: 'TB' });
 
-    return { nodes, edges };
+    const nodeWidth = 100;
+    const nodeHeight = 50;
+
+    nodes.forEach((node) => {
+      dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+    });
+
+    edges.forEach((edge) => {
+      dagreGraph.setEdge(edge.source, edge.target);
+    });
+
+    dagre.layout(dagreGraph);
+
+    const layoutedNodes = nodes.map((node) => {
+      const { x, y } = dagreGraph.node(node.id);
+      return {
+        ...node,
+        position: { x: x - nodeWidth / 2, y: y - nodeHeight / 2 },
+        sourcePosition: 'bottom',
+        targetPosition: 'top',
+      };
+    });
+
+    return { nodes: layoutedNodes, edges };
   }, []);
 
   const fetchData = useCallback(async () => {
     if (!domain) {
       setDot("digraph DNSSEC {}");
       setFlow({ nodes: [], edges: [] });
+      setNodes([]);
+      setEdges([]);
       setSummary(null);
       return;
     }
@@ -385,7 +388,10 @@ const SampleGraph = ({
       }
 
       setDot(buildDot(json));
-      setFlow(buildFlow(json));
+      const layouted = buildFlow(json);
+      setFlow(layouted);
+      setNodes(layouted.nodes);
+      setEdges(layouted.edges);
       setSummary(json.chain_summary || null);
     } catch (err) {
       console.error("Failed to fetch DNSSEC chain", err);
@@ -400,11 +406,16 @@ const SampleGraph = ({
         `Chain data for ${domain} loaded in ${elapsed} ms from ${source}`
       );
     }
-  }, [domain, buildDot, buildFlow, userId, selectedDate]);
+  }, [domain, buildDot, buildFlow, userId, selectedDate, setNodes, setEdges]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData, refreshTrigger]);
+
+  useEffect(() => {
+    setNodes(flow.nodes);
+    setEdges(flow.edges);
+  }, [flow, setNodes, setEdges]);
 
 
   if (!domain) {
@@ -457,8 +468,10 @@ const SampleGraph = ({
                     />
                   ) : (
                     <ReactFlow
-                      nodes={flow.nodes}
-                      edges={flow.edges}
+                      nodes={nodes}
+                      edges={edges}
+                      onNodesChange={onNodesChange}
+                      onEdgesChange={onEdgesChange}
                       fitView
                       style={{ width: "100%", height: "100%" }}
                     >
