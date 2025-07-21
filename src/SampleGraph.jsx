@@ -12,6 +12,7 @@ import "@xyflow/react/dist/style.css";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import { API_BASE } from "@/lib/api";
 
@@ -63,7 +64,9 @@ const SampleGraph = ({
     x: 0,
     y: 0,
   });
-  const [viewMode, setViewMode] = useState("graphviz");
+  const [viewMode, setViewMode] = useState(() =>
+    getCache("display_mode") || "graphviz"
+  );
   const [flow, setFlow] = useState({ nodes: [], edges: [] });
   const cleanupRef = useRef(null);
   const graphContainerRef = useRef(null);
@@ -357,6 +360,10 @@ const SampleGraph = ({
     setFlow(dotToFlow(dot));
   }, [dot, dotToFlow]);
 
+  useEffect(() => {
+    setCache("display_mode", viewMode);
+  }, [viewMode]);
+
   if (!domain) {
     return (
       <div className="text-center text-gray-500">
@@ -439,15 +446,24 @@ const SampleGraph = ({
           </Button>
         </div>
       )}
-      <Button
-        size="icon"
-        variant="secondary"
-        onClick={() => setViewMode(viewMode === "graphviz" ? "reactflow" : "graphviz")}
-        className="absolute -right-16 top-36 h-12 w-12"
-        type="button"
-      >
-        {viewMode === "graphviz" ? "RF" : "GV"}
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            size="icon"
+            variant="secondary"
+            onClick={() =>
+              setViewMode(viewMode === "graphviz" ? "reactflow" : "graphviz")
+            }
+            className="absolute -right-16 top-36 h-12 w-12"
+            type="button"
+          >
+            {viewMode === "graphviz" ? "RF" : "GV"}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="left">
+          {viewMode === "graphviz" ? "Switch to React Flow" : "Switch to Graphviz"}
+        </TooltipContent>
+      </Tooltip>
       <Button
         size="icon"
         variant="secondary"
