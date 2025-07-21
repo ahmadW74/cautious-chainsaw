@@ -2,6 +2,7 @@ import React from 'react';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 export default function GroupNode({ data }) {
+  const tooltipText = `${data.label}${data.tooltip ? ` - ${data.tooltip}` : ''}`;
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -9,11 +10,7 @@ export default function GroupNode({ data }) {
           {data.label}
         </div>
       </TooltipTrigger>
-      {data.tooltip && (
-        <TooltipContent className="whitespace-pre">
-          {data.tooltip}
-        </TooltipContent>
-      )}
+      <TooltipContent className="whitespace-pre">{tooltipText}</TooltipContent>
     </Tooltip>
   );
 }
