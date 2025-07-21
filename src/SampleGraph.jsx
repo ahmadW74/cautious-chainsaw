@@ -413,7 +413,7 @@ const SampleGraph = ({
       layoutedNodes.push({
         ...groupNode,
         position: { x: -nodeWidth, y: currentY - nodeGap / 2 },
-        style: { padding: 10, background: 'transparent' },
+        style: { padding: 10 },
         data: groupNode.data,
         width: gw + nodeWidth * 2,
         height: gh + nodeGap,
@@ -556,7 +556,7 @@ const SampleGraph = ({
                       onEdgesChange={onEdgesChange}
                       nodeTypes={nodeTypes}
                       fitView
-                      style={{ width: "100%", height: "100%" }}
+                      style={{ width: "100%", height: "100%", backgroundColor: "#D0C0F7" }}
                     >
                       <Background />
                       <Controls />

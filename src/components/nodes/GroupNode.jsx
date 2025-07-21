@@ -7,7 +7,7 @@ export default function GroupNode({ data }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="w-full h-full bg-transparent rounded border p-2" />
+        <div className="w-full h-full rounded border-2 border-dotted border-green-500 bg-[#e6ffe6] p-2" />
       </TooltipTrigger>
       {tooltipText && (
         <TooltipContent className="whitespace-pre">{tooltipText}</TooltipContent>
