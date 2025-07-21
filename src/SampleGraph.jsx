@@ -367,7 +367,7 @@ const SampleGraph = ({
           target: `ksk_${idx + 1}`,
           label: 'delegates',
           animated: true,
-          style: { stroke: '#ff0000' },
+          style: { stroke: 'green' },
         });
       }
 
@@ -375,10 +375,11 @@ const SampleGraph = ({
       levelEdges.push(edges);
     });
 
-    const nodeWidth = 100;
-    const nodeHeight = 50;
-    const nodeGap = 80;
-    const groupGap = 160;
+    // Larger node size and tighter spacing
+    const nodeWidth = 150;
+    const nodeHeight = 60;
+    const nodeGap = 60;
+    const groupGap = 120;
 
     const layoutedNodes = [];
     let currentY = 0;
@@ -399,20 +400,27 @@ const SampleGraph = ({
 
       const { width: gw, height: gh } = g.graph();
 
+      const groupNode = groupNodes[idx];
+      const groupPosition = { x: -nodeWidth, y: currentY - nodeGap / 2 };
+
       nodes.forEach((node) => {
         const { x, y } = g.node(node.id);
         layoutedNodes.push({
           ...node,
-          position: { x: x - nodeWidth / 2, y: y - nodeHeight / 2 + currentY },
+          position: {
+            x: x + nodeWidth / 2,
+            y: y - nodeHeight / 2 + nodeGap / 2,
+          },
+          width: nodeWidth,
+          height: nodeHeight,
           sourcePosition: 'bottom',
           targetPosition: 'top',
         });
       });
 
-      const groupNode = groupNodes[idx];
       layoutedNodes.push({
         ...groupNode,
-        position: { x: -nodeWidth, y: currentY - nodeGap / 2 },
+        position: groupPosition,
         style: { padding: 10 },
         data: groupNode.data,
         width: gw + nodeWidth * 2,
