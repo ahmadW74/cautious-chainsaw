@@ -7,12 +7,20 @@ import React, {
 } from "react";
 import Graphviz from "graphviz-react";
 import { graphviz } from "d3-graphviz";
-import { ReactFlow, Background, Controls, useNodesState, useEdgesState } from "@xyflow/react";
+import {
+  ReactFlow,
+  Background,
+  Controls,
+  useNodesState,
+  useEdgesState,
+} from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import dagre from "dagre";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import RecordNode from "@/components/nodes/RecordNode.jsx";
+import GroupNode from "@/components/nodes/GroupNode.jsx";
 
 import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 
@@ -73,6 +81,10 @@ const SampleGraph = ({
   const graphContainerRef = useRef(null);
   const graphvizOptions = useMemo(
     () => ({ engine: "dot", width: "100%", height: "100%", zoom: true }),
+    []
+  );
+  const nodeTypes = useMemo(
+    () => ({ record: RecordNode, dnsGroup: GroupNode }),
     []
   );
 
@@ -279,22 +291,35 @@ const SampleGraph = ({
 
     data.levels.forEach((level, idx) => {
       const groupId = `level_${idx}`;
+      const securityTooltip =
+        level.dnssec_status?.status === 'signed' ? 'SECURE' : 'INSECURE';
       groupNodes.push({
         id: groupId,
-        type: 'group',
-        data: { label: level.display_name || `Level ${idx}` },
+        type: 'dnsGroup',
+        draggable: true,
+        data: {
+          label: level.display_name || `Level ${idx}`,
+          tooltip: securityTooltip,
+        },
         position: { x: 0, y: 0 },
       });
 
       const nodes = [];
       const edges = [];
 
+      const allKsk = (level.records?.dnskey_records || []).filter((k) => k.is_ksk) || [];
+      const ksk = allKsk[0] || level.key_hierarchy?.ksk_keys?.[0] || null;
+      const kskTooltip = ksk
+        ? `Key ID: ${ksk.key_tag}\nAlg: ${ksk.algorithm_name || ksk.algorithm}\nSize: ${ksk.key_size}`
+        : 'No KSK';
       const kskId = `ksk_${idx}`;
       nodes.push({
         id: kskId,
+        type: 'record',
         parentNode: groupId,
         extent: 'parent',
-        data: { label: 'KSK' },
+        draggable: true,
+        data: { label: 'KSK', tooltip: kskTooltip },
         style: { background: '#ffcccc' },
       });
 
@@ -303,11 +328,17 @@ const SampleGraph = ({
       const firstZskId = `zsk_${idx}_0`;
       for (let j = 0; j < numZsk; j++) {
         const zskId = `zsk_${idx}_${j}`;
+        const zskRecord = zskRecords[j];
+        const zskTooltip = zskRecord
+          ? `Key ID: ${zskRecord.key_tag}\nAlg: ${zskRecord.algorithm_name || zskRecord.algorithm}\nSize: ${zskRecord.key_size}`
+          : 'No ZSK';
         nodes.push({
           id: zskId,
+          type: 'record',
           parentNode: groupId,
           extent: 'parent',
-          data: { label: 'ZSK' },
+          draggable: true,
+          data: { label: 'ZSK', tooltip: zskTooltip },
           style: { background: '#ffdddd' },
         });
         edges.push({ id: `${kskId}-${zskId}`, source: kskId, target: zskId, label: 'signs' });
@@ -315,11 +346,18 @@ const SampleGraph = ({
 
       if (idx < data.levels.length - 1) {
         const dsId = `ds_${idx}_${idx + 1}`;
+        const child = data.levels[idx + 1];
+        const ds = child.records?.ds_records?.[0];
+        const dsTooltip = ds
+          ? `Key ID: ${ds.key_tag}\nAlg: ${ds.algorithm_name || ds.algorithm}\nDigest: ${ds.digest}`
+          : 'No DS';
         nodes.push({
           id: dsId,
+          type: 'record',
           parentNode: groupId,
           extent: 'parent',
-          data: { label: 'DS' },
+          draggable: true,
+          data: { label: 'DS', tooltip: dsTooltip },
           style: { background: '#ccccff' },
         });
         edges.push({ id: `zsk_${idx}_0-${dsId}`, source: firstZskId, target: dsId, label: 'delegates' });
@@ -376,7 +414,7 @@ const SampleGraph = ({
         ...groupNode,
         position: { x: -nodeWidth, y: currentY - nodeGap / 2 },
         style: { padding: 10 },
-        data: { label: groupNode.data.label },
+        data: groupNode.data,
         width: gw + nodeWidth * 2,
         height: gh + nodeGap,
       });
@@ -516,6 +554,7 @@ const SampleGraph = ({
                       edges={edges}
                       onNodesChange={onNodesChange}
                       onEdgesChange={onEdgesChange}
+                      nodeTypes={nodeTypes}
                       fitView
                       style={{ width: "100%", height: "100%" }}
                     >
