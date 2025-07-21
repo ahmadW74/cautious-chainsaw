@@ -272,13 +272,28 @@ const SampleGraph = ({
   const buildFlow = useCallback((data) => {
     if (!data || !Array.isArray(data.levels)) return { nodes: [], edges: [] };
 
-    const nodes = [];
-    const edges = [];
+    const levelNodes = [];
+    const levelEdges = [];
+    const crossEdges = [];
+    const groupNodes = [];
 
     data.levels.forEach((level, idx) => {
+      const groupId = `level_${idx}`;
+      groupNodes.push({
+        id: groupId,
+        type: 'group',
+        data: { label: level.display_name || `Level ${idx}` },
+        position: { x: 0, y: 0 },
+      });
+
+      const nodes = [];
+      const edges = [];
+
       const kskId = `ksk_${idx}`;
       nodes.push({
         id: kskId,
+        parentNode: groupId,
+        extent: 'parent',
         data: { label: 'KSK' },
         style: { background: '#ffcccc' },
       });
@@ -290,6 +305,8 @@ const SampleGraph = ({
         const zskId = `zsk_${idx}_${j}`;
         nodes.push({
           id: zskId,
+          parentNode: groupId,
+          extent: 'parent',
           data: { label: 'ZSK' },
           style: { background: '#ffdddd' },
         });
@@ -300,11 +317,13 @@ const SampleGraph = ({
         const dsId = `ds_${idx}_${idx + 1}`;
         nodes.push({
           id: dsId,
+          parentNode: groupId,
+          extent: 'parent',
           data: { label: 'DS' },
           style: { background: '#ccccff' },
         });
         edges.push({ id: `zsk_${idx}_0-${dsId}`, source: firstZskId, target: dsId, label: 'delegates' });
-        edges.push({
+        crossEdges.push({
           id: `${dsId}-ksk_${idx + 1}`,
           source: dsId,
           target: `ksk_${idx + 1}`,
@@ -313,34 +332,59 @@ const SampleGraph = ({
           style: { stroke: '#ff0000' },
         });
       }
-    });
 
-    const dagreGraph = new dagre.graphlib.Graph();
-    dagreGraph.setDefaultEdgeLabel(() => ({}));
-    dagreGraph.setGraph({ rankdir: 'TB' });
+      levelNodes.push(nodes);
+      levelEdges.push(edges);
+    });
 
     const nodeWidth = 100;
     const nodeHeight = 50;
+    const nodeGap = 80;
+    const groupGap = 160;
 
-    nodes.forEach((node) => {
-      dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+    const layoutedNodes = [];
+    let currentY = 0;
+
+    levelNodes.forEach((nodes, idx) => {
+      const g = new dagre.graphlib.Graph();
+      g.setDefaultEdgeLabel(() => ({}));
+      g.setGraph({ rankdir: 'TB', nodesep: nodeGap, ranksep: nodeGap });
+
+      nodes.forEach((node) => {
+        g.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+      });
+      levelEdges[idx].forEach((edge) => {
+        g.setEdge(edge.source, edge.target);
+      });
+
+      dagre.layout(g);
+
+      const { width: gw, height: gh } = g.graph();
+
+      nodes.forEach((node) => {
+        const { x, y } = g.node(node.id);
+        layoutedNodes.push({
+          ...node,
+          position: { x: x - nodeWidth / 2, y: y - nodeHeight / 2 + currentY },
+          sourcePosition: 'bottom',
+          targetPosition: 'top',
+        });
+      });
+
+      const groupNode = groupNodes[idx];
+      layoutedNodes.push({
+        ...groupNode,
+        position: { x: -nodeWidth, y: currentY - nodeGap / 2 },
+        style: { padding: 10 },
+        data: { label: groupNode.data.label },
+        width: gw + nodeWidth * 2,
+        height: gh + nodeGap,
+      });
+
+      currentY += gh + groupGap;
     });
 
-    edges.forEach((edge) => {
-      dagreGraph.setEdge(edge.source, edge.target);
-    });
-
-    dagre.layout(dagreGraph);
-
-    const layoutedNodes = nodes.map((node) => {
-      const { x, y } = dagreGraph.node(node.id);
-      return {
-        ...node,
-        position: { x: x - nodeWidth / 2, y: y - nodeHeight / 2 },
-        sourcePosition: 'bottom',
-        targetPosition: 'top',
-      };
-    });
+    const edges = levelEdges.flat().concat(crossEdges);
 
     return { nodes: layoutedNodes, edges };
   }, []);
