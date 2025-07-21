@@ -284,6 +284,11 @@ const SampleGraph = ({
   const buildFlow = useCallback((data) => {
     if (!data || !Array.isArray(data.levels)) return { nodes: [], edges: [] };
 
+    const nodeWidth = 150;
+    const nodeHeight = 50;
+    const nodeGap = 60;
+    const groupGap = 120;
+
     const levelNodes = [];
     const levelEdges = [];
     const crossEdges = [];
@@ -299,7 +304,7 @@ const SampleGraph = ({
         draggable: true,
         data: {
           label: level.display_name || `Level ${idx}`,
-          tooltip: securityTooltip,
+          tooltip: `${level.display_name || `Level ${idx}`}\n${securityTooltip}`,
         },
         position: { x: 0, y: 0 },
       });
@@ -320,7 +325,7 @@ const SampleGraph = ({
         extent: 'parent',
         draggable: true,
         data: { label: 'KSK', tooltip: kskTooltip },
-        style: { background: '#ffcccc' },
+        style: { background: '#ffcccc', width: nodeWidth },
       });
 
       const zskRecords = (level.records?.dnskey_records || []).filter((r) => r.is_zsk);
@@ -339,7 +344,7 @@ const SampleGraph = ({
           extent: 'parent',
           draggable: true,
           data: { label: 'ZSK', tooltip: zskTooltip },
-          style: { background: '#ffdddd' },
+          style: { background: '#ffdddd', width: nodeWidth },
         });
         edges.push({ id: `${kskId}-${zskId}`, source: kskId, target: zskId, label: 'signs' });
       }
@@ -358,7 +363,7 @@ const SampleGraph = ({
           extent: 'parent',
           draggable: true,
           data: { label: 'DS', tooltip: dsTooltip },
-          style: { background: '#ccccff' },
+          style: { background: '#ccccff', width: nodeWidth },
         });
         edges.push({ id: `zsk_${idx}_0-${dsId}`, source: firstZskId, target: dsId, label: 'delegates' });
         crossEdges.push({
@@ -367,18 +372,13 @@ const SampleGraph = ({
           target: `ksk_${idx + 1}`,
           label: 'delegates',
           animated: true,
-          style: { stroke: '#ff0000' },
+          style: { stroke: 'green' },
         });
       }
 
       levelNodes.push(nodes);
       levelEdges.push(edges);
     });
-
-    const nodeWidth = 100;
-    const nodeHeight = 50;
-    const nodeGap = 80;
-    const groupGap = 160;
 
     const layoutedNodes = [];
     let currentY = 0;
@@ -413,7 +413,7 @@ const SampleGraph = ({
       layoutedNodes.push({
         ...groupNode,
         position: { x: -nodeWidth, y: currentY - nodeGap / 2 },
-        style: { padding: 10 },
+        style: { padding: 10, background: 'transparent' },
         data: groupNode.data,
         width: gw + nodeWidth * 2,
         height: gh + nodeGap,
