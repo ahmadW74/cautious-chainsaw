@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import Graphviz from "graphviz-react";
 import { graphviz } from "d3-graphviz";
-import ReactFlow, { Background, Controls } from "@xyflow/react";
+import { ReactFlow, Background, Controls } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import { Card, CardContent } from "@/components/ui/card";
@@ -40,7 +40,7 @@ const setCache = (key, value) => {
  * @param {number} [props.refreshTrigger] - Incrementing value to trigger reload
  * @param {Function} [props.onRefresh] - Callback when the reload button is clicked
  * @param {string} [props.userId] - ID of the logged in user
-  * @param {string} [props.selectedDate] - Month selected from the timeline slider (YYYY-MM)
+ * @param {string} [props.selectedDate] - Month selected from the timeline slider (YYYY-MM)
  * @param {string} props.viewMode - Display mode (graphviz or reactflow)
  * @param {string} [props.maxWidth="56rem"] - Max width of the graph container
  * @param {string} [props.height="28rem"] - Height of the graph container
@@ -286,7 +286,8 @@ const SampleGraph = ({
       idx += 1;
     }
 
-    const edgeRegex = /([a-zA-Z0-9_]+)\s*->\s*([a-zA-Z0-9_]+)(?:\s*\[([^\]]*)\])?;/g;
+    const edgeRegex =
+      /([a-zA-Z0-9_]+)\s*->\s*([a-zA-Z0-9_]+)(?:\s*\[([^\]]*)\])?;/g;
     while ((m = edgeRegex.exec(dotStr)) !== null) {
       const labelMatch = m[3] ? m[3].match(/label="([^"]+)"/) : null;
       edges.push({
@@ -328,7 +329,8 @@ const SampleGraph = ({
         let url = `http://127.0.0.1:8000/chain/${encodeURIComponent(domain)}`;
         const params = [];
         if (userId) params.push(`user_id=${encodeURIComponent(userId)}`);
-        if (selectedDate) params.push(`date=${encodeURIComponent(selectedDate)}`);
+        if (selectedDate)
+          params.push(`date=${encodeURIComponent(selectedDate)}`);
         if (params.length) {
           url += `?${params.join("&")}`;
         }
@@ -348,7 +350,9 @@ const SampleGraph = ({
       const elapsed = Math.round(performance.now() - start);
       setRenderTime(elapsed);
       setDataSource(source);
-      console.log(`Chain data for ${domain} loaded in ${elapsed} ms from ${source}`);
+      console.log(
+        `Chain data for ${domain} loaded in ${elapsed} ms from ${source}`
+      );
     }
   }, [domain, buildDot, userId, selectedDate]);
 
@@ -359,7 +363,6 @@ const SampleGraph = ({
   useEffect(() => {
     setFlow(dotToFlow(dot));
   }, [dot, dotToFlow]);
-
 
   if (!domain) {
     return (
@@ -390,7 +393,8 @@ const SampleGraph = ({
                 </p>
                 {renderTime !== null && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Loaded in {renderTime} ms{dataSource ? ` from ${dataSource}` : ""}
+                    Loaded in {renderTime} ms
+                    {dataSource ? ` from ${dataSource}` : ""}
                   </p>
                 )}
               </div>
@@ -435,10 +439,20 @@ const SampleGraph = ({
       )}
       {viewMode === "graphviz" && (
         <div className="absolute -right-16 top-20 flex flex-col gap-2">
-          <Button size="icon" variant="secondary" onClick={zoomIn} type="button">
+          <Button
+            size="icon"
+            variant="secondary"
+            onClick={zoomIn}
+            type="button"
+          >
             <ZoomIn className="h-4 w-4" />
           </Button>
-          <Button size="icon" variant="secondary" onClick={zoomOut} type="button">
+          <Button
+            size="icon"
+            variant="secondary"
+            onClick={zoomOut}
+            type="button"
+          >
             <ZoomOut className="h-4 w-4" />
           </Button>
         </div>
