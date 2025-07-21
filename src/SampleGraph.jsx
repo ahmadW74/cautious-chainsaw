@@ -12,7 +12,7 @@ import "@xyflow/react/dist/style.css";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+
 import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import { API_BASE } from "@/lib/api";
 
@@ -40,7 +40,8 @@ const setCache = (key, value) => {
  * @param {number} [props.refreshTrigger] - Incrementing value to trigger reload
  * @param {Function} [props.onRefresh] - Callback when the reload button is clicked
  * @param {string} [props.userId] - ID of the logged in user
- * @param {string} [props.selectedDate] - Month selected from the timeline slider (YYYY-MM)
+  * @param {string} [props.selectedDate] - Month selected from the timeline slider (YYYY-MM)
+ * @param {string} props.viewMode - Display mode (graphviz or reactflow)
  * @param {string} [props.maxWidth="56rem"] - Max width of the graph container
  * @param {string} [props.height="28rem"] - Height of the graph container
  */
@@ -50,6 +51,7 @@ const SampleGraph = ({
   onRefresh,
   userId,
   selectedDate,
+  viewMode,
   maxWidth = "56rem",
   height = "28rem",
 }) => {
@@ -64,9 +66,6 @@ const SampleGraph = ({
     x: 0,
     y: 0,
   });
-  const [viewMode, setViewMode] = useState(() =>
-    getCache("display_mode") || "graphviz"
-  );
   const [flow, setFlow] = useState({ nodes: [], edges: [] });
   const cleanupRef = useRef(null);
   const graphContainerRef = useRef(null);
@@ -310,11 +309,12 @@ const SampleGraph = ({
     const start = performance.now();
     let json = null;
     let source = "network";
+    const key = `chain_${domain.toLowerCase()}`;
 
     try {
       setLoading(true);
 
-      const cached = getCache(`chain_${domain}`);
+      const cached = getCache(key);
       if (cached) {
         try {
           json = JSON.parse(cached);
@@ -334,7 +334,7 @@ const SampleGraph = ({
         }
         const res = await fetch(url);
         json = await res.json();
-        setCache(`chain_${domain}`, JSON.stringify(json));
+        setCache(key, JSON.stringify(json));
       }
 
       setDot(buildDot(json));
@@ -360,9 +360,6 @@ const SampleGraph = ({
     setFlow(dotToFlow(dot));
   }, [dot, dotToFlow]);
 
-  useEffect(() => {
-    setCache("display_mode", viewMode);
-  }, [viewMode]);
 
   if (!domain) {
     return (
@@ -446,24 +443,6 @@ const SampleGraph = ({
           </Button>
         </div>
       )}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            size="icon"
-            variant="secondary"
-            onClick={() =>
-              setViewMode(viewMode === "graphviz" ? "reactflow" : "graphviz")
-            }
-            className="absolute -right-16 top-36 h-12 w-12"
-            type="button"
-          >
-            {viewMode === "graphviz" ? "RF" : "GV"}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="left">
-          {viewMode === "graphviz" ? "Switch to React Flow" : "Switch to Graphviz"}
-        </TooltipContent>
-      </Tooltip>
       <Button
         size="icon"
         variant="secondary"

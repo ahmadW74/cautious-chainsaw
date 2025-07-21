@@ -12,6 +12,22 @@ import {
 } from "@/components/ui/dialog";
 import SampleGraph from "./SampleGraph.jsx";
 
+const getCache = (key) => {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+
+const setCache = (key, value) => {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // ignore write errors
+  }
+};
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { API_BASE } from "@/lib/api";
 export default function App() {
@@ -69,6 +85,15 @@ export default function App() {
 
   // Theme state
   const [theme, setTheme] = useState("light");
+
+  // Diagram display mode
+  const [viewMode, setViewMode] = useState(() =>
+    getCache("display_mode") || "graphviz"
+  );
+
+  useEffect(() => {
+    setCache("display_mode", viewMode);
+  }, [viewMode]);
 
   // Signup state
   const [signupName, setSignupName] = useState("");
@@ -208,8 +233,9 @@ export default function App() {
 
   //graph logic
   const handleAnalyze = () => {
-    if (domain.trim()) {
-      setCurrentDomain(domain.trim());
+    const cleaned = domain.trim().toLowerCase();
+    if (cleaned) {
+      setCurrentDomain(cleaned);
     }
   };
 
@@ -397,7 +423,19 @@ export default function App() {
       {/* Header */}
       <header className="border-b border-border">
         <div className="mx-auto max-w-7xl p-6 flex justify-between items-center">
-          <h1 className="text-3xl font-semibold tracking-tight">DNSCAP</h1>
+          <div className="flex items-center space-x-2">
+            <h1 className="text-3xl font-semibold tracking-tight">DNSCAP</h1>
+            <Button
+              size="icon"
+              variant="secondary"
+              onClick={() =>
+                setViewMode(viewMode === "graphviz" ? "reactflow" : "graphviz")
+              }
+              type="button"
+            >
+              {viewMode === "graphviz" ? "RF" : "GV"}
+            </Button>
+          </div>
           <div className="flex items-center space-x-2">
             {profilePic ? (
               <img
@@ -500,6 +538,7 @@ export default function App() {
             domain={currentDomain}
             refreshTrigger={refreshTrigger}
             theme={theme}
+            viewMode={viewMode}
             onRefresh={handleRefresh}
             userId={userId}
             selectedDate={selectedDate.toISOString().slice(0, 7)}
