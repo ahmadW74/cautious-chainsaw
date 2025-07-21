@@ -266,43 +266,88 @@ const SampleGraph = ({
     return dotStr;
   }, []);
 
-  const dotToFlow = useCallback((dotStr) => {
+
+  const buildFlow = useCallback((data) => {
+    if (!data || !Array.isArray(data.levels)) return { nodes: [], edges: [] };
+
     const nodes = [];
     const edges = [];
-    const nodeRegex = /([a-zA-Z0-9_]+)\s*\[([^\]]+)\];/g;
-    let m;
-    let idx = 0;
-    while ((m = nodeRegex.exec(dotStr)) !== null) {
-      const id = m[1];
-      const attrs = m[2];
-      const labelMatch = attrs.match(/label="([^"]+)"/);
-      const fillMatch = attrs.match(/fillcolor="([^"]+)"/);
+    const levelGap = 250;
+    const groupWidth = 400;
+    const groupHeight = 200;
+
+    data.levels.forEach((level, idx) => {
+      const groupId = `group_${idx}`;
       nodes.push({
-        id,
-        data: { label: labelMatch ? labelMatch[1] : id },
-        position: { x: (idx % 4) * 150, y: Math.floor(idx / 4) * 100 },
-        style: fillMatch ? { background: fillMatch[1] } : undefined,
+        id: groupId,
+        type: 'group',
+        position: { x: 0, y: idx * levelGap },
+        style: { width: groupWidth, height: groupHeight },
+        data: { label: level.display_name },
       });
-      idx += 1;
+
+      const kskId = `ksk_${idx}`;
+      nodes.push({
+        id: kskId,
+        position: { x: 20, y: 20 },
+        parentNode: groupId,
+        extent: 'parent',
+        data: { label: 'KSK' },
+      });
+
+      const numZsk = idx === 0 ? 3 : 1;
+      for (let j = 0; j < numZsk; j++) {
+        const zskId = `zsk_${idx}_${j}`;
+        nodes.push({
+          id: zskId,
+          position: { x: 150 + j * 80, y: 80 },
+          parentNode: groupId,
+          extent: 'parent',
+          data: { label: 'ZSK' },
+        });
+        edges.push({
+          id: `${kskId}-${zskId}`,
+          source: kskId,
+          target: zskId,
+          label: 'signs',
+        });
+      }
+
+      if (idx < data.levels.length - 1) {
+        const dsId = `ds_${idx}_${idx + 1}`;
+        nodes.push({
+          id: dsId,
+          position: { x: 20, y: 140 },
+          parentNode: groupId,
+          extent: 'parent',
+          data: { label: 'DS' },
+        });
+        edges.push({
+          id: `zsk_${idx}_0-${dsId}`,
+          source: `zsk_${idx}_0`,
+          target: dsId,
+          label: 'delegates',
+        });
+      }
+    });
+
+    for (let i = 0; i < data.levels.length - 1; i++) {
+      const dsId = `ds_${i}_${i + 1}`;
+      edges.push({
+        id: `${dsId}-ksk_${i + 1}`,
+        source: dsId,
+        target: `ksk_${i + 1}`,
+        label: 'delegates',
+      });
     }
 
-    const edgeRegex =
-      /([a-zA-Z0-9_]+)\s*->\s*([a-zA-Z0-9_]+)(?:\s*\[([^\]]*)\])?;/g;
-    while ((m = edgeRegex.exec(dotStr)) !== null) {
-      const labelMatch = m[3] ? m[3].match(/label="([^"]+)"/) : null;
-      edges.push({
-        id: `${m[1]}-${m[2]}`,
-        source: m[1],
-        target: m[2],
-        label: labelMatch ? labelMatch[1] : undefined,
-      });
-    }
     return { nodes, edges };
   }, []);
 
   const fetchData = useCallback(async () => {
     if (!domain) {
       setDot("digraph DNSSEC {}");
+      setFlow({ nodes: [], edges: [] });
       setSummary(null);
       return;
     }
@@ -340,6 +385,7 @@ const SampleGraph = ({
       }
 
       setDot(buildDot(json));
+      setFlow(buildFlow(json));
       setSummary(json.chain_summary || null);
     } catch (err) {
       console.error("Failed to fetch DNSSEC chain", err);
@@ -354,15 +400,12 @@ const SampleGraph = ({
         `Chain data for ${domain} loaded in ${elapsed} ms from ${source}`
       );
     }
-  }, [domain, buildDot, userId, selectedDate]);
+  }, [domain, buildDot, buildFlow, userId, selectedDate]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData, refreshTrigger]);
 
-  useEffect(() => {
-    setFlow(dotToFlow(dot));
-  }, [dot, dotToFlow]);
 
   if (!domain) {
     return (
