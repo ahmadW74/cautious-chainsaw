@@ -400,20 +400,23 @@ const SampleGraph = ({
       const { width: gw, height: gh } = g.graph();
 
       const groupNode = groupNodes[idx];
+      const groupPosition = { x: -nodeWidth, y: currentY - nodeGap / 2 };
+      const groupWidth = gw + nodeWidth * 2;
+      const groupHeight = gh + nodeGap;
       layoutedNodes.push({
         ...groupNode,
-        position: { x: -nodeWidth, y: currentY - nodeGap / 2 },
-        style: { padding: 10, background: 'transparent' },
+        position: groupPosition,
+        style: { width: groupWidth, height: groupHeight, padding: 10, background: 'transparent' },
         data: groupNode.data,
-        width: gw + nodeWidth * 2,
-        height: gh + nodeGap,
       });
 
       nodes.forEach((node) => {
         const { x, y } = g.node(node.id);
+        const relX = x + nodeWidth / 2;
+        const relY = y - nodeHeight / 2 + nodeGap / 2;
         layoutedNodes.push({
           ...node,
-          position: { x: x - nodeWidth / 2, y: y - nodeHeight / 2 + currentY },
+          position: { x: relX, y: relY },
           sourcePosition: 'bottom',
           targetPosition: 'top',
         });
