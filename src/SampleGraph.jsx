@@ -7,13 +7,6 @@ import React, {
 } from "react";
 import Graphviz from "graphviz-react";
 import { graphviz } from "d3-graphviz";
-import {
-  ReactFlow,
-  Background,
-  Controls,
-  useNodesState,
-  useEdgesState,
-} from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import dagre from "dagre";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
@@ -21,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import RecordNode from "@/components/nodes/RecordNode.jsx";
 import GroupNode from "@/components/nodes/GroupNode.jsx";
+import ChainFlow from "./ChainFlow.jsx";
 
 import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 
@@ -75,8 +69,6 @@ const SampleGraph = ({
     y: 0,
   });
   const [flow, setFlow] = useState({ nodes: [], edges: [] });
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const cleanupRef = useRef(null);
   const graphContainerRef = useRef(null);
   const graphvizOptions = useMemo(
@@ -431,8 +423,6 @@ const SampleGraph = ({
     if (!domain) {
       setDot("digraph DNSSEC {}");
       setFlow({ nodes: [], edges: [] });
-      setNodes([]);
-      setEdges([]);
       setSummary(null);
       return;
     }
@@ -472,8 +462,6 @@ const SampleGraph = ({
       setDot(buildDot(json));
       const layouted = buildFlow(json);
       setFlow(layouted);
-      setNodes(layouted.nodes);
-      setEdges(layouted.edges);
       setSummary(json.chain_summary || null);
     } catch (err) {
       console.error("Failed to fetch DNSSEC chain", err);
@@ -488,16 +476,12 @@ const SampleGraph = ({
         `Chain data for ${domain} loaded in ${elapsed} ms from ${source}`
       );
     }
-  }, [domain, buildDot, buildFlow, userId, selectedDate, setNodes, setEdges]);
+  }, [domain, buildDot, buildFlow, userId, selectedDate]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData, refreshTrigger]);
 
-  useEffect(() => {
-    setNodes(flow.nodes);
-    setEdges(flow.edges);
-  }, [flow, setNodes, setEdges]);
 
 
   if (!domain) {
@@ -549,18 +533,11 @@ const SampleGraph = ({
                       style={{ width: "100%", height: "100%" }}
                     />
                   ) : (
-                    <ReactFlow
-                      nodes={nodes}
-                      edges={edges}
-                      onNodesChange={onNodesChange}
-                      onEdgesChange={onEdgesChange}
+                    <ChainFlow
+                      nodes={flow.nodes}
+                      edges={flow.edges}
                       nodeTypes={nodeTypes}
-                      fitView
-                      style={{ width: "100%", height: "100%" }}
-                    >
-                      <Background />
-                      <Controls />
-                    </ReactFlow>
+                    />
                   )}
                 </ErrorBoundary>
               </div>
