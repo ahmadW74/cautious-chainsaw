@@ -15,7 +15,6 @@ import {
   useEdgesState,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import dagre from "dagre";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -284,147 +283,80 @@ const SampleGraph = ({
   const buildFlow = useCallback((data) => {
     if (!data || !Array.isArray(data.levels)) return { nodes: [], edges: [] };
 
-    const nodeWidth = 150;
-    const nodeHeight = 50;
-    const nodeGap = 60;
-    const groupGap = 120;
-
-    const levelNodes = [];
-    const levelEdges = [];
-    const crossEdges = [];
-    const groupNodes = [];
+    const nodes = [];
+    const edges = [];
+    const groupWidth = 200;
+    const groupHeight = 200;
+    const spacingY = 250;
 
     data.levels.forEach((level, idx) => {
       const groupId = `level_${idx}`;
       const securityTooltip =
-        level.dnssec_status?.status === 'signed' ? 'SECURE' : 'INSECURE';
-      groupNodes.push({
+        level.dnssec_status?.status === "signed" ? "SECURE" : "INSECURE";
+
+      nodes.push({
         id: groupId,
-        type: 'dnsGroup',
-        draggable: true,
+        type: "dnsGroup",
+        position: { x: 0, y: idx * spacingY },
+        style: { width: groupWidth, height: groupHeight, background: "transparent" },
         data: {
           label: level.display_name || `Level ${idx}`,
           tooltip: `${level.display_name || `Level ${idx}`}\n${securityTooltip}`,
         },
-        position: { x: 0, y: 0 },
       });
 
-      const nodes = [];
-      const edges = [];
-
-      const allKsk = (level.records?.dnskey_records || []).filter((k) => k.is_ksk) || [];
-      const ksk = allKsk[0] || level.key_hierarchy?.ksk_keys?.[0] || null;
-      const kskTooltip = ksk
-        ? `Key ID: ${ksk.key_tag}\nAlg: ${ksk.algorithm_name || ksk.algorithm}\nSize: ${ksk.key_size}`
-        : 'No KSK';
+      const kskRecord = (level.records?.dnskey_records || []).find((r) => r.is_ksk);
+      const kskTooltip = kskRecord ? `Key ID: ${kskRecord.key_tag}` : "No KSK";
       const kskId = `ksk_${idx}`;
       nodes.push({
         id: kskId,
-        type: 'record',
+        type: "record",
         parentNode: groupId,
-        extent: 'parent',
-        draggable: true,
-        data: { label: 'KSK', tooltip: kskTooltip },
-        style: { background: '#ffcccc', width: nodeWidth },
+        extent: "parent",
+        position: { x: 10, y: 10 },
+        data: { label: "KSK", tooltip: kskTooltip },
+        style: { background: "#ffcccc" },
       });
 
-      const zskRecords = (level.records?.dnskey_records || []).filter((r) => r.is_zsk);
-      const numZsk = idx === 0 ? Math.min(3, zskRecords.length) : 1;
-      const firstZskId = `zsk_${idx}_0`;
-      for (let j = 0; j < numZsk; j++) {
-        const zskId = `zsk_${idx}_${j}`;
-        const zskRecord = zskRecords[j];
-        const zskTooltip = zskRecord
-          ? `Key ID: ${zskRecord.key_tag}\nAlg: ${zskRecord.algorithm_name || zskRecord.algorithm}\nSize: ${zskRecord.key_size}`
-          : 'No ZSK';
+      const zskRecord = (level.records?.dnskey_records || []).find((r) => r.is_zsk);
+      let zskId = null;
+      if (zskRecord) {
+        zskId = `zsk_${idx}`;
         nodes.push({
           id: zskId,
-          type: 'record',
+          type: "record",
           parentNode: groupId,
-          extent: 'parent',
-          draggable: true,
-          data: { label: 'ZSK', tooltip: zskTooltip },
-          style: { background: '#ffdddd', width: nodeWidth },
+          extent: "parent",
+          position: { x: 10, y: 80 },
+          data: { label: "ZSK", tooltip: `Key ID: ${zskRecord.key_tag}` },
+          style: { background: "#ffdddd" },
         });
-        edges.push({ id: `${kskId}-${zskId}`, source: kskId, target: zskId, label: 'signs' });
+        edges.push({ id: `${kskId}-${zskId}`, source: kskId, target: zskId });
       }
 
       if (idx < data.levels.length - 1) {
+        const ds = data.levels[idx + 1].records?.ds_records?.[0];
         const dsId = `ds_${idx}_${idx + 1}`;
-        const child = data.levels[idx + 1];
-        const ds = child.records?.ds_records?.[0];
-        const dsTooltip = ds
-          ? `Key ID: ${ds.key_tag}\nAlg: ${ds.algorithm_name || ds.algorithm}\nDigest: ${ds.digest}`
-          : 'No DS';
+        const dsTooltip = ds ? `Key ID: ${ds.key_tag}` : "No DS";
         nodes.push({
           id: dsId,
-          type: 'record',
+          type: "record",
           parentNode: groupId,
-          extent: 'parent',
-          draggable: true,
-          data: { label: 'DS', tooltip: dsTooltip },
-          style: { background: '#ccccff', width: nodeWidth },
+          extent: "parent",
+          position: { x: 10, y: 150 },
+          data: { label: "DS", tooltip: dsTooltip },
+          style: { background: "#ccccff" },
         });
-        edges.push({ id: `zsk_${idx}_0-${dsId}`, source: firstZskId, target: dsId, label: 'delegates' });
-        crossEdges.push({
-          id: `${dsId}-ksk_${idx + 1}`,
-          source: dsId,
-          target: `ksk_${idx + 1}`,
-          label: 'delegates',
-          animated: true,
-          style: { stroke: 'green' },
-        });
+        if (zskId) {
+          edges.push({ id: `${zskId}-${dsId}`, source: zskId, target: dsId });
+        } else {
+          edges.push({ id: `${kskId}-${dsId}`, source: kskId, target: dsId });
+        }
+        edges.push({ id: `${dsId}-ksk_${idx + 1}`, source: dsId, target: `ksk_${idx + 1}` });
       }
-
-      levelNodes.push(nodes);
-      levelEdges.push(edges);
     });
 
-    const layoutedNodes = [];
-    let currentY = 0;
-
-    levelNodes.forEach((nodes, idx) => {
-      const g = new dagre.graphlib.Graph();
-      g.setDefaultEdgeLabel(() => ({}));
-      g.setGraph({ rankdir: 'TB', nodesep: nodeGap, ranksep: nodeGap });
-
-      nodes.forEach((node) => {
-        g.setNode(node.id, { width: nodeWidth, height: nodeHeight });
-      });
-      levelEdges[idx].forEach((edge) => {
-        g.setEdge(edge.source, edge.target);
-      });
-
-      dagre.layout(g);
-
-      const { width: gw, height: gh } = g.graph();
-
-      nodes.forEach((node) => {
-        const { x, y } = g.node(node.id);
-        layoutedNodes.push({
-          ...node,
-          position: { x: x - nodeWidth / 2, y: y - nodeHeight / 2 + currentY },
-          sourcePosition: 'bottom',
-          targetPosition: 'top',
-        });
-      });
-
-      const groupNode = groupNodes[idx];
-      layoutedNodes.push({
-        ...groupNode,
-        position: { x: -nodeWidth, y: currentY - nodeGap / 2 },
-        style: { padding: 10, background: 'transparent' },
-        data: groupNode.data,
-        width: gw + nodeWidth * 2,
-        height: gh + nodeGap,
-      });
-
-      currentY += gh + groupGap;
-    });
-
-    const edges = levelEdges.flat().concat(crossEdges);
-
-    return { nodes: layoutedNodes, edges };
+    return { nodes, edges };
   }, []);
 
   const fetchData = useCallback(async () => {
