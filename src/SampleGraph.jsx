@@ -321,7 +321,7 @@ const SampleGraph = ({
       nodes.push({
         id: kskId,
         type: 'record',
-        parentNode: groupId,
+        parentId: groupId,
         extent: 'parent',
         draggable: true,
         data: { label: 'KSK', tooltip: kskTooltip },
@@ -340,7 +340,7 @@ const SampleGraph = ({
         nodes.push({
           id: zskId,
           type: 'record',
-          parentNode: groupId,
+          parentId: groupId,
           extent: 'parent',
           draggable: true,
           data: { label: 'ZSK', tooltip: zskTooltip },
@@ -359,7 +359,7 @@ const SampleGraph = ({
         nodes.push({
           id: dsId,
           type: 'record',
-          parentNode: groupId,
+          parentId: groupId,
           extent: 'parent',
           draggable: true,
           data: { label: 'DS', tooltip: dsTooltip },
@@ -399,16 +399,6 @@ const SampleGraph = ({
 
       const { width: gw, height: gh } = g.graph();
 
-      nodes.forEach((node) => {
-        const { x, y } = g.node(node.id);
-        layoutedNodes.push({
-          ...node,
-          position: { x: x - nodeWidth / 2, y: y - nodeHeight / 2 + currentY },
-          sourcePosition: 'bottom',
-          targetPosition: 'top',
-        });
-      });
-
       const groupNode = groupNodes[idx];
       layoutedNodes.push({
         ...groupNode,
@@ -417,6 +407,16 @@ const SampleGraph = ({
         data: groupNode.data,
         width: gw + nodeWidth * 2,
         height: gh + nodeGap,
+      });
+
+      nodes.forEach((node) => {
+        const { x, y } = g.node(node.id);
+        layoutedNodes.push({
+          ...node,
+          position: { x: x - nodeWidth / 2, y: y - nodeHeight / 2 + currentY },
+          sourcePosition: 'bottom',
+          targetPosition: 'top',
+        });
       });
 
       currentY += gh + groupGap;
