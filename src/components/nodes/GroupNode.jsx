@@ -2,7 +2,8 @@ import React from 'react';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 export default function GroupNode({ data }) {
-  const tooltipText = data.tooltip ? `${data.label}\n${data.tooltip}` : data.label;
+  // If tooltip text already includes the label don't prepend it again
+  const tooltipText = data.tooltip || data.label;
 
   return (
     <Tooltip>

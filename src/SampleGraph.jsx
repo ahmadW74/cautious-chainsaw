@@ -284,8 +284,8 @@ const SampleGraph = ({
   const buildFlow = useCallback((data) => {
     if (!data || !Array.isArray(data.levels)) return { nodes: [], edges: [] };
 
-    const nodeWidth = 150;
-    const nodeHeight = 50;
+    const nodeWidth = 180;
+    const nodeHeight = 60;
     const nodeGap = 60;
     const groupGap = 120;
 
@@ -324,8 +324,8 @@ const SampleGraph = ({
         parentId: groupId,
         extent: 'parent',
         draggable: true,
-        data: { label: 'KSK', tooltip: kskTooltip },
-        style: { background: '#ffcccc', width: nodeWidth },
+        data: { label: 'KSK', tooltip: kskTooltip, bg: '#ffcccc' },
+        style: { width: nodeWidth },
       });
 
       const zskRecords = (level.records?.dnskey_records || []).filter((r) => r.is_zsk);
@@ -343,8 +343,8 @@ const SampleGraph = ({
           parentId: groupId,
           extent: 'parent',
           draggable: true,
-          data: { label: 'ZSK', tooltip: zskTooltip },
-          style: { background: '#ffdddd', width: nodeWidth },
+          data: { label: 'ZSK', tooltip: zskTooltip, bg: '#ffdddd' },
+          style: { width: nodeWidth },
         });
         edges.push({ id: `${kskId}-${zskId}`, source: kskId, target: zskId, label: 'signs' });
       }
@@ -362,8 +362,8 @@ const SampleGraph = ({
           parentId: groupId,
           extent: 'parent',
           draggable: true,
-          data: { label: 'DS', tooltip: dsTooltip },
-          style: { background: '#ccccff', width: nodeWidth },
+          data: { label: 'DS', tooltip: dsTooltip, bg: '#ccccff' },
+          style: { width: nodeWidth },
         });
         edges.push({ id: `zsk_${idx}_0-${dsId}`, source: firstZskId, target: dsId, label: 'delegates' });
         crossEdges.push({
