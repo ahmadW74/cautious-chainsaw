@@ -36,7 +36,7 @@ app.add_middleware(
 
 DATA_FILE_PATH = os.path.join(os.path.dirname(__file__), "data.txt")
 # Store logs outside the project directory to avoid triggering frontend hot reloads
-LOG_FILE_PATH = os.path.join(tempfile.gettempdir(), "dnscap_chain_logs.txt")
+LOG_FILE_PATH = os.path.join(os.path.dirname(__file__), "chain_logs.txt")
 # Cache data should also be stored outside the project directory to prevent
 # the frontend dev server from reloading when new domains are analyzed.
 CACHE_FILE_PATH = os.path.join(tempfile.gettempdir(), "dnscap_chain_cache.txt")
