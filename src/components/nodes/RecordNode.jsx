@@ -9,7 +9,7 @@ export default function RecordNode({ data }) {
       <Tooltip>
         <TooltipTrigger asChild>
           <div
-            className="px-2 py-1 rounded border text-xs transition-all duration-200 hover:ring-2 hover:ring-primary"
+            className="px-4 py-2 rounded border text-sm transition-all duration-200 hover:ring-2 hover:ring-primary"
             style={{ backgroundColor: data.bg || "var(--color-background)" }}
           >
             {data.label}
