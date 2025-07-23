@@ -22,6 +22,7 @@ import binascii
 import hashlib
 import base64
 import time
+import logging
 
 app = FastAPI()
 app.add_middleware(
@@ -40,6 +41,14 @@ LOG_FILE_PATH = os.path.join(tempfile.gettempdir(), "dnscap_chain_logs.txt")
 CACHE_FILE_PATH = os.path.join(tempfile.gettempdir(), "dnscap_chain_cache.txt")
 data = []
 next_user_id = 1
+
+# Configure logging to record cache events
+logging.basicConfig(
+    filename=LOG_FILE_PATH,
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s:%(message)s",
+)
+logger = logging.getLogger(__name__)
 
 # Fallback root DNSKEY information used when live DNS queries fail. This provides
 # one KSK and three ZSKs so the frontend can always render the root zone.
@@ -137,11 +146,15 @@ def append_log(event: str, user_id: Optional[str] = "", domain: str = "", date: 
 def load_cache() -> Dict[str, Any]:
     """Load cached chain data from disk."""
     if not os.path.exists(CACHE_FILE_PATH):
+        logger.debug("Cache file not found; starting with empty cache")
         return {}
     try:
         with open(CACHE_FILE_PATH, "r") as f:
-            return json.load(f)
-    except Exception:
+            cache = json.load(f)
+        logger.debug("Cache loaded successfully")
+        return cache
+    except Exception as e:
+        logger.error(f"Failed to load cache: {e}")
         return {}
 
 
@@ -150,8 +163,9 @@ def save_cache(cache: Dict[str, Any]) -> None:
     try:
         with open(CACHE_FILE_PATH, "w") as f:
             json.dump(cache, f)
-    except Exception:
-        pass
+        logger.debug("Cache saved successfully")
+    except Exception as e:
+        logger.error(f"Failed to save cache: {e}")
 with open(DATA_FILE_PATH, "r") as file:
     for line in file:
         parts = line.strip().split(":")
@@ -810,14 +824,18 @@ def get_item(domain: str, user_id: Optional[str] = None, date: Optional[str] = N
     if domain in cache:
         result = cache[domain]
         from_cache = True
+        logger.debug("Cache hit for domain %s", domain)
     else:
         result = analyze_dnssec_chain(domain)
         cache[domain] = result
         save_cache(cache)
+        logger.debug("Cache miss for domain %s", domain)
     if user_id and date:
         append_log("chain", user_id, domain, date)
     elapsed = int((time.time() - start) * 1000)
-    print(f"Chain fetch for {domain} took {elapsed}ms (cached={from_cache})")
+    logger.info(
+        "Chain fetch for %s took %dms (cached=%s)", domain, elapsed, from_cache
+    )
     return result
 
 @app.get("/login/{user}/{passw}")
