@@ -22,6 +22,8 @@ import binascii
 import hashlib
 import base64
 import time
+import logging
+import memcache
 
 app = FastAPI()
 app.add_middleware(
@@ -38,6 +40,17 @@ LOG_FILE_PATH = os.path.join(tempfile.gettempdir(), "dnscap_chain_logs.txt")
 # Cache data should also be stored outside the project directory to prevent
 # the frontend dev server from reloading when new domains are analyzed.
 CACHE_FILE_PATH = os.path.join(tempfile.gettempdir(), "dnscap_chain_cache.txt")
+
+# Configure application logging
+logger = logging.getLogger("dnscap")
+logger.setLevel(logging.INFO)
+handler = logging.FileHandler(LOG_FILE_PATH)
+handler.setFormatter(logging.Formatter('%(asctime)s,%(message)s'))
+logger.addHandler(handler)
+
+# Initialize Memcached client for chain caching
+memcached_client = memcache.Client(['127.0.0.1:11211'], socket_timeout=3)
+
 data = []
 next_user_id = 1
 
@@ -124,32 +137,25 @@ FALLBACK_ROOT_KEYS = [
 
 
 def append_log(event: str, user_id: Optional[str] = "", domain: str = "", date: str = "") -> None:
-    """Append a timestamped log entry to the log file."""
-    timestamp = datetime.datetime.utcnow().isoformat()
-    log_entry = f"{timestamp},{event},{user_id},{domain},{date}\n"
+    """Log user and chain events using the standard logging module."""
     try:
-        with open(LOG_FILE_PATH, "a") as log_file:
-            log_file.write(log_entry)
+        logger.info(f"{event},{user_id},{domain},{date}")
     except Exception:
         pass
 
 
-def load_cache() -> Dict[str, Any]:
-    """Load cached chain data from disk."""
-    if not os.path.exists(CACHE_FILE_PATH):
-        return {}
+def get_cached_chain(domain: str) -> Optional[Dict[str, Any]]:
+    """Retrieve cached chain data from Memcached."""
     try:
-        with open(CACHE_FILE_PATH, "r") as f:
-            return json.load(f)
+        return memcached_client.get(domain)
     except Exception:
-        return {}
+        return None
 
 
-def save_cache(cache: Dict[str, Any]) -> None:
-    """Persist cache dictionary to disk."""
+def set_cached_chain(domain: str, chain: Dict[str, Any], ttl: int = 3600) -> None:
+    """Store chain data in Memcached."""
     try:
-        with open(CACHE_FILE_PATH, "w") as f:
-            json.dump(cache, f)
+        memcached_client.set(domain, chain, time=ttl)
     except Exception:
         pass
 with open(DATA_FILE_PATH, "r") as file:
@@ -805,17 +811,12 @@ def analyze_dnssec_chain(domain: str) -> Dict[str, Any]:
 @app.get("/chain/{domain}")
 def get_item(domain: str, user_id: Optional[str] = None, date: Optional[str] = None):
     start = time.time()
-    cache = load_cache()
-    from_cache = False
-    if domain in cache:
-        result = cache[domain]
-        from_cache = True
-    else:
+    result = get_cached_chain(domain)
+    from_cache = result is not None
+    if not from_cache:
         result = analyze_dnssec_chain(domain)
-        cache[domain] = result
-        save_cache(cache)
-    if user_id and date:
-        append_log("chain", user_id, domain, date)
+        set_cached_chain(domain, result)
+    append_log("chain", user_id or "", domain, date or "")
     elapsed = int((time.time() - start) * 1000)
     print(f"Chain fetch for {domain} took {elapsed}ms (cached={from_cache})")
     return result
@@ -843,6 +844,8 @@ def signup(user:str,passw:str,name:str):
     data.append(array_entry)
     with open(DATA_FILE_PATH, "a") as file:
         file.write(f"\n{file_entry}")
+    append_log("signup", uid)
+    return {"success": True, "id": uid}
 
 class TokenPayload(BaseModel):
     token: str
