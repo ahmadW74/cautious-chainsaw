@@ -25,6 +25,11 @@ import time
 import logging
 import memcache
 
+# Helper to consistently normalize domain names for caching
+def normalize_domain(domain: str) -> str:
+    """Normalize domain names used as cache keys."""
+    return domain.lower().rstrip('.')
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -146,16 +151,18 @@ def append_log(event: str, user_id: Optional[str] = "", domain: str = "", date: 
 
 def get_cached_chain(domain: str) -> Optional[Dict[str, Any]]:
     """Retrieve cached chain data from Memcached."""
+    key = normalize_domain(domain)
     try:
-        return memcached_client.get(domain)
+        return memcached_client.get(key)
     except Exception:
         return None
 
 
 def set_cached_chain(domain: str, chain: Dict[str, Any], ttl: int = 3600) -> None:
     """Store chain data in Memcached."""
+    key = normalize_domain(domain)
     try:
-        memcached_client.set(domain, chain, time=ttl)
+        memcached_client.set(key, chain, time=ttl)
     except Exception:
         pass
 with open(DATA_FILE_PATH, "r") as file:
@@ -811,11 +818,12 @@ def analyze_dnssec_chain(domain: str) -> Dict[str, Any]:
 @app.get("/chain/{domain}")
 def get_item(domain: str, user_id: Optional[str] = None, date: Optional[str] = None):
     start = time.time()
-    result = get_cached_chain(domain)
+    normalized = normalize_domain(domain)
+    result = get_cached_chain(normalized)
     from_cache = result is not None
     if not from_cache:
-        result = analyze_dnssec_chain(domain)
-        set_cached_chain(domain, result)
+        result = analyze_dnssec_chain(normalized)
+        set_cached_chain(normalized, result)
     append_log("chain", user_id or "", domain, date or "")
     elapsed = int((time.time() - start) * 1000)
     print(f"Chain fetch for {domain} took {elapsed}ms (cached={from_cache})")
