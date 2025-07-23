@@ -284,8 +284,8 @@ const SampleGraph = ({
   const buildFlow = useCallback((data) => {
     if (!data || !Array.isArray(data.levels)) return { nodes: [], edges: [] };
 
-    const nodeWidth = 180;
-    const nodeHeight = 60;
+    const nodeWidth = 220;
+    const nodeHeight = 80;
     const nodeGap = 60;
     const groupGap = 120;
 
@@ -365,7 +365,7 @@ const SampleGraph = ({
           data: { label: 'DS', tooltip: dsTooltip, bg: '#ccccff' },
           style: { width: nodeWidth },
         });
-        edges.push({ id: `zsk_${idx}_0-${dsId}`, source: firstZskId, target: dsId, label: 'delegates' });
+        edges.push({ id: `zsk_${idx}_0-${dsId}`, source: firstZskId, target: dsId, label: 'signs' });
         crossEdges.push({
           id: `${dsId}-ksk_${idx + 1}`,
           source: dsId,

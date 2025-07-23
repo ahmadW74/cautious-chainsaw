@@ -8,7 +8,7 @@ export default function GroupNode({ data }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="w-full h-full bg-transparent rounded border p-2" />
+        <div className="w-full h-full bg-transparent rounded border p-2 transition-all duration-200 hover:ring-2 hover:ring-primary" />
       </TooltipTrigger>
       {tooltipText && (
         <TooltipContent className="whitespace-pre">{tooltipText}</TooltipContent>
