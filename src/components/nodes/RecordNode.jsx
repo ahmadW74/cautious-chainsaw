@@ -8,7 +8,10 @@ export default function RecordNode({ data }) {
       <Handle type="target" position={Position.Top} />
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="px-2 py-1 rounded border bg-background text-foreground text-xs">
+          <div
+            className="px-2 py-1 rounded border text-xs transition-all duration-200 hover:ring-2 hover:ring-primary"
+            style={{ backgroundColor: data.bg || "var(--color-background)" }}
+          >
             {data.label}
           </div>
         </TooltipTrigger>
