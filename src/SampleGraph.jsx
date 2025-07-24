@@ -215,12 +215,13 @@ const SampleGraph = ({
       dotStr += "    color=green;\n";
       dotStr += '    fillcolor="#e6ffe6";\n\n';
 
-      dotStr += `    ksk_${idx} [label="KSK" fillcolor="#ffcccc" tooltip="${escape(
+      dotStr += `    ksk_${idx} [label="${ksk ? 'KSK' : 'NO KSK'}" fillcolor="#ffcccc" tooltip="${escape(
         kskTooltip
       )}"];\n`;
 
       zskNodes.forEach((z, j) => {
-        dotStr += `    zsk_${idx}_${j} [label="ZSK" fillcolor="#ffdddd" tooltip="${escape(
+        const zLabel = zskNodes[j] ? 'ZSK' : 'NO ZSK';
+        dotStr += `    zsk_${idx}_${j} [label="${zLabel}" fillcolor="#ffdddd" tooltip="${escape(
           zskTooltips[j]
         )}"];\n`;
       });
@@ -232,20 +233,18 @@ const SampleGraph = ({
           ? `Key ID: ${ds.key_tag}\nAlg: ${
               ds.algorithm_name || ds.algorithm
             }\nDigest: ${ds.digest}`
-          : "No DS";
-        if (ds) {
-          dotStr += `    ds_${idx}_${
-            idx + 1
-          } [label="DS" fillcolor="#ccccff" tooltip="${escape(dsTooltip)}"];\n`;
-        } else {
-          dotStr += `    ds_${idx}_${
-            idx + 1
-          } [label="No DS" fillcolor="#ffe6e6" tooltip="No DS record" style=dashed];\n`;
-        }
+          : 'NO DS';
+        const label = ds ? 'DS' : 'NO DS';
+        const extra = ds ? '' : ' style=dashed';
+        dotStr += `    ds_${idx}_${
+          idx + 1
+        } [label="${label}" fillcolor="#ccccff" tooltip="${escape(dsTooltip)}"${extra}];\n`;
       }
 
-      zskNodes.forEach((_, j) => {
-        dotStr += `    ksk_${idx} -> zsk_${idx}_${j} [label="signs"];\n`;
+      zskNodes.forEach((z, j) => {
+        const signLabel = ksk && z ? 'signs' : 'no signing';
+        const color = ksk && z ? '' : ' color=red';
+        dotStr += `    ksk_${idx} -> zsk_${idx}_${j} [label="${signLabel}"${color}];\n`;
       });
       if (idx < data.levels.length - 1) {
         dotStr += `    zsk_${idx}_0 -> ds_${idx}_${
@@ -267,11 +266,9 @@ const SampleGraph = ({
           i + 1
         }_0 [ltail=cluster_${i}, lhead=cluster_${i + 1}];\n`;
       } else {
-        dotStr += `  zsk_${i}_0 -> ksk_${
+        dotStr += `  ds_${i}_${i + 1} -> ksk_${
           i + 1
-        } [ltail=cluster_${i}, lhead=cluster_${
-          i + 1
-        }, style=dashed, label="unsigned"];\n`;
+        } [ltail=cluster_${i}, lhead=cluster_${i + 1}, label="no delegation", color=red];\n`;
       }
     }
 
@@ -298,16 +295,6 @@ const SampleGraph = ({
       const groupId = `level_${idx}`;
       const securityTooltip =
         level.dnssec_status?.status === 'signed' ? 'SECURE' : 'INSECURE';
-      groupNodes.push({
-        id: groupId,
-        type: 'dnsGroup',
-        draggable: true,
-        data: {
-          label: level.display_name || `Level ${idx}`,
-          tooltip: `${level.display_name || `Level ${idx}`}\n${securityTooltip}`,
-        },
-        position: { x: 0, y: 0 },
-      });
 
       const nodes = [];
       const edges = [];
@@ -318,17 +305,31 @@ const SampleGraph = ({
         ? `Key ID: ${ksk.key_tag}\nAlg: ${ksk.algorithm_name || ksk.algorithm}\nSize: ${ksk.key_size}`
         : 'No KSK';
       const kskId = `ksk_${idx}`;
+      const zskRecords = (level.records?.dnskey_records || []).filter((r) => r.is_zsk);
+      const kskRingColor = !ksk || zskRecords.length === 0 ? 'var(--color-destructive)' : undefined;
+
+      const groupRingColor = kskRingColor;
+      groupNodes.push({
+        id: groupId,
+        type: 'dnsGroup',
+        draggable: true,
+        data: {
+          label: level.display_name || `Level ${idx}`,
+          tooltip: `${level.display_name || `Level ${idx}`}\n${securityTooltip}`,
+          ringColor: groupRingColor,
+        },
+        position: { x: 0, y: 0 },
+      });
       nodes.push({
         id: kskId,
         type: 'record',
         parentId: groupId,
         extent: 'parent',
         draggable: true,
-        data: { label: 'KSK', tooltip: kskTooltip, bg: '#ffcccc' },
+        data: { label: ksk ? 'KSK' : 'NO KSK', tooltip: kskTooltip, bg: '#ffcccc', ringColor: kskRingColor },
         style: { width: nodeWidth },
       });
 
-      const zskRecords = (level.records?.dnskey_records || []).filter((r) => r.is_zsk);
       const numZsk = idx === 0 ? Math.min(3, zskRecords.length) : 1;
       const firstZskId = `zsk_${idx}_0`;
       for (let j = 0; j < numZsk; j++) {
@@ -343,10 +344,17 @@ const SampleGraph = ({
           parentId: groupId,
           extent: 'parent',
           draggable: true,
-          data: { label: 'ZSK', tooltip: zskTooltip, bg: '#ffdddd' },
+          data: {
+            label: zskRecord ? 'ZSK' : 'NO ZSK',
+            tooltip: zskTooltip,
+            bg: '#ffdddd',
+            ringColor: zskRecord ? undefined : 'var(--color-destructive)',
+          },
           style: { width: nodeWidth },
         });
-        edges.push({ id: `${kskId}-${zskId}`, source: kskId, target: zskId, label: 'signs' });
+        const signLabel = ksk && zskRecord ? 'signs' : 'no signing';
+        const signStyle = ksk && zskRecord ? {} : { stroke: 'red' };
+        edges.push({ id: `${kskId}-${zskId}`, source: kskId, target: zskId, label: signLabel, style: signStyle });
       }
 
       if (idx < data.levels.length - 1) {
@@ -355,14 +363,19 @@ const SampleGraph = ({
         const ds = child.records?.ds_records?.[0];
         const dsTooltip = ds
           ? `Key ID: ${ds.key_tag}\nAlg: ${ds.algorithm_name || ds.algorithm}\nDigest: ${ds.digest}`
-          : 'No DS';
+          : 'NO DS';
         nodes.push({
           id: dsId,
           type: 'record',
           parentId: groupId,
           extent: 'parent',
           draggable: true,
-          data: { label: 'DS', tooltip: dsTooltip, bg: '#ccccff' },
+          data: {
+            label: ds ? 'DS' : 'NO DS',
+            tooltip: dsTooltip,
+            bg: '#ccccff',
+            ringColor: ds ? undefined : 'var(--color-destructive)',
+          },
           style: { width: nodeWidth },
         });
         edges.push({ id: `zsk_${idx}_0-${dsId}`, source: firstZskId, target: dsId, label: 'signs' });
@@ -370,9 +383,9 @@ const SampleGraph = ({
           id: `${dsId}-ksk_${idx + 1}`,
           source: dsId,
           target: `ksk_${idx + 1}`,
-          label: 'delegates',
+          label: ds ? 'delegates' : 'no delegation',
           animated: true,
-          style: { stroke: 'green' },
+          style: { stroke: ds ? 'green' : 'red' },
         });
       }
 
