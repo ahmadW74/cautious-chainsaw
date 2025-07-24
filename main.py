@@ -56,6 +56,28 @@ logger.addHandler(handler)
 # Initialize Memcached client for chain caching
 memcached_client = memcache.Client(['127.0.0.1:11211'], socket_timeout=3)
 
+# Basic file-based cache used when Memcached is unavailable. This avoids
+# repeated expensive DNS lookups in development environments where a
+# Memcached server may not be running.
+def _read_file_cache() -> Dict[str, Any]:
+    """Load cache dictionary from disk."""
+    try:
+        if os.path.exists(CACHE_FILE_PATH):
+            with open(CACHE_FILE_PATH, "r") as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return {}
+
+
+def _write_file_cache(cache: Dict[str, Any]) -> None:
+    """Persist cache dictionary to disk."""
+    try:
+        with open(CACHE_FILE_PATH, "w") as f:
+            json.dump(cache, f)
+    except Exception:
+        pass
+
 data = []
 next_user_id = 1
 
@@ -150,21 +172,44 @@ def append_log(event: str, user_id: Optional[str] = "", domain: str = "", date: 
 
 
 def get_cached_chain(domain: str) -> Optional[Dict[str, Any]]:
-    """Retrieve cached chain data from Memcached."""
+    """Retrieve cached chain data from Memcached or file cache."""
     key = normalize_domain(domain)
+
+    # Try Memcached first
     try:
-        return memcached_client.get(key)
+        result = memcached_client.get(key)
+        if result is not None:
+            return result
     except Exception:
-        return None
+        pass
+
+    # Fallback to file-based cache
+    cache = _read_file_cache()
+    entry = cache.get(key)
+    if entry and time.time() < entry.get("expires", 0):
+        return entry.get("data")
+    elif entry:
+        cache.pop(key, None)
+        _write_file_cache(cache)
+    return None
 
 
 def set_cached_chain(domain: str, chain: Dict[str, Any], ttl: int = 3600) -> None:
-    """Store chain data in Memcached."""
+    """Store chain data in Memcached and file cache."""
     key = normalize_domain(domain)
+    expires = time.time() + ttl
+
+    # Store in Memcached if available
     try:
         memcached_client.set(key, chain, time=ttl)
     except Exception:
         pass
+
+    # Always store to file cache so repeated requests are fast even without
+    # Memcached running.
+    cache = _read_file_cache()
+    cache[key] = {"data": chain, "expires": expires}
+    _write_file_cache(cache)
 with open(DATA_FILE_PATH, "r") as file:
     for line in file:
         parts = line.strip().split(":")
