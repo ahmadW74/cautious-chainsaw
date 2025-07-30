@@ -420,6 +420,44 @@ const SampleGraph = ({
           animated: true,
           style: { stroke: ds ? "green" : "red" },
         });
+      } else {
+        const recordTypes = [
+          ["TXT", level.records?.txt_records],
+          ["MX", level.records?.mx_records],
+          ["A", level.records?.a_records],
+          ["AAAA", level.records?.aaaa_records],
+          ["SOA", level.records?.soa_record ? [level.records.soa_record] : []],
+        ];
+        recordTypes.forEach(([type, recs], rIdx) => {
+          if (!recs || recs.length === 0) return;
+          const rec = recs[0];
+          const recId = `${type.toLowerCase()}_${idx}_${rIdx}`;
+          const tooltip = Array.isArray(recs)
+            ? recs.map((r) => r.value || `${r.mname || ''}`.trim()).join("\n")
+            : JSON.stringify(recs);
+          nodes.push({
+            id: recId,
+            type: "record",
+            parentId: groupId,
+            extent: "parent",
+            draggable: true,
+            data: {
+              label: type,
+              tooltip,
+              bg: "#ccffcc",
+              ringColor: rec.signed ? undefined : "var(--color-destructive)",
+            },
+            style: { width: nodeWidth },
+          });
+          edges.push({
+            id: `${firstZskId}-${recId}`,
+            source: firstZskId,
+            target: recId,
+            label: rec.signed ? "signs" : "unsigned",
+            animated: true,
+            style: { stroke: rec.signed ? "green" : "red" },
+          });
+        });
       }
 
       levelNodes.push(nodes);
