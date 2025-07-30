@@ -525,12 +525,20 @@ class DNSSECAnalyzer:
         return ns_records
     
     def get_soa_records(self, domain: str) -> Optional[Dict[str, Any]]:
-        """Get SOA record for a domain"""
+        """Get SOA record for a domain, including DNSSEC signature status"""
         try:
             response = self.query_with_dnssec(domain, 'SOA')
             if not response:
                 return None
-                
+
+            signed = False
+            for rrset in response.answer:
+                if rrset.rdtype == dns.rdatatype.RRSIG:
+                    for rdata in rrset:
+                        if rdata.type_covered == dns.rdatatype.SOA:
+                            signed = True
+                            break
+
             for rrset in response.answer:
                 if rrset.rdtype == dns.rdatatype.SOA:
                     rdata = rrset[0]
@@ -542,12 +550,90 @@ class DNSSECAnalyzer:
                         'retry': rdata.retry,
                         'expire': rdata.expire,
                         'minimum': rdata.minimum,
-                        'ttl': rrset.ttl
+                        'ttl': rrset.ttl,
+                        'signed': signed,
                     }
         except Exception as e:
             print(f"Error getting SOA record for {domain}: {e}")
-        
+
         return None
+
+    def _get_rrsig_status(self, response, rdatatype_value) -> bool:
+        """Helper to determine if a record type is signed by checking RRSIGs"""
+        try:
+            for rrset in response.answer:
+                if rrset.rdtype == dns.rdatatype.RRSIG:
+                    for rdata in rrset:
+                        if rdata.type_covered == rdatatype_value:
+                            return True
+        except Exception:
+            pass
+        return False
+
+    def get_a_records(self, domain: str) -> List[Dict[str, Any]]:
+        """Get A records for a domain with signature info"""
+        records = []
+        try:
+            response = self.query_with_dnssec(domain, 'A')
+            if not response:
+                return records
+            signed = self._get_rrsig_status(response, dns.rdatatype.A)
+            for rrset in response.answer:
+                if rrset.rdtype == dns.rdatatype.A:
+                    for rdata in rrset:
+                        records.append({'value': str(rdata.address), 'ttl': rrset.ttl, 'signed': signed})
+        except Exception as e:
+            print(f"Error getting A records for {domain}: {e}")
+        return records
+
+    def get_aaaa_records(self, domain: str) -> List[Dict[str, Any]]:
+        """Get AAAA records for a domain with signature info"""
+        records = []
+        try:
+            response = self.query_with_dnssec(domain, 'AAAA')
+            if not response:
+                return records
+            signed = self._get_rrsig_status(response, dns.rdatatype.AAAA)
+            for rrset in response.answer:
+                if rrset.rdtype == dns.rdatatype.AAAA:
+                    for rdata in rrset:
+                        records.append({'value': str(rdata.address), 'ttl': rrset.ttl, 'signed': signed})
+        except Exception as e:
+            print(f"Error getting AAAA records for {domain}: {e}")
+        return records
+
+    def get_mx_records(self, domain: str) -> List[Dict[str, Any]]:
+        """Get MX records for a domain with signature info"""
+        records = []
+        try:
+            response = self.query_with_dnssec(domain, 'MX')
+            if not response:
+                return records
+            signed = self._get_rrsig_status(response, dns.rdatatype.MX)
+            for rrset in response.answer:
+                if rrset.rdtype == dns.rdatatype.MX:
+                    for rdata in rrset:
+                        records.append({'value': f"{rdata.preference} {rdata.exchange}", 'ttl': rrset.ttl, 'signed': signed})
+        except Exception as e:
+            print(f"Error getting MX records for {domain}: {e}")
+        return records
+
+    def get_txt_records(self, domain: str) -> List[Dict[str, Any]]:
+        """Get TXT records for a domain with signature info"""
+        records = []
+        try:
+            response = self.query_with_dnssec(domain, 'TXT')
+            if not response:
+                return records
+            signed = self._get_rrsig_status(response, dns.rdatatype.TXT)
+            for rrset in response.answer:
+                if rrset.rdtype == dns.rdatatype.TXT:
+                    for rdata in rrset:
+                        txt = b''.join(rdata.strings).decode(errors='ignore')
+                        records.append({'value': txt, 'ttl': rrset.ttl, 'signed': signed})
+        except Exception as e:
+            print(f"Error getting TXT records for {domain}: {e}")
+        return records
     
     def build_chain_of_trust(self, domain: str) -> List[Dict[str, Any]]:
         """Build the complete DNSSEC chain of trust from root to domain"""
@@ -584,6 +670,10 @@ class DNSSECAnalyzer:
             ns_records = self.get_ns_records(domain_str)
             soa_record = self.get_soa_records(domain_str)
             nsec_records = self.get_nsec_records(domain_str)
+            a_records = self.get_a_records(domain_str)
+            aaaa_records = self.get_aaaa_records(domain_str)
+            mx_records = self.get_mx_records(domain_str)
+            txt_records = self.get_txt_records(domain_str)
             
             chain.append({
                 'domain': domain_str,
@@ -592,7 +682,11 @@ class DNSSECAnalyzer:
                 'dnskey_records': dnskey_records,
                 'ns_records': ns_records,
                 'soa_record': soa_record,
-                'nsec_records': nsec_records
+                'nsec_records': nsec_records,
+                'a_records': a_records,
+                'aaaa_records': aaaa_records,
+                'mx_records': mx_records,
+                'txt_records': txt_records
             })
         
         return chain
@@ -678,7 +772,11 @@ class DNSSECAnalyzer:
                     "dnskey_records": level['dnskey_records'],
                     "ns_records": level['ns_records'],
                     "soa_record": level['soa_record'],
-                    "nsec_records": level['nsec_records']
+                    "nsec_records": level['nsec_records'],
+                    "a_records": level['a_records'],
+                    "aaaa_records": level['aaaa_records'],
+                    "mx_records": level['mx_records'],
+                    "txt_records": level['txt_records']
                 },
                 "delegation": {
                     "delegates_to": chain[i + 1]['display_name'] if i < len(chain) - 1 else None,
