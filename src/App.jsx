@@ -11,6 +11,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import SampleGraph from "./SampleGraph.jsx";
+import { ReactFlowProvider } from "@xyflow/react";
 
 const getCache = (key) => {
   try {
@@ -534,15 +535,17 @@ export default function App() {
               ))}
             </div>
           </div>
-          <SampleGraph
-            domain={currentDomain}
-            refreshTrigger={refreshTrigger}
-            theme={theme}
-            viewMode={viewMode}
-            onRefresh={handleRefresh}
-            userId={userId}
-            selectedDate={selectedDate.toISOString().slice(0, 7)}
-          />
+          <ReactFlowProvider>
+            <SampleGraph
+              domain={currentDomain}
+              refreshTrigger={refreshTrigger}
+              theme={theme}
+              viewMode={viewMode}
+              onRefresh={handleRefresh}
+              userId={userId}
+              selectedDate={selectedDate.toISOString().slice(0, 7)}
+            />
+          </ReactFlowProvider>
         </div>
       </main>
       <footer className="border-t border-border bg-card text-card-foreground p-4 text-sm">
