@@ -11,6 +11,11 @@ export default function RecordNode({ data }) {
   return (
     <div className="relative flex flex-col items-center">
       <Handle type="target" position={Position.Top} />
+      {data.levelName && (
+        <div className="text-xs text-muted-foreground mb-1">
+          {data.levelName}
+        </div>
+      )}
       <PinnedTooltip>
         <PinnedTooltipTrigger asChild>
           <div

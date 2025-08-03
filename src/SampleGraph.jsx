@@ -13,7 +13,9 @@ import {
   Controls,
   useNodesState,
   useEdgesState,
+  useReactFlow,
 } from "@xyflow/react";
+import { Resizable } from "re-resizable";
 import "@xyflow/react/dist/style.css";
 import dagre from "dagre";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
@@ -88,6 +90,50 @@ const SampleGraph = ({
     () => ({ record: RecordNode, dnsGroup: GroupNode }),
     []
   );
+
+  const reactFlowInstance = useReactFlow();
+
+  const parseSize = (value, fallback) => {
+    if (typeof value === "number") return value;
+    if (typeof value === "string") {
+      const num = parseFloat(value);
+      if (Number.isNaN(num)) return fallback;
+      return value.endsWith("rem") ? num * 16 : num;
+    }
+    return fallback;
+    };
+
+  const [rfSize, setRfSize] = useState({
+    width: parseSize(maxWidth, 896),
+    height: parseSize(height, 448),
+  });
+
+  const handleExportJson = useCallback(() => {
+    if (!reactFlowInstance) return;
+    const flowObj = reactFlowInstance.toObject();
+    const blob = new Blob([JSON.stringify(flowObj, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${domain || "graph"}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }, [reactFlowInstance, domain]);
+
+  const handleExportSvg = useCallback(() => {
+    if (!reactFlowInstance) return;
+    reactFlowInstance.toSvg().then((svg) => {
+      const blob = new Blob([svg], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${domain || "graph"}.svg`;
+      link.click();
+      URL.revokeObjectURL(url);
+    });
+  }, [reactFlowInstance, domain]);
 
   const handleZoom = useCallback((factor) => {
     if (!graphContainerRef.current) return;
@@ -292,7 +338,7 @@ const SampleGraph = ({
 
     const nodeWidth = 220;
     const nodeHeight = 80;
-    const nodeGap = 60;
+    const nodeGap = 40;
     const groupGap = 120;
 
     const levelNodes = [];
@@ -350,6 +396,7 @@ const SampleGraph = ({
           tooltip: kskTooltip,
           bg: "#ffcccc",
           ringColor: kskRingColor,
+          levelName: level.display_name,
         },
         style: { width: nodeWidth },
       });
@@ -375,6 +422,7 @@ const SampleGraph = ({
             tooltip: zskTooltip,
             bg: "#ffdddd",
             ringColor: zskRecord ? undefined : "var(--color-destructive)",
+            levelName: level.display_name,
           },
           style: { width: nodeWidth },
         });
@@ -409,6 +457,7 @@ const SampleGraph = ({
             tooltip: dsTooltip,
             bg: "#ccccff",
             ringColor: ds ? undefined : "var(--color-destructive)",
+            levelName: level.display_name,
           },
           style: { width: nodeWidth },
         });
@@ -452,6 +501,7 @@ const SampleGraph = ({
               tooltip,
               bg: "#ccffcc",
               ringColor: rec.signed ? undefined : "var(--color-destructive)",
+              levelName: level.display_name,
             },
             style: { width: nodeWidth },
           });
@@ -632,20 +682,35 @@ const SampleGraph = ({
                 )}
               </div>
             )}
-            <div
-              ref={graphContainerRef}
-              className="relative w-full border border-border rounded overflow-hidden mx-auto"
-              style={{ maxWidth, height }}
-            >
-              <div className="w-full h-full">
-                <ErrorBoundary>
-                  {viewMode === "graphviz" ? (
+            {viewMode === "graphviz" ? (
+              <div
+                ref={graphContainerRef}
+                className="relative w-full border border-border rounded overflow-hidden mx-auto"
+                style={{ maxWidth, height }}
+              >
+                <div className="w-full h-full">
+                  <ErrorBoundary>
                     <Graphviz
                       dot={dot}
                       options={graphvizOptions}
                       style={{ width: "100%", height: "100%" }}
                     />
-                  ) : (
+                  </ErrorBoundary>
+                </div>
+              </div>
+            ) : (
+              <Resizable
+                size={rfSize}
+                onResizeStop={(e, dir, ref, d) =>
+                  setRfSize({
+                    width: rfSize.width + d.width,
+                    height: rfSize.height + d.height,
+                  })
+                }
+                className="relative border border-border rounded overflow-hidden mx-auto"
+              >
+                <div className="w-full h-full" ref={graphContainerRef}>
+                  <ErrorBoundary>
                     <ReactFlow
                       nodes={nodes}
                       edges={edges}
@@ -658,10 +723,10 @@ const SampleGraph = ({
                       <Background />
                       <Controls />
                     </ReactFlow>
-                  )}
-                </ErrorBoundary>
-              </div>
-            </div>
+                  </ErrorBoundary>
+                </div>
+              </Resizable>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -680,6 +745,24 @@ const SampleGraph = ({
           onClick={() => setPinnedTooltip(null)}
         >
           {pinnedTooltip.text}
+        </div>
+      )}
+      {viewMode === "reactflow" && (
+        <div className="absolute -right-16 top-20 flex flex-col gap-2">
+          <Button
+            variant="secondary"
+            onClick={handleExportJson}
+            type="button"
+          >
+            JSON
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={handleExportSvg}
+            type="button"
+          >
+            SVG
+          </Button>
         </div>
       )}
       {viewMode === "graphviz" && (
