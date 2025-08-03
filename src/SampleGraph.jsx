@@ -74,6 +74,7 @@ const SampleGraph = ({
     x: 0,
     y: 0,
   });
+  const [pinnedTooltip, setPinnedTooltip] = useState(null);
   const [flow, setFlow] = useState({ nodes: [], edges: [] });
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -131,17 +132,22 @@ const SampleGraph = ({
             );
           };
           const hide = () => setTooltip((t) => ({ ...t, visible: false }));
+          const pin = (e) => {
+            setPinnedTooltip({ text, x: e.clientX + 10, y: e.clientY + 10 });
+          };
           parent.addEventListener("mouseenter", show);
           parent.addEventListener("mousemove", move);
           parent.addEventListener("mouseleave", hide);
-          listeners.push({ parent, show, move, hide });
+          parent.addEventListener("click", pin);
+          listeners.push({ parent, show, move, hide, pin });
         }
       });
       cleanupRef.current = () => {
-        listeners.forEach(({ parent, show, move, hide }) => {
+        listeners.forEach(({ parent, show, move, hide, pin }) => {
           parent.removeEventListener("mouseenter", show);
           parent.removeEventListener("mousemove", move);
           parent.removeEventListener("mouseleave", hide);
+          parent.removeEventListener("click", pin);
         });
       };
     };
@@ -188,13 +194,13 @@ const SampleGraph = ({
 
       const zskNodes = idx === 0 ? allZsk.slice(0, 3) : [allZsk[0]];
       const kskTooltip = ksk
-        ? `Key ID: ${ksk.key_tag}\nAlg: ${
+        ? `Key Tag: ${ksk.key_tag}\nFlags: ${ksk.flags}\nTTL: ${ksk.ttl}s (${ksk.ttl_human})\nAlg: ${
             ksk.algorithm_name || ksk.algorithm
           }\nSize: ${ksk.key_size}`
         : "No KSK";
       const zskTooltips = zskNodes.map((z) =>
         z
-          ? `Key ID: ${z.key_tag}\nAlg: ${
+          ? `Key Tag: ${z.key_tag}\nFlags: ${z.flags}\nTTL: ${z.ttl}s (${z.ttl_human})\nAlg: ${
               z.algorithm_name || z.algorithm
             }\nSize: ${z.key_size}`
           : "No ZSK"
@@ -230,7 +236,7 @@ const SampleGraph = ({
         const child = data.levels[idx + 1];
         const ds = child.records?.ds_records?.[0];
         const dsTooltip = ds
-          ? `Key ID: ${ds.key_tag}\nAlg: ${
+          ? `Key Tag: ${ds.key_tag}\nTTL: ${ds.ttl}s (${ds.ttl_human})\nAlg: ${
               ds.algorithm_name || ds.algorithm
             }\nDigest: ${ds.digest}`
           : "NO DS";
@@ -306,7 +312,7 @@ const SampleGraph = ({
         (level.records?.dnskey_records || []).filter((k) => k.is_ksk) || [];
       const ksk = allKsk[0] || level.key_hierarchy?.ksk_keys?.[0] || null;
       const kskTooltip = ksk
-        ? `Key ID: ${ksk.key_tag}\nAlg: ${
+        ? `Key Tag: ${ksk.key_tag}\nFlags: ${ksk.flags}\nTTL: ${ksk.ttl}s (${ksk.ttl_human})\nAlg: ${
             ksk.algorithm_name || ksk.algorithm
           }\nSize: ${ksk.key_size}`
         : "No KSK";
@@ -354,7 +360,7 @@ const SampleGraph = ({
         const zskId = `zsk_${idx}_${j}`;
         const zskRecord = zskRecords[j];
         const zskTooltip = zskRecord
-          ? `Key ID: ${zskRecord.key_tag}\nAlg: ${
+          ? `Key Tag: ${zskRecord.key_tag}\nFlags: ${zskRecord.flags}\nTTL: ${zskRecord.ttl}s (${zskRecord.ttl_human})\nAlg: ${
               zskRecord.algorithm_name || zskRecord.algorithm
             }\nSize: ${zskRecord.key_size}`
           : "No ZSK";
@@ -388,7 +394,7 @@ const SampleGraph = ({
         const child = data.levels[idx + 1];
         const ds = child.records?.ds_records?.[0];
         const dsTooltip = ds
-          ? `Key ID: ${ds.key_tag}\nAlg: ${
+          ? `Key Tag: ${ds.key_tag}\nTTL: ${ds.ttl}s (${ds.ttl_human})\nAlg: ${
               ds.algorithm_name || ds.algorithm
             }\nDigest: ${ds.digest}`
           : "NO DS";
@@ -665,6 +671,15 @@ const SampleGraph = ({
           style={{ left: tooltip.x, top: tooltip.y }}
         >
           {tooltip.text}
+        </div>
+      )}
+      {pinnedTooltip && (
+        <div
+          className="fixed z-50 bg-primary text-primary-foreground rounded-md px-2 py-1 text-xs cursor-pointer"
+          style={{ left: pinnedTooltip.x, top: pinnedTooltip.y }}
+          onClick={() => setPinnedTooltip(null)}
+        >
+          {pinnedTooltip.text}
         </div>
       )}
       {viewMode === "graphviz" && (

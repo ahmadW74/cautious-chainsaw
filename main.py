@@ -257,6 +257,25 @@ class DNSSECAnalyzer:
             4: "SHA-384"
         }
         return digest_types.get(digest_type, f"Unknown({digest_type})")
+
+    def format_ttl(self, ttl: int) -> str:
+        """Convert a TTL in seconds to a human-readable string."""
+        if ttl is None:
+            return "N/A"
+        days, rem = divmod(int(ttl), 86400)
+        hours, rem = divmod(rem, 3600)
+        minutes, _ = divmod(rem, 60)
+        parts = []
+        if days:
+            parts.append(f"{days}d")
+        if hours:
+            parts.append(f"{hours}h")
+        if minutes and not days:
+            # Include minutes only when less than a day for brevity
+            parts.append(f"{minutes}m")
+        if not parts:
+            parts.append("0m")
+        return " ".join(parts)
     
     def format_key_data(self, key_data: bytes) -> str:
         """Format key data for display"""
@@ -394,7 +413,8 @@ class DNSSECAnalyzer:
                             'digest_type': rdata.digest_type,
                             'digest_type_name': self.get_digest_type_name(rdata.digest_type),
                             'digest': binascii.hexlify(rdata.digest).decode().upper(),
-                            'ttl': rrset.ttl
+                            'ttl': rrset.ttl,
+                            'ttl_human': self.format_ttl(rrset.ttl)
                         })
         except Exception as e:
             print(f"Error getting DS records for {domain}: {e}")
@@ -473,7 +493,8 @@ class DNSSECAnalyzer:
                             'key_data_b64': self.format_key_data(rdata.key),
                             'key_data_hex': binascii.hexlify(rdata.key).decode().upper(),
                             'is_sep': bool(rdata.flags & 1),  # Secure Entry Point
-                            'ttl': rrset.ttl
+                            'ttl': rrset.ttl,
+                            'ttl_human': self.format_ttl(rrset.ttl)
                         })
             
             # Second pass: determine roles for each key
@@ -491,6 +512,7 @@ class DNSSECAnalyzer:
                     'key_data_hex': key['key_data_hex'],
                     'is_sep': key['is_sep'],
                     'ttl': key['ttl'],
+                    'ttl_human': key['ttl_human'],
                     'role': role_info['primary_role'],
                     'all_roles': role_info['all_roles'],
                     'is_ksk': role_info['is_ksk'],
