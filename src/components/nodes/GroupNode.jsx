@@ -1,5 +1,9 @@
 import React from 'react';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import {
+  PinnedTooltip,
+  PinnedTooltipTrigger,
+  PinnedTooltipContent,
+} from '@/components/ui/tooltip';
 
 export default function GroupNode({ data }) {
   // If tooltip text already includes the label don't prepend it again
@@ -7,16 +11,18 @@ export default function GroupNode({ data }) {
 
   const ringColor = data.ringColor || 'var(--color-primary)';
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
+    <PinnedTooltip>
+      <PinnedTooltipTrigger asChild>
         <div
           className="w-full h-full bg-transparent rounded border p-2 transition-all duration-200 hover:ring-2"
           style={{ '--tw-ring-color': ringColor }}
         />
-      </TooltipTrigger>
+      </PinnedTooltipTrigger>
       {tooltipText && (
-        <TooltipContent className="whitespace-pre">{tooltipText}</TooltipContent>
+        <PinnedTooltipContent className="whitespace-pre">
+          {tooltipText}
+        </PinnedTooltipContent>
       )}
-    </Tooltip>
+    </PinnedTooltip>
   );
 }
