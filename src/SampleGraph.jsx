@@ -15,6 +15,7 @@ import {
   useEdgesState,
   useReactFlow,
 } from "@xyflow/react";
+import { toPng } from "html-to-image";
 import { Resizable } from "re-resizable";
 import "@xyflow/react/dist/style.css";
 import dagre from "dagre";
@@ -122,17 +123,25 @@ const SampleGraph = ({
     URL.revokeObjectURL(url);
   }, [reactFlowInstance, domain]);
 
-  const handleExportSvg = useCallback(() => {
-    if (!reactFlowInstance) return;
-    reactFlowInstance.toSvg().then((svg) => {
-      const blob = new Blob([svg], { type: "image/svg+xml" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `${domain || "graph"}.svg`;
-      link.click();
-      URL.revokeObjectURL(url);
-    });
+  const handleExportPng = useCallback(async () => {
+    if (!reactFlowInstance || !graphContainerRef.current) return;
+
+    const viewport = reactFlowInstance.getViewport?.();
+    reactFlowInstance.fitView({ includeHiddenNodes: true });
+    await new Promise((r) => setTimeout(r, 0));
+
+    const dataUrl = await toPng(graphContainerRef.current);
+    const blob = await (await fetch(dataUrl)).blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${domain || "graph"}.png`;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    if (viewport && reactFlowInstance.setViewport) {
+      reactFlowInstance.setViewport(viewport);
+    }
   }, [reactFlowInstance, domain]);
 
   const handleZoom = useCallback((factor) => {
@@ -336,8 +345,8 @@ const SampleGraph = ({
   const buildFlow = useCallback((data) => {
     if (!data || !Array.isArray(data.levels)) return { nodes: [], edges: [] };
 
-    const nodeWidth = 220;
-    const nodeHeight = 80;
+    const nodeWidth = 260;
+    const nodeHeight = 100;
     const nodeGap = 40;
     const groupGap = 120;
 
@@ -397,6 +406,8 @@ const SampleGraph = ({
           bg: "#ffcccc",
           ringColor: kskRingColor,
           levelName: level.display_name,
+          flags: ksk?.flags,
+          size: ksk?.key_size,
         },
         style: { width: nodeWidth },
       });
@@ -423,6 +434,8 @@ const SampleGraph = ({
             bg: "#ffdddd",
             ringColor: zskRecord ? undefined : "var(--color-destructive)",
             levelName: level.display_name,
+            flags: zskRecord?.flags,
+            size: zskRecord?.key_size,
           },
           style: { width: nodeWidth },
         });
@@ -758,10 +771,10 @@ const SampleGraph = ({
           </Button>
           <Button
             variant="secondary"
-            onClick={handleExportSvg}
+            onClick={handleExportPng}
             type="button"
           >
-            SVG
+            PNG
           </Button>
         </div>
       )}
