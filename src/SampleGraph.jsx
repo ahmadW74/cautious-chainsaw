@@ -500,6 +500,7 @@ const SampleGraph = ({
           target: zskId,
           label: signLabel,
           style: signStyle,
+          animated: !(ksk && zskRecord),
           labelStyle: { background: "white", color: "black", padding: 2 },
         });
       }
@@ -540,7 +541,7 @@ const SampleGraph = ({
           source: dsId,
           target: `ksk_${idx + 1}`,
           label: ds ? "delegates" : "no delegation",
-          animated: false,
+          animated: true,
           labelStyle: { background: "white", color: "black", padding: 2 },
           style: { stroke: ds ? "green" : "red" },
         });
@@ -579,7 +580,7 @@ const SampleGraph = ({
             source: firstZskId,
             target: recId,
             label: rec.signed ? "signs" : "unsigned",
-            animated: false,
+            animated: true,
             labelStyle: { background: "white", color: "black", padding: 2 },
             style: { stroke: rec.signed ? "green" : "red" },
           });
@@ -827,62 +828,64 @@ const SampleGraph = ({
           {pinnedTooltip.text}
         </div>
       )}
-      {viewMode === "reactflow" && (
-        <div className="absolute -right-16 top-20 flex flex-col gap-2">
-          <Button
-            size="icon"
-            variant="secondary"
-            onClick={handleFitView}
-            type="button"
-          >
-            <Maximize className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={handleExportJson}
-            type="button"
-          >
-            JSON
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={handleExportPng}
-            type="button"
-          >
-            PNG
-          </Button>
-        </div>
-      )}
-      {viewMode === "graphviz" && (
-        <div className="absolute -right-16 top-20 flex flex-col gap-2">
-          <Button
-            size="icon"
-            variant="secondary"
-            onClick={zoomIn}
-            type="button"
-          >
-            <ZoomIn className="h-4 w-4" />
-          </Button>
-          <Button
-            size="icon"
-            variant="secondary"
-            onClick={zoomOut}
-            type="button"
-          >
-            <ZoomOut className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
-      <Button
-        size="icon"
-        variant="secondary"
-        onClick={onRefresh}
-        disabled={!domain}
-        className="absolute -right-16 top-4 h-12 w-12"
-        type="button"
-      >
-        <RotateCcw className="h-6 w-6" />
-      </Button>
+      <div className="absolute -right-16 top-4 flex flex-col gap-2 items-center">
+        <Button
+          size="icon"
+          variant="secondary"
+          onClick={onRefresh}
+          disabled={!domain}
+          className="h-12 w-12"
+          type="button"
+        >
+          <RotateCcw className="h-6 w-6" />
+        </Button>
+        {viewMode === "reactflow" && (
+          <>
+            <Button
+              size="icon"
+              variant="secondary"
+              onClick={handleFitView}
+              type="button"
+            >
+              <Maximize className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={handleExportJson}
+              type="button"
+            >
+              JSON
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={handleExportPng}
+              type="button"
+            >
+              PNG
+            </Button>
+          </>
+        )}
+        {viewMode === "graphviz" && (
+          <>
+            <Button
+              size="icon"
+              variant="secondary"
+              onClick={zoomIn}
+              type="button"
+            >
+              <ZoomIn className="h-4 w-4" />
+            </Button>
+            <Button
+              size="icon"
+              variant="secondary"
+              onClick={zoomOut}
+              type="button"
+            >
+              <ZoomOut className="h-4 w-4" />
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   );
 };
