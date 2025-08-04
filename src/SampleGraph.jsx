@@ -127,8 +127,33 @@ const SampleGraph = ({
     if (!reactFlowInstance || !graphContainerRef.current) return;
 
     const viewport = reactFlowInstance.getViewport?.();
-    reactFlowInstance.fitView({ includeHiddenNodes: true });
-    await new Promise((r) => setTimeout(r, 0));
+    const prevSize = rfSize;
+
+    const nodes = reactFlowInstance.getNodes?.() || [];
+    if (nodes.length) {
+      let minX = Infinity;
+      let minY = Infinity;
+      let maxX = -Infinity;
+      let maxY = -Infinity;
+      nodes.forEach((n) => {
+        const x = n.positionAbsolute?.x ?? n.position?.x ?? 0;
+        const y = n.positionAbsolute?.y ?? n.position?.y ?? 0;
+        const width = n.width ?? n.measured?.width ?? 0;
+        const height = n.height ?? n.measured?.height ?? 0;
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x + width);
+        maxY = Math.max(maxY, y + height);
+      });
+      const padding = 40;
+      setRfSize({
+        width: maxX - minX + padding,
+        height: maxY - minY + padding,
+      });
+      await new Promise((r) => setTimeout(r, 0));
+      reactFlowInstance.fitView({ includeHiddenNodes: true });
+      await new Promise((r) => setTimeout(r, 0));
+    }
 
     const dataUrl = await toPng(graphContainerRef.current);
     const blob = await (await fetch(dataUrl)).blob();
@@ -139,10 +164,11 @@ const SampleGraph = ({
     link.click();
     URL.revokeObjectURL(url);
 
+    setRfSize(prevSize);
     if (viewport && reactFlowInstance.setViewport) {
       reactFlowInstance.setViewport(viewport);
     }
-  }, [reactFlowInstance, domain]);
+  }, [reactFlowInstance, domain, rfSize]);
 
   const handleZoom = useCallback((factor) => {
     if (!graphContainerRef.current) return;
