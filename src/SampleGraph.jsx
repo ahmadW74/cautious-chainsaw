@@ -726,6 +726,16 @@ const SampleGraph = ({
     setEdges(flow.edges);
   }, [flow, setNodes, setEdges]);
 
+  useEffect(() => {
+    if (viewMode !== "reactflow") return;
+    const nodes = reactFlowInstance.getNodes?.() || [];
+    if (!nodes.length) return;
+    const id = requestAnimationFrame(() => {
+      reactFlowInstance.fitView({ includeHiddenNodes: true, padding: 0.1 });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [flow, rfSize, viewMode, reactFlowInstance]);
+
   if (!domain) {
     return (
       <div className="text-center text-gray-500">
