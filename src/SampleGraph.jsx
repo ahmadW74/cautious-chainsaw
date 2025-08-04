@@ -14,6 +14,8 @@ import {
   useNodesState,
   useEdgesState,
   useReactFlow,
+  getNodesBounds,
+  getViewportForBounds,
 } from "@xyflow/react";
 import { toPng } from "html-to-image";
 import { Resizable } from "re-resizable";
@@ -126,55 +128,44 @@ const SampleGraph = ({
   const handleExportPng = useCallback(async () => {
     if (!reactFlowInstance || !graphContainerRef.current) return;
 
-    const viewport = reactFlowInstance.getViewport?.();
+    const viewportEl = graphContainerRef.current.querySelector(
+      ".react-flow__viewport"
+    );
+    if (!viewportEl) return;
+
     const nodes = reactFlowInstance.getNodes?.() || [];
     let dataUrl;
     if (nodes.length) {
-      let minX = Infinity;
-      let minY = Infinity;
-      let maxX = -Infinity;
-      let maxY = -Infinity;
-      nodes.forEach((n) => {
-        const x = n.positionAbsolute?.x ?? n.position?.x ?? 0;
-        const y = n.positionAbsolute?.y ?? n.position?.y ?? 0;
-        const width = n.width ?? n.measured?.width ?? 0;
-        const height = n.height ?? n.measured?.height ?? 0;
-        minX = Math.min(minX, x);
-        minY = Math.min(minY, y);
-        maxX = Math.max(maxX, x + width);
-        maxY = Math.max(maxY, y + height);
-      });
-      reactFlowInstance.fitBounds(
-        { x: minX, y: minY, width: maxX - minX, height: maxY - minY },
-        { includeHiddenNodes: true, padding: 0.1 }
-      );
-      await new Promise((r) => setTimeout(r, 50));
+      const bounds = getNodesBounds(nodes);
       const padding = 40;
-      const width = maxX - minX + padding;
-      const height = maxY - minY + padding;
-      dataUrl = await toPng(graphContainerRef.current, {
+      const imageWidth = bounds.width + padding;
+      const imageHeight = bounds.height + padding;
+      const viewport = getViewportForBounds(
+        bounds,
+        imageWidth,
+        imageHeight,
+        0.5,
+        2
+      );
+      dataUrl = await toPng(viewportEl, {
         backgroundColor: "#ffffff",
-        canvasWidth: width,
-        canvasHeight: height,
+        width: imageWidth,
+        height: imageHeight,
         style: {
-          transform: `translate(${-minX + padding / 2}px, ${-minY + padding / 2}px)`,
+          width: imageWidth,
+          height: imageHeight,
+          transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
         },
       });
     } else {
-      dataUrl = await toPng(graphContainerRef.current, {
+      dataUrl = await toPng(viewportEl, {
         backgroundColor: "#ffffff",
       });
     }
-    const blob = await (await fetch(dataUrl)).blob();
-    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.href = url;
-    link.download = `${domain || "graph"}.png`;
+    link.setAttribute("download", `${domain || "graph"}.png`);
+    link.setAttribute("href", dataUrl);
     link.click();
-    URL.revokeObjectURL(url);
-    if (viewport && reactFlowInstance.setViewport) {
-      reactFlowInstance.setViewport(viewport);
-    }
   }, [reactFlowInstance, domain]);
 
   const handleFitView = useCallback(() => {
