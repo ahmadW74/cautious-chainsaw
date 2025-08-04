@@ -127,9 +127,8 @@ const SampleGraph = ({
     if (!reactFlowInstance || !graphContainerRef.current) return;
 
     const viewport = reactFlowInstance.getViewport?.();
-    const prevSize = rfSize;
-
     const nodes = reactFlowInstance.getNodes?.() || [];
+    let dataUrl;
     if (nodes.length) {
       let minX = Infinity;
       let minY = Infinity;
@@ -145,17 +144,27 @@ const SampleGraph = ({
         maxX = Math.max(maxX, x + width);
         maxY = Math.max(maxY, y + height);
       });
+      reactFlowInstance.fitBounds(
+        { x: minX, y: minY, width: maxX - minX, height: maxY - minY },
+        { includeHiddenNodes: true, padding: 0.1 }
+      );
+      await new Promise((r) => setTimeout(r, 50));
       const padding = 40;
-      setRfSize({
-        width: maxX - minX + padding,
-        height: maxY - minY + padding,
+      const width = maxX - minX + padding;
+      const height = maxY - minY + padding;
+      dataUrl = await toPng(graphContainerRef.current, {
+        backgroundColor: "#ffffff",
+        canvasWidth: width,
+        canvasHeight: height,
+        style: {
+          transform: `translate(${-minX + padding / 2}px, ${-minY + padding / 2}px)`,
+        },
       });
-      await new Promise((r) => setTimeout(r, 0));
-      reactFlowInstance.fitView({ includeHiddenNodes: true });
-      await new Promise((r) => setTimeout(r, 0));
+    } else {
+      dataUrl = await toPng(graphContainerRef.current, {
+        backgroundColor: "#ffffff",
+      });
     }
-
-    const dataUrl = await toPng(graphContainerRef.current);
     const blob = await (await fetch(dataUrl)).blob();
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -163,12 +172,10 @@ const SampleGraph = ({
     link.download = `${domain || "graph"}.png`;
     link.click();
     URL.revokeObjectURL(url);
-
-    setRfSize(prevSize);
     if (viewport && reactFlowInstance.setViewport) {
       reactFlowInstance.setViewport(viewport);
     }
-  }, [reactFlowInstance, domain, rfSize]);
+  }, [reactFlowInstance, domain]);
 
   const handleZoom = useCallback((factor) => {
     if (!graphContainerRef.current) return;
@@ -473,6 +480,7 @@ const SampleGraph = ({
           target: zskId,
           label: signLabel,
           style: signStyle,
+          labelStyle: { background: "white", color: "black", padding: 2 },
         });
       }
 
@@ -505,13 +513,15 @@ const SampleGraph = ({
           source: firstZskId,
           target: dsId,
           label: "signs",
+          labelStyle: { background: "white", color: "black", padding: 2 },
         });
         crossEdges.push({
           id: `${dsId}-ksk_${idx + 1}`,
           source: dsId,
           target: `ksk_${idx + 1}`,
           label: ds ? "delegates" : "no delegation",
-          animated: true,
+          animated: false,
+          labelStyle: { background: "white", color: "black", padding: 2 },
           style: { stroke: ds ? "green" : "red" },
         });
       } else {
@@ -549,7 +559,8 @@ const SampleGraph = ({
             source: firstZskId,
             target: recId,
             label: rec.signed ? "signs" : "unsigned",
-            animated: true,
+            animated: false,
+            labelStyle: { background: "white", color: "black", padding: 2 },
             style: { stroke: rec.signed ? "green" : "red" },
           });
         });
