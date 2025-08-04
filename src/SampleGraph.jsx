@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import RecordNode from "@/components/nodes/RecordNode.jsx";
 import GroupNode from "@/components/nodes/GroupNode.jsx";
 
-import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
+import { Maximize, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 
 const getCache = (key) => {
   try {
@@ -176,6 +176,35 @@ const SampleGraph = ({
       reactFlowInstance.setViewport(viewport);
     }
   }, [reactFlowInstance, domain]);
+
+  const handleFitView = useCallback(() => {
+    if (!reactFlowInstance) return;
+    const nodes = reactFlowInstance.getNodes?.() || [];
+    if (!nodes.length) return;
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    nodes.forEach((n) => {
+      const x = n.positionAbsolute?.x ?? n.position?.x ?? 0;
+      const y = n.positionAbsolute?.y ?? n.position?.y ?? 0;
+      const width = n.width ?? n.measured?.width ?? 0;
+      const height = n.height ?? n.measured?.height ?? 0;
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x + width);
+      maxY = Math.max(maxY, y + height);
+    });
+    const width = maxX - minX;
+    const height = maxY - minY;
+    setRfSize({ width, height });
+    requestAnimationFrame(() => {
+      reactFlowInstance.fitBounds(
+        { x: minX, y: minY, width, height },
+        { includeHiddenNodes: true, padding: 0.1 }
+      );
+    });
+  }, [reactFlowInstance]);
 
   const handleZoom = useCallback((factor) => {
     if (!graphContainerRef.current) return;
@@ -799,6 +828,14 @@ const SampleGraph = ({
       )}
       {viewMode === "reactflow" && (
         <div className="absolute -right-16 top-20 flex flex-col gap-2">
+          <Button
+            size="icon"
+            variant="secondary"
+            onClick={handleFitView}
+            type="button"
+          >
+            <Maximize className="h-4 w-4" />
+          </Button>
           <Button
             variant="secondary"
             onClick={handleExportJson}
