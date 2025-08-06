@@ -132,40 +132,55 @@ const SampleGraph = ({
       ".react-flow__viewport"
     );
     if (!viewportEl) return;
+    const hiddenEls = [];
+    viewportEl.querySelectorAll(".react-flow__edge-text").forEach((el) => {
+      const text = el.textContent?.trim().toLowerCase();
+      if (text === "delegates" || text === "signs") {
+        const wrapper = el.closest(".react-flow__edge-textwrapper") || el;
+        hiddenEls.push(wrapper);
+        wrapper.style.display = "none";
+      }
+    });
 
-    const nodes = reactFlowInstance.getNodes?.() || [];
-    let dataUrl;
-    if (nodes.length) {
-      const bounds = getNodesBounds(nodes);
-      const padding = 40;
-      const imageWidth = bounds.width + padding;
-      const imageHeight = bounds.height + padding;
-      const viewport = getViewportForBounds(
-        bounds,
-        imageWidth,
-        imageHeight,
-        0.5,
-        2
-      );
-      dataUrl = await toPng(viewportEl, {
-        backgroundColor: "#ffffff",
-        width: imageWidth,
-        height: imageHeight,
-        style: {
+    try {
+      const nodes = reactFlowInstance.getNodes?.() || [];
+      let dataUrl;
+      if (nodes.length) {
+        const bounds = getNodesBounds(nodes);
+        const padding = 40;
+        const imageWidth = bounds.width + padding;
+        const imageHeight = bounds.height + padding;
+        const viewport = getViewportForBounds(
+          bounds,
+          imageWidth,
+          imageHeight,
+          0.5,
+          2
+        );
+        dataUrl = await toPng(viewportEl, {
+          backgroundColor: "#ffffff",
           width: imageWidth,
           height: imageHeight,
-          transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
-        },
-      });
-    } else {
-      dataUrl = await toPng(viewportEl, {
-        backgroundColor: "#ffffff",
+          style: {
+            width: imageWidth,
+            height: imageHeight,
+            transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+          },
+        });
+      } else {
+        dataUrl = await toPng(viewportEl, {
+          backgroundColor: "#ffffff",
+        });
+      }
+      const link = document.createElement("a");
+      link.setAttribute("download", `${domain || "graph"}.png`);
+      link.setAttribute("href", dataUrl);
+      link.click();
+    } finally {
+      hiddenEls.forEach((el) => {
+        el.style.display = "";
       });
     }
-    const link = document.createElement("a");
-    link.setAttribute("download", `${domain || "graph"}.png`);
-    link.setAttribute("href", dataUrl);
-    link.click();
   }, [reactFlowInstance, domain]);
 
   const handleFitView = useCallback(() => {
