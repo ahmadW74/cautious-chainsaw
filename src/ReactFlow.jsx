@@ -1,5 +1,9 @@
 import React from "react";
-import { ReactFlow, Background, Controls } from "@xyflow/react";
+import {
+  ReactFlow as ReactFlowBase,
+  Background,
+  Controls,
+} from "@xyflow/react";
 import { Resizable } from "re-resizable";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import "@xyflow/react/dist/style.css";
@@ -17,7 +21,7 @@ import "@xyflow/react/dist/style.css";
  * @param {Function} props.setRfSize - Setter for graph size
  * @param {React.MutableRefObject} props.graphContainerRef - Ref to the container element
  */
-const ReactFlowGraph = ({
+const ReactFlow = ({
   nodes,
   edges,
   onNodesChange,
@@ -40,7 +44,7 @@ const ReactFlowGraph = ({
     >
       <div className="w-full h-full" ref={graphContainerRef}>
         <ErrorBoundary>
-          <ReactFlow
+          <ReactFlowBase
             nodes={nodes}
             edges={edges}
             onNodesChange={onNodesChange}
@@ -51,12 +55,12 @@ const ReactFlowGraph = ({
           >
             <Background />
             <Controls />
-          </ReactFlow>
+          </ReactFlowBase>
         </ErrorBoundary>
       </div>
     </Resizable>
   );
 };
 
-export default ReactFlowGraph;
+export default ReactFlow;
 

@@ -21,7 +21,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import RecordNode from "@/components/nodes/RecordNode.jsx";
 import GroupNode from "@/components/nodes/GroupNode.jsx";
-import ReactFlowGraph from "./ReactFlowGraph.jsx";
+import ReactFlow from "./ReactFlow.jsx";
 
 import { Maximize, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 
@@ -791,7 +791,7 @@ const SampleGraph = ({
                 </div>
               </div>
             ) : (
-              <ReactFlowGraph
+              <ReactFlow
                 nodes={nodes}
                 edges={edges}
                 onNodesChange={onNodesChange}
