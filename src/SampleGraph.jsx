@@ -8,9 +8,6 @@ import React, {
 import Graphviz from "graphviz-react";
 import { graphviz } from "d3-graphviz";
 import {
-  ReactFlow,
-  Background,
-  Controls,
   useNodesState,
   useEdgesState,
   useReactFlow,
@@ -18,14 +15,13 @@ import {
   getViewportForBounds,
 } from "@xyflow/react";
 import { toPng } from "html-to-image";
-import { Resizable } from "re-resizable";
-import "@xyflow/react/dist/style.css";
 import dagre from "dagre";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import RecordNode from "@/components/nodes/RecordNode.jsx";
 import GroupNode from "@/components/nodes/GroupNode.jsx";
+import ReactFlowGraph from "./ReactFlowGraph.jsx";
 
 import { Maximize, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 
@@ -795,33 +791,16 @@ const SampleGraph = ({
                 </div>
               </div>
             ) : (
-              <Resizable
-                size={rfSize}
-                onResizeStop={(e, dir, ref, d) =>
-                  setRfSize({
-                    width: rfSize.width + d.width,
-                    height: rfSize.height + d.height,
-                  })
-                }
-                className="relative border border-border rounded overflow-hidden mx-auto"
-              >
-                <div className="w-full h-full" ref={graphContainerRef}>
-                  <ErrorBoundary>
-                    <ReactFlow
-                      nodes={nodes}
-                      edges={edges}
-                      onNodesChange={onNodesChange}
-                      onEdgesChange={onEdgesChange}
-                      nodeTypes={nodeTypes}
-                      fitView
-                      style={{ width: "100%", height: "100%" }}
-                    >
-                      <Background />
-                      <Controls />
-                    </ReactFlow>
-                  </ErrorBoundary>
-                </div>
-              </Resizable>
+              <ReactFlowGraph
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                nodeTypes={nodeTypes}
+                rfSize={rfSize}
+                setRfSize={setRfSize}
+                graphContainerRef={graphContainerRef}
+              />
             )}
           </div>
         </CardContent>
