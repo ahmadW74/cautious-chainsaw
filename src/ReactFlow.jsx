@@ -51,7 +51,21 @@ const ReactFlow = ({
             onEdgesChange={onEdgesChange}
             nodeTypes={nodeTypes}
             fitView
-            style={{ width: "100%", height: "100%" }}
+            style={{
+              width: "100%",
+              height: "100%",
+              fontFamily: "'Roboto Flex', sans-serif",
+              color: "#ffffff",
+              fontWeight: "bold",
+            }}
+            defaultEdgeOptions={{
+              style: { stroke: "#9333ea", strokeWidth: 2 },
+              labelStyle: {
+                color: "#ffffff",
+                fontWeight: "bold",
+                fontFamily: "'Roboto Flex', sans-serif",
+              },
+            }}
           >
             <Background />
             <Controls />

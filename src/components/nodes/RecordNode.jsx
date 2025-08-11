@@ -9,20 +9,27 @@ import {
 export default function RecordNode({ data }) {
   const ringColor = data.ringColor || "var(--color-primary)";
   return (
-    <div className="relative flex flex-col items-center">
+    <div
+      className="relative flex flex-col items-center text-white font-bold"
+      style={{ fontFamily: "'Roboto Flex', sans-serif" }}
+    >
       <Handle type="target" position={Position.Top} />
       {data.levelName && (
-        <div className="text-base text-muted-foreground mb-2">
+        <div
+          className="w-full mb-4 text-center bg-purple-700 text-white font-bold rounded-3xl"
+          style={{ fontFamily: "'Fjalla One', sans-serif" }}
+        >
           {data.levelName}
         </div>
       )}
       <PinnedTooltip>
         <PinnedTooltipTrigger asChild>
           <div
-            className="px-5 py-3 rounded border text-base transition-all duration-200 hover:ring-2 text-center"
+            className="px-5 py-3 rounded-3xl border text-base transition-all duration-200 hover:ring-2 text-center text-white"
             style={{
               backgroundColor: data.bg || "var(--color-background)",
               "--tw-ring-color": ringColor,
+              fontFamily: "'Roboto Flex', sans-serif",
             }}
           >
             <div>{data.label}</div>
