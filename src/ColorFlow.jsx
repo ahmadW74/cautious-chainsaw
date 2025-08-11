@@ -6,7 +6,6 @@ import {
 } from "@xyflow/react";
 import { Resizable } from "re-resizable";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
-import NebulaBackground from "@/components/NebulaBackground.jsx";
 import "@xyflow/react/dist/style.css";
 
 /**
@@ -33,8 +32,7 @@ const ColorFlow = ({
       }
       className="relative border border-border rounded overflow-hidden mx-auto"
     >
-      <div className="w-full h-full relative" ref={graphContainerRef}>
-        <NebulaBackground />
+      <div className="w-full h-full" ref={graphContainerRef}>
         <ErrorBoundary>
           <ReactFlowBase
             nodes={nodes}
@@ -43,7 +41,7 @@ const ColorFlow = ({
             onEdgesChange={onEdgesChange}
             nodeTypes={nodeTypes}
             fitView
-            style={{ width: "100%", height: "100%", background: "transparent" }}
+            style={{ width: "100%", height: "100%", background: "white" }}
           >
             <Background />
             <Controls />
