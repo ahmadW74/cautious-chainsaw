@@ -1,7 +1,7 @@
 import { parse } from 'tldts';
 
 const MAX_LENGTH = 26;
-const HEADER_HEIGHT = 32; // px
+const HEADER_HEIGHT = 40; // px
 const UNDERLAP = 10; // px overlapped by card body
 
 export const HEADER_STYLE = {

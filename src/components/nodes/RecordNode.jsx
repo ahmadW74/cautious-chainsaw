@@ -9,12 +9,11 @@ import { computeDomain, HEADER_STYLE } from "@/lib/domain";
 
 export default function RecordNode({ data }) {
   const ringColor = data.ringColor || "var(--color-primary)";
-  const { full: domainFull, tld } = useMemo(
+  const { full: domainFull, truncated } = useMemo(
     () => computeDomain(data),
     [data]
   );
-  const isBroken = data.ringColor === "var(--color-destructive)";
-  const headerColor = isBroken ? "#FF073A" : "#39FF14";
+  const headerColor = "var(--color-primary)";
   return (
     <div className="relative flex flex-col items-center">
       <Handle type="target" position={Position.Top} />
@@ -22,11 +21,11 @@ export default function RecordNode({ data }) {
         <PinnedTooltipTrigger asChild>
           <div className="relative">
             <div
-              className="absolute top-0 left-0 right-0 z-0 rounded-t-2xl text-white text-xs font-bold tracking-[0.04em] pl-2 pt-1.5 select-none"
+              className="absolute top-0 left-0 right-0 z-0 rounded-t-2xl text-white text-sm font-bold tracking-[0.04em] pl-2 pt-2 select-none"
               style={{ height: HEADER_STYLE.height, backgroundColor: headerColor }}
               title={domainFull}
             >
-              {tld}
+              {truncated}
             </div>
             <div
               className="relative z-10 px-5 py-3 rounded-2xl border text-base transition-all duration-200 hover:ring-2 text-center"
