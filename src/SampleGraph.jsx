@@ -23,7 +23,6 @@ import RecordNode from "@/components/nodes/RecordNode.jsx";
 import GroupNode from "@/components/nodes/GroupNode.jsx";
 import ReactFlow from "./ReactFlow.jsx";
 import ColorFlow from "./ColorFlow.jsx";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 import { Maximize, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 
@@ -52,7 +51,7 @@ const setCache = (key, value) => {
  * @param {Function} [props.onRefresh] - Callback when the reload button is clicked
  * @param {string} [props.userId] - ID of the logged in user
  * @param {string} [props.selectedDate] - Month selected from the timeline slider (YYYY-MM)
- * @param {string} props.viewMode - Display mode (graphviz or reactflow)
+ * @param {string} props.viewMode - Display mode (graphviz, reactflow, or reactflow-color)
  * @param {string} [props.maxWidth="56rem"] - Max width of the graph container
  * @param {string} [props.height="28rem"] - Height of the graph container
  */
@@ -109,12 +108,6 @@ const SampleGraph = ({
     height: parseSize(height, 448),
   });
 
-  const [colorGraphOpen, setColorGraphOpen] = useState(false);
-  const colorGraphContainerRef = useRef(null);
-  const [colorRfSize, setColorRfSize] = useState({
-    width: parseSize(maxWidth, 896),
-    height: parseSize(height, 448),
-  });
 
   const handleExportJson = useCallback(() => {
     if (!reactFlowInstance) return;
@@ -739,7 +732,7 @@ const SampleGraph = ({
   }, [flow, setNodes, setEdges]);
 
   useEffect(() => {
-    if (viewMode !== "reactflow") return;
+    if (viewMode !== "reactflow" && viewMode !== "reactflow-color") return;
     const nodes = reactFlowInstance.getNodes?.() || [];
     if (!nodes.length) return;
     const id = requestAnimationFrame(() => {
@@ -799,8 +792,19 @@ const SampleGraph = ({
                   </ErrorBoundary>
                 </div>
               </div>
-            ) : (
+            ) : viewMode === "reactflow" ? (
               <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                nodeTypes={nodeTypes}
+                rfSize={rfSize}
+                setRfSize={setRfSize}
+                graphContainerRef={graphContainerRef}
+              />
+            ) : (
+              <ColorFlow
                 nodes={nodes}
                 edges={edges}
                 onNodesChange={onNodesChange}
@@ -842,7 +846,7 @@ const SampleGraph = ({
         >
           <RotateCcw className="h-6 w-6" />
         </Button>
-        {viewMode === "reactflow" && (
+          {(viewMode === "reactflow" || viewMode === "reactflow-color") && (
           <>
             <Button
               size="icon"
@@ -865,13 +869,6 @@ const SampleGraph = ({
               type="button"
             >
               PNG
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => setColorGraphOpen(true)}
-              type="button"
-            >
-              Color
             </Button>
           </>
         )}
@@ -896,20 +893,6 @@ const SampleGraph = ({
           </>
         )}
       </div>
-      <Dialog open={colorGraphOpen} onOpenChange={setColorGraphOpen}>
-        <DialogContent className="max-w-[90vw] w-[90vw] h-[80vh] p-0">
-          <ColorFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            nodeTypes={nodeTypes}
-            rfSize={colorRfSize}
-            setRfSize={setColorRfSize}
-            graphContainerRef={colorGraphContainerRef}
-          />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
