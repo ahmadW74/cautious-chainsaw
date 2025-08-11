@@ -430,11 +430,21 @@ export default function App() {
               size="icon"
               variant="secondary"
               onClick={() =>
-                setViewMode(viewMode === "graphviz" ? "reactflow" : "graphviz")
+                setViewMode(
+                  viewMode === "graphviz"
+                    ? "reactflow"
+                    : viewMode === "reactflow"
+                      ? "reactflow-color"
+                      : "graphviz"
+                )
               }
               type="button"
             >
-              {viewMode === "graphviz" ? "RF" : "GV"}
+              {viewMode === "graphviz"
+                ? "RF"
+                : viewMode === "reactflow"
+                  ? "RFC"
+                  : "GV"}
             </Button>
           </div>
           <div className="flex items-center space-x-2">
