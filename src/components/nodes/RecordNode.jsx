@@ -1,57 +1,43 @@
 import React, { useMemo } from "react";
 import { Handle, Position } from "@xyflow/react";
-import {
-  PinnedTooltip,
-  PinnedTooltipTrigger,
-  PinnedTooltipContent,
-} from "@/components/ui/tooltip";
 import { computeDomain, HEADER_STYLE } from "@/lib/domain";
 
 export default function RecordNode({ data }) {
-  const ringColor = data.ringColor || "var(--color-primary)";
+  const ringColor = "var(--color-primary)";
   const { full: domainFull, truncated } = useMemo(
     () => computeDomain(data),
     [data]
   );
-  const headerColor = "var(--color-primary)";
+  const headerColor = "transparent";
   return (
     <div className="relative flex flex-col items-center">
       <Handle type="target" position={Position.Top} />
-      <PinnedTooltip>
-        <PinnedTooltipTrigger asChild>
-          <div className="relative">
-            <div
-              className="absolute top-0 left-0 right-0 z-0 rounded-t-2xl text-white text-sm font-bold tracking-[0.04em] pl-2 pt-2 select-none"
-              style={{ height: HEADER_STYLE.height, backgroundColor: headerColor }}
-              title={domainFull}
-            >
-              {truncated}
+      <div className="relative">
+        <div
+          className="absolute top-0 left-0 right-0 z-0 rounded-t-2xl text-sm font-bold tracking-[0.04em] pl-2 pt-2 select-none"
+          style={{ height: HEADER_STYLE.height, backgroundColor: headerColor }}
+          title={domainFull}
+        >
+          {truncated}
+        </div>
+        <div
+          className="relative z-10 px-5 py-3 rounded-2xl border text-base ring-2 text-center"
+          style={{
+            marginTop: HEADER_STYLE.visibleHeight,
+            backgroundColor: "transparent",
+            "--tw-ring-color": ringColor,
+          }}
+        >
+          <div>{data.label}</div>
+          {(data.flags || data.size) && (
+            <div className="mt-1 text-xs">
+              {data.flags && <>Flags: {data.flags}</>}
+              {data.flags && data.size && " | "}
+              {data.size && <>Size: {data.size}</>}
             </div>
-            <div
-              className="relative z-10 px-5 py-3 rounded-2xl border text-base transition-all duration-200 hover:ring-2 text-center"
-              style={{
-                marginTop: HEADER_STYLE.visibleHeight,
-                backgroundColor: data.bg || "var(--color-background)",
-                "--tw-ring-color": ringColor,
-              }}
-            >
-              <div>{data.label}</div>
-              {(data.flags || data.size) && (
-                <div className="mt-1 text-xs">
-                  {data.flags && <>Flags: {data.flags}</>}
-                  {data.flags && data.size && " | "}
-                  {data.size && <>Size: {data.size}</>}
-                </div>
-              )}
-            </div>
-          </div>
-        </PinnedTooltipTrigger>
-        {data.tooltip && (
-          <PinnedTooltipContent className="whitespace-pre">
-            {data.tooltip}
-          </PinnedTooltipContent>
-        )}
-      </PinnedTooltip>
+          )}
+        </div>
+      </div>
       <Handle type="source" position={Position.Bottom} />
     </div>
   );
