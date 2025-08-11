@@ -22,6 +22,8 @@ import { Button } from "@/components/ui/button";
 import RecordNode from "@/components/nodes/RecordNode.jsx";
 import GroupNode from "@/components/nodes/GroupNode.jsx";
 import ReactFlow from "./ReactFlow.jsx";
+import ColorFlow from "./ColorFlow.jsx";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 import { Maximize, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 
@@ -103,6 +105,13 @@ const SampleGraph = ({
     };
 
   const [rfSize, setRfSize] = useState({
+    width: parseSize(maxWidth, 896),
+    height: parseSize(height, 448),
+  });
+
+  const [colorGraphOpen, setColorGraphOpen] = useState(false);
+  const colorGraphContainerRef = useRef(null);
+  const [colorRfSize, setColorRfSize] = useState({
     width: parseSize(maxWidth, 896),
     height: parseSize(height, 448),
   });
@@ -857,6 +866,13 @@ const SampleGraph = ({
             >
               PNG
             </Button>
+            <Button
+              variant="secondary"
+              onClick={() => setColorGraphOpen(true)}
+              type="button"
+            >
+              Color
+            </Button>
           </>
         )}
         {viewMode === "graphviz" && (
@@ -880,6 +896,20 @@ const SampleGraph = ({
           </>
         )}
       </div>
+      <Dialog open={colorGraphOpen} onOpenChange={setColorGraphOpen}>
+        <DialogContent className="max-w-[90vw] w-[90vw] h-[80vh] p-0">
+          <ColorFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            nodeTypes={nodeTypes}
+            rfSize={colorRfSize}
+            setRfSize={setColorRfSize}
+            graphContainerRef={colorGraphContainerRef}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
