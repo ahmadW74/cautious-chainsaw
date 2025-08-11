@@ -14,8 +14,8 @@ export default function GroupNode({ data }) {
     <PinnedTooltip>
       <PinnedTooltipTrigger asChild>
         <div
-          className="w-full h-full bg-transparent rounded border p-2 transition-all duration-200 hover:ring-2"
-          style={{ '--tw-ring-color': ringColor }}
+          className="w-full h-full bg-transparent rounded-3xl border p-2 transition-all duration-200 hover:ring-2 text-white font-bold"
+          style={{ '--tw-ring-color': ringColor, fontFamily: "'Roboto Flex', sans-serif" }}
         />
       </PinnedTooltipTrigger>
       {tooltipText && (

@@ -467,7 +467,7 @@ const SampleGraph = ({
         data: {
           label: ksk ? "KSK" : "NO KSK",
           tooltip: kskTooltip,
-          bg: "#ffcccc",
+          bg: "#ff4d4d",
           ringColor: kskRingColor,
           levelName: level.display_name,
           flags: ksk?.flags,
@@ -495,7 +495,7 @@ const SampleGraph = ({
           data: {
             label: zskRecord ? "ZSK" : "NO ZSK",
             tooltip: zskTooltip,
-            bg: "#ffdddd",
+            bg: "#ff6666",
             ringColor: zskRecord ? undefined : "var(--color-destructive)",
             levelName: level.display_name,
             flags: zskRecord?.flags,
@@ -504,7 +504,7 @@ const SampleGraph = ({
           style: { width: nodeWidth },
         });
         const signLabel = ksk && zskRecord ? "signs" : "no signing";
-        const signStyle = ksk && zskRecord ? {} : { stroke: "red" };
+        const signStyle = ksk && zskRecord ? {} : { stroke: "#ff0000" };
         edges.push({
           id: `${kskId}-${zskId}`,
           source: kskId,
@@ -512,7 +512,13 @@ const SampleGraph = ({
           label: signLabel,
           style: signStyle,
           animated: !(ksk && zskRecord),
-          labelStyle: { background: "white", color: "black", padding: 2 },
+          labelStyle: {
+            background: "#9333ea",
+            color: "#ffffff",
+            padding: 2,
+            fontWeight: "bold",
+            fontFamily: "'Roboto Flex', sans-serif",
+          },
         });
       }
 
@@ -534,7 +540,7 @@ const SampleGraph = ({
           data: {
             label: ds ? "DS" : "NO DS",
             tooltip: dsTooltip,
-            bg: "#ccccff",
+            bg: "#6666ff",
             ringColor: ds ? undefined : "var(--color-destructive)",
             levelName: level.display_name,
           },
@@ -545,7 +551,13 @@ const SampleGraph = ({
           source: firstZskId,
           target: dsId,
           label: "signs",
-          labelStyle: { background: "white", color: "black", padding: 2 },
+          labelStyle: {
+            background: "#9333ea",
+            color: "#ffffff",
+            padding: 2,
+            fontWeight: "bold",
+            fontFamily: "'Roboto Flex', sans-serif",
+          },
         });
         crossEdges.push({
           id: `${dsId}-ksk_${idx + 1}`,
@@ -553,8 +565,14 @@ const SampleGraph = ({
           target: `ksk_${idx + 1}`,
           label: ds ? "delegates" : "no delegation",
           animated: true,
-          labelStyle: { background: "white", color: "black", padding: 2 },
-          style: { stroke: ds ? "green" : "red" },
+          labelStyle: {
+            background: "#9333ea",
+            color: "#ffffff",
+            padding: 2,
+            fontWeight: "bold",
+            fontFamily: "'Roboto Flex', sans-serif",
+          },
+          style: { stroke: ds ? "#00ff00" : "#ff0000" },
         });
       } else {
         const recordTypes = [
@@ -580,7 +598,7 @@ const SampleGraph = ({
             data: {
               label: type,
               tooltip,
-              bg: "#ccffcc",
+              bg: "#66ff66",
               ringColor: rec.signed ? undefined : "var(--color-destructive)",
               levelName: level.display_name,
             },
@@ -592,8 +610,14 @@ const SampleGraph = ({
             target: recId,
             label: rec.signed ? "signs" : "unsigned",
             animated: true,
-            labelStyle: { background: "white", color: "black", padding: 2 },
-            style: { stroke: rec.signed ? "green" : "red" },
+            labelStyle: {
+              background: "#9333ea",
+              color: "#ffffff",
+              padding: 2,
+              fontWeight: "bold",
+              fontFamily: "'Roboto Flex', sans-serif",
+            },
+            style: { stroke: rec.signed ? "#00ff00" : "#ff0000" },
           });
         });
       }
