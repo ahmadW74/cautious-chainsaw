@@ -7,29 +7,26 @@ import {
 } from "@/components/ui/tooltip";
 import { computeDomain, HEADER_STYLE } from "@/lib/domain";
 
-export default function RecordNode({ data, id }) {
+export default function RecordNode({ data }) {
   const ringColor = data.ringColor || "var(--color-primary)";
-  const { full: domainFull, truncated: domainShort } = useMemo(
-    () => computeDomain(data, id),
-    [data, id]
+  const { full: domainFull, tld } = useMemo(
+    () => computeDomain(data),
+    [data]
   );
+  const isBroken = data.ringColor === "var(--color-destructive)";
+  const headerColor = isBroken ? "#FF073A" : "#39FF14";
   return (
     <div className="relative flex flex-col items-center">
       <Handle type="target" position={Position.Top} />
-      {data.levelName && (
-        <div className="text-base text-muted-foreground mb-2">
-          {data.levelName}
-        </div>
-      )}
       <PinnedTooltip>
         <PinnedTooltipTrigger asChild>
           <div className="relative">
             <div
-              className="absolute top-0 left-0 right-0 z-0 rounded-t-2xl bg-gradient-to-r from-[#F472B6] via-[#E879F9] to-[#C084FC] text-white text-xs font-bold tracking-[0.04em] pl-2 pt-1.5 select-none"
-              style={{ height: HEADER_STYLE.height }}
+              className="absolute top-0 left-0 right-0 z-0 rounded-t-2xl text-white text-xs font-bold tracking-[0.04em] pl-2 pt-1.5 select-none"
+              style={{ height: HEADER_STYLE.height, backgroundColor: headerColor }}
               title={domainFull}
             >
-              {domainShort}
+              {tld}
             </div>
             <div
               className="relative z-10 px-5 py-3 rounded-2xl border text-base transition-all duration-200 hover:ring-2 text-center"
