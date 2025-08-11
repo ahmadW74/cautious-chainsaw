@@ -441,12 +441,7 @@ const SampleGraph = ({
       const zskRecords = (level.records?.dnskey_records || []).filter(
         (r) => r.is_zsk
       );
-      const kskRingColor =
-        !ksk || zskRecords.length === 0
-          ? "var(--color-destructive)"
-          : undefined;
 
-      const groupRingColor = kskRingColor;
       groupNodes.push({
         id: groupId,
         type: "dnsGroup",
@@ -456,7 +451,6 @@ const SampleGraph = ({
           tooltip: `${
             level.display_name || `Level ${idx}`
           }\n${securityTooltip}`,
-          ringColor: groupRingColor,
         },
         position: { x: 0, y: 0 },
       });
@@ -469,8 +463,6 @@ const SampleGraph = ({
         data: {
           label: ksk ? "KSK" : "NO KSK",
           tooltip: kskTooltip,
-          bg: "#ffcccc",
-          ringColor: kskRingColor,
           domain: level.display_name,
           flags: ksk?.flags,
           size: ksk?.key_size,
@@ -497,8 +489,6 @@ const SampleGraph = ({
           data: {
             label: zskRecord ? "ZSK" : "NO ZSK",
             tooltip: zskTooltip,
-            bg: "#ffdddd",
-            ringColor: zskRecord ? undefined : "var(--color-destructive)",
             domain: level.display_name,
             flags: zskRecord?.flags,
             size: zskRecord?.key_size,
@@ -536,8 +526,6 @@ const SampleGraph = ({
           data: {
             label: ds ? "DS" : "NO DS",
             tooltip: dsTooltip,
-            bg: "#ccccff",
-            ringColor: ds ? undefined : "var(--color-destructive)",
             domain: level.display_name,
           },
           style: { width: nodeWidth },
@@ -582,8 +570,6 @@ const SampleGraph = ({
             data: {
               label: type,
               tooltip,
-              bg: "#ccffcc",
-              ringColor: rec.signed ? undefined : "var(--color-destructive)",
               domain: level.display_name,
             },
             style: { width: nodeWidth },
