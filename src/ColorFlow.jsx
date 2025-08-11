@@ -6,8 +6,8 @@ import {
 } from "@xyflow/react";
 import { Resizable } from "re-resizable";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
+import NebulaBackground from "@/components/NebulaBackground.jsx";
 import "@xyflow/react/dist/style.css";
-import "./colorful-bg.css";
 
 /**
  * ReactFlow graph with animated background.
@@ -33,7 +33,8 @@ const ColorFlow = ({
       }
       className="relative border border-border rounded overflow-hidden mx-auto"
     >
-      <div className="w-full h-full colorful-background" ref={graphContainerRef}>
+      <div className="w-full h-full relative" ref={graphContainerRef}>
+        <NebulaBackground />
         <ErrorBoundary>
           <ReactFlowBase
             nodes={nodes}
