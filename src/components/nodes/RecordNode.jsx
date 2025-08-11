@@ -1,6 +1,5 @@
 import React, { useMemo } from "react";
 import { Handle, Position } from "@xyflow/react";
-import LiquidGlass from "liquid-glass-react";
 import {
   PinnedTooltip,
   PinnedTooltipTrigger,
@@ -28,10 +27,8 @@ export default function RecordNode({ data }) {
             >
               {truncated}
             </div>
-            <LiquidGlass
+            <div
               className="relative z-10 px-5 py-3 rounded-2xl border text-base transition-all duration-200 hover:ring-2 text-center"
-              padding="0"
-              cornerRadius={24}
               style={{
                 marginTop: HEADER_STYLE.visibleHeight,
                 backgroundColor: data.bg || "var(--color-background)",
@@ -46,7 +43,7 @@ export default function RecordNode({ data }) {
                   {data.size && <>Size: {data.size}</>}
                 </div>
               )}
-            </LiquidGlass>
+            </div>
           </div>
         </PinnedTooltipTrigger>
         {data.tooltip && (
