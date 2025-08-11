@@ -1,4 +1,4 @@
-import { getDomain } from 'tldts';
+import { parse } from 'tldts';
 
 const MAX_LENGTH = 26;
 const HEADER_HEIGHT = 32; // px
@@ -9,17 +9,19 @@ export const HEADER_STYLE = {
   visibleHeight: HEADER_HEIGHT - UNDERLAP,
 };
 
-export function computeDomain(data = {}, id = '') {
-  let raw = (data.domain ?? data.label ?? id ?? '').toString().toLowerCase().trim();
+export function computeDomain(data = {}) {
+  let raw = (data.domain ?? '').toString().toLowerCase().trim();
   if (raw.endsWith('.')) {
     raw = raw.slice(0, -1);
   }
-  let full = getDomain(raw, { allowPrivateDomains: true }) || raw;
+  const parsed = parse(raw, { allowPrivateDomains: true });
+  let full = parsed.domain || raw;
   if (!full) {
     full = '(no domain)';
   }
   const truncated = truncateMiddle(full, MAX_LENGTH);
-  return { full, truncated };
+  const tld = parsed.publicSuffix ? `.${parsed.publicSuffix}` : 'root';
+  return { full, truncated, tld };
 }
 
 function truncateMiddle(str, max) {
