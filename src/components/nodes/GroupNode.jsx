@@ -1,4 +1,5 @@
 import React from 'react';
+import LiquidGlass from 'liquid-glass-react';
 import {
   PinnedTooltip,
   PinnedTooltipTrigger,
@@ -13,12 +14,13 @@ export default function GroupNode({ data }) {
   return (
     <PinnedTooltip>
       <PinnedTooltipTrigger asChild>
-        <div className="relative w-full h-full">
-          <div
-            className="absolute left-0 right-0 top-0 bottom-0 z-10 bg-transparent rounded-2xl border p-2 transition-all duration-200 hover:ring-2"
-            style={{ '--tw-ring-color': ringColor }}
-          />
-        </div>
+        <LiquidGlass
+          className="relative w-full h-full rounded-2xl border p-2 transition-all duration-200 hover:ring-2"
+          padding="0"
+          style={{ '--tw-ring-color': ringColor }}
+        >
+          <div className="w-full h-full" />
+        </LiquidGlass>
       </PinnedTooltipTrigger>
       {tooltipText && (
         <PinnedTooltipContent className="whitespace-pre">
