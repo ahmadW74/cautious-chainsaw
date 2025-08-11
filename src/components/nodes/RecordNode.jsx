@@ -8,7 +8,6 @@ import {
 import { computeDomain, HEADER_STYLE } from "@/lib/domain";
 
 export default function RecordNode({ data }) {
-  const ringColor = data.ringColor || "var(--color-primary)";
   const { full: domainFull, truncated } = useMemo(
     () => computeDomain(data),
     [data]
@@ -31,8 +30,9 @@ export default function RecordNode({ data }) {
               className="relative z-10 px-5 py-3 rounded-2xl border text-base transition-all duration-200 hover:ring-2 text-center"
               style={{
                 marginTop: HEADER_STYLE.visibleHeight,
-                backgroundColor: data.bg || "var(--color-background)",
-                "--tw-ring-color": ringColor,
+                backgroundColor: "var(--color-background)",
+                borderColor: "var(--color-primary)",
+                "--tw-ring-color": "var(--color-primary)",
               }}
             >
               <div>{data.label}</div>
