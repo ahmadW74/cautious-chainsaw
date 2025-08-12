@@ -32,7 +32,8 @@ const ReactFlow = ({
   setRfSize,
   graphContainerRef,
 }) => {
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(0.76);
+  const [focus, setFocus] = useState({ x: 0, y: 0 });
   const [fontUrl, setFontUrl] = useState("");
 
   const handleFontUrlChange = (e) => {
@@ -80,7 +81,8 @@ const ReactFlow = ({
     >
       <div className="absolute top-1 left-1 z-10 text-xs bg-secondary/80 px-2 py-1 rounded">
         Zoom: {zoom.toFixed(2)} • {Math.round(rfSize.width)}×
-        {Math.round(rfSize.height)}
+        {Math.round(rfSize.height)} • Focus: {Math.round(focus.x)},
+        {Math.round(focus.y)}
       </div>
       <div className="absolute top-1 right-1 z-10 w-48">
         <Input
@@ -102,8 +104,11 @@ const ReactFlow = ({
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             nodeTypes={nodeTypes}
-            fitView
-            onMove={(e, vp) => setZoom(vp.zoom)}
+            defaultViewport={{ x: 0, y: 0, zoom: 0.76 }}
+            onMove={(e, vp) => {
+              setZoom(vp.zoom);
+              setFocus({ x: vp.x, y: vp.y });
+            }}
             style={{ width: "100%", height: "100%" }}
           >
             <Background />
