@@ -415,6 +415,7 @@ const SampleGraph = ({
     const nodeHeight = 100;
     const nodeGap = 40;
     const groupGap = 120;
+    const nodeScale = 1.2;
 
     const levelNodes = [];
     const levelEdges = [];
@@ -629,11 +630,17 @@ const SampleGraph = ({
         const { x, y } = g.node(node.id);
         const relX = x + nodeWidth / 2;
         const relY = y - nodeHeight / 2 + nodeGap / 2;
+        const scaledWidth = nodeWidth * nodeScale;
+        const scaledHeight = nodeHeight * nodeScale;
         layoutedNodes.push({
           ...node,
-          position: { x: relX, y: relY },
+          position: {
+            x: relX - (scaledWidth - nodeWidth) / 2,
+            y: relY - (scaledHeight - nodeHeight) / 2,
+          },
           sourcePosition: "bottom",
           targetPosition: "top",
+          style: { ...node.style, width: scaledWidth, height: scaledHeight },
         });
       });
 
