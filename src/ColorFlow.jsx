@@ -23,7 +23,7 @@ const ColorFlow = ({
   setRfSize,
   graphContainerRef,
 }) => {
-  const [zoom, setZoom] = useState(0.8);
+  const [zoom, setZoom] = useState(0.7);
   const [focus, setFocus] = useState({ x: 0, y: 0 });
   const [fontUrl, setFontUrl] = useState("");
 
@@ -93,7 +93,7 @@ const ColorFlow = ({
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             nodeTypes={nodeTypes}
-            defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
+            defaultViewport={{ x: 0, y: 0, zoom: 0.7 }}
             onMove={(e, vp) => {
               setZoom(vp.zoom);
               setFocus({ x: vp.x, y: vp.y });
