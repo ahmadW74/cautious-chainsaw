@@ -728,11 +728,32 @@ const SampleGraph = ({
     if (viewMode !== "reactflow" && viewMode !== "reactflow-color") return;
     const nodes = reactFlowInstance.getNodes?.() || [];
     if (!nodes.length) return;
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    nodes.forEach((n) => {
+      const x = n.positionAbsolute?.x ?? n.position?.x ?? 0;
+      const y = n.positionAbsolute?.y ?? n.position?.y ?? 0;
+      const width = n.width ?? n.measured?.width ?? 0;
+      const height = n.height ?? n.measured?.height ?? 0;
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x + width);
+      maxY = Math.max(maxY, y + height);
+    });
+    const width = maxX - minX;
+    const height = maxY - minY;
+    setRfSize({ width, height });
     const id = requestAnimationFrame(() => {
-      reactFlowInstance.fitView({ includeHiddenNodes: true, padding: 0.1 });
+      reactFlowInstance.fitBounds(
+        { x: minX, y: minY, width, height },
+        { includeHiddenNodes: true, padding: 0.1 }
+      );
+      reactFlowInstance.zoomTo?.(0.8);
     });
     return () => cancelAnimationFrame(id);
-  }, [flow, rfSize, viewMode, reactFlowInstance]);
+  }, [flow, viewMode, reactFlowInstance, setRfSize]);
 
   if (!domain) {
     return (

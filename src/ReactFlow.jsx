@@ -32,7 +32,7 @@ const ReactFlow = ({
   setRfSize,
   graphContainerRef,
 }) => {
-  const [zoom, setZoom] = useState(0.76);
+  const [zoom, setZoom] = useState(0.8);
   const [focus, setFocus] = useState({ x: 0, y: 0 });
   const [fontUrl, setFontUrl] = useState("");
 
@@ -104,7 +104,7 @@ const ReactFlow = ({
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             nodeTypes={nodeTypes}
-            defaultViewport={{ x: 0, y: 0, zoom: 0.76 }}
+            defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
             onMove={(e, vp) => {
               setZoom(vp.zoom);
               setFocus({ x: vp.x, y: vp.y });
