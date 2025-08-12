@@ -7,7 +7,6 @@ import {
 import { Resizable } from "re-resizable";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import NebulaBackground from "@/components/NebulaBackground.jsx";
-import { Input } from "@/components/ui/input.jsx";
 import "@xyflow/react/dist/style.css";
 
 /**
@@ -25,39 +24,6 @@ const ColorFlow = ({
 }) => {
   const [zoom, setZoom] = useState(0.7);
   const [focus, setFocus] = useState({ x: 0, y: 0 });
-  const [fontUrl, setFontUrl] = useState("");
-
-  const handleFontUrlChange = (e) => {
-    const url = e.target.value;
-    setFontUrl(url);
-
-    const existing = document.getElementById("dynamic-node-font");
-    if (existing) existing.remove();
-
-    if (url) {
-      const link = document.createElement("link");
-      link.id = "dynamic-node-font";
-      link.rel = "stylesheet";
-      link.href = url;
-      document.head.appendChild(link);
-
-      try {
-        const u = new URL(url);
-        const familyParam = u.searchParams.get("family");
-        if (familyParam) {
-          const family = decodeURIComponent(familyParam.split(":")[0]).replace(/\+/g, " ");
-          document.documentElement.style.setProperty(
-            "--node-font-family",
-            `'${family}', sans-serif`
-          );
-        }
-      } catch {
-        // ignore URL parse errors
-      }
-    } else {
-      document.documentElement.style.removeProperty("--node-font-family");
-    }
-  };
 
   return (
     <Resizable
@@ -74,15 +40,6 @@ const ColorFlow = ({
         Zoom: {zoom.toFixed(2)} • {Math.round(rfSize.width)}×
         {Math.round(rfSize.height)} • Focus: {Math.round(focus.x)},
         {Math.round(focus.y)}
-      </div>
-      <div className="absolute top-1 right-1 z-10 w-48">
-        <Input
-          type="text"
-          placeholder="Font CSS URL"
-          value={fontUrl}
-          onChange={handleFontUrlChange}
-          className="h-8"
-        />
       </div>
       <div className="w-full h-full relative" ref={graphContainerRef}>
         <NebulaBackground />
