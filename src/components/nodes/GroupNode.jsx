@@ -20,7 +20,10 @@ export default function GroupNode({ data }) {
         </div>
       </PinnedTooltipTrigger>
       {tooltipText && (
-        <PinnedTooltipContent className="whitespace-pre">
+        <PinnedTooltipContent
+          className="whitespace-pre"
+          style={{ fontFamily: "var(--node-font-family, inherit)" }}
+        >
           {tooltipText}
         </PinnedTooltipContent>
       )}

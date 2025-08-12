@@ -33,6 +33,7 @@ export default function RecordNode({ data }) {
                 backgroundColor: "var(--color-background)",
                 borderColor: "var(--color-primary)",
                 "--tw-ring-color": "var(--color-primary)",
+                fontFamily: "var(--node-font-family, inherit)",
               }}
             >
               <div>{data.label}</div>
@@ -47,7 +48,10 @@ export default function RecordNode({ data }) {
           </div>
         </PinnedTooltipTrigger>
         {data.tooltip && (
-          <PinnedTooltipContent className="whitespace-pre">
+          <PinnedTooltipContent
+            className="whitespace-pre"
+            style={{ fontFamily: "var(--node-font-family, inherit)" }}
+          >
             {data.tooltip}
           </PinnedTooltipContent>
         )}
