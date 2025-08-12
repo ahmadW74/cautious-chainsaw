@@ -53,7 +53,7 @@ const setCache = (key, value) => {
  * @param {string} [props.selectedDate] - Month selected from the timeline slider (YYYY-MM)
  * @param {string} props.viewMode - Display mode (graphviz, reactflow, or reactflow-color)
  * @param {string} [props.maxWidth="56rem"] - Max width of the graph container
- * @param {string} [props.height="28rem"] - Height of the graph container
+ * @param {number|string} [props.height=1113] - Height of the graph container
  */
 const SampleGraph = ({
   domain,
@@ -63,7 +63,7 @@ const SampleGraph = ({
   selectedDate,
   viewMode,
   maxWidth = "56rem",
-  height = "28rem",
+  height = 1113,
 }) => {
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
@@ -105,7 +105,7 @@ const SampleGraph = ({
 
   const [rfSize, setRfSize] = useState({
     width: parseSize(maxWidth, 896),
-    height: parseSize(height, 448),
+    height: parseSize(height, 1113),
   });
 
 
