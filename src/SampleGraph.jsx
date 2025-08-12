@@ -52,7 +52,7 @@ const setCache = (key, value) => {
  * @param {string} [props.userId] - ID of the logged in user
  * @param {string} [props.selectedDate] - Month selected from the timeline slider (YYYY-MM)
  * @param {string} props.viewMode - Display mode (graphviz, reactflow, or reactflow-color)
- * @param {string} [props.maxWidth="56rem"] - Max width of the graph container
+ * @param {string} [props.maxWidth="80rem"] - Max width of the graph container
  * @param {number|string} [props.height=1113] - Height of the graph container
  */
 const SampleGraph = ({
@@ -62,7 +62,7 @@ const SampleGraph = ({
   userId,
   selectedDate,
   viewMode,
-  maxWidth = "56rem",
+  maxWidth = "80rem",
   height = 1113,
 }) => {
   const [dot, setDot] = useState("digraph DNSSEC {}");
@@ -104,7 +104,7 @@ const SampleGraph = ({
     };
 
   const [rfSize, setRfSize] = useState({
-    width: parseSize(maxWidth, 896),
+    width: parseSize(maxWidth, 1280),
     height: parseSize(height, 1113),
   });
 
@@ -185,28 +185,12 @@ const SampleGraph = ({
     if (!reactFlowInstance) return;
     const nodes = reactFlowInstance.getNodes?.() || [];
     if (!nodes.length) return;
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
-    nodes.forEach((n) => {
-      const x = n.positionAbsolute?.x ?? n.position?.x ?? 0;
-      const y = n.positionAbsolute?.y ?? n.position?.y ?? 0;
-      const width = n.width ?? n.measured?.width ?? 0;
-      const height = n.height ?? n.measured?.height ?? 0;
-      minX = Math.min(minX, x);
-      minY = Math.min(minY, y);
-      maxX = Math.max(maxX, x + width);
-      maxY = Math.max(maxY, y + height);
-    });
-    const width = maxX - minX;
-    const height = maxY - minY;
-    setRfSize({ width, height });
+    const bounds = getNodesBounds(nodes);
+    const scale = 0.7;
+    setRfSize({ width: bounds.width / scale, height: bounds.height / scale });
     requestAnimationFrame(() => {
-      reactFlowInstance.fitBounds(
-        { x: minX, y: minY, width, height },
-        { includeHiddenNodes: true, padding: 0.1 }
-      );
+      reactFlowInstance.fitView({ includeHiddenNodes: true, padding: 0.1 });
+      reactFlowInstance.zoomTo?.(scale);
     });
   }, [reactFlowInstance]);
 
@@ -728,29 +712,12 @@ const SampleGraph = ({
     if (viewMode !== "reactflow" && viewMode !== "reactflow-color") return;
     const nodes = reactFlowInstance.getNodes?.() || [];
     if (!nodes.length) return;
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
-    nodes.forEach((n) => {
-      const x = n.positionAbsolute?.x ?? n.position?.x ?? 0;
-      const y = n.positionAbsolute?.y ?? n.position?.y ?? 0;
-      const width = n.width ?? n.measured?.width ?? 0;
-      const height = n.height ?? n.measured?.height ?? 0;
-      minX = Math.min(minX, x);
-      minY = Math.min(minY, y);
-      maxX = Math.max(maxX, x + width);
-      maxY = Math.max(maxY, y + height);
-    });
-    const width = maxX - minX;
-    const height = maxY - minY;
-    setRfSize({ width, height });
+    const bounds = getNodesBounds(nodes);
+    const scale = 0.7;
+    setRfSize({ width: bounds.width / scale, height: bounds.height / scale });
     const id = requestAnimationFrame(() => {
-      reactFlowInstance.fitBounds(
-        { x: minX, y: minY, width, height },
-        { includeHiddenNodes: true, padding: 0.1 }
-      );
-      reactFlowInstance.zoomTo?.(0.8);
+      reactFlowInstance.fitView({ includeHiddenNodes: true, padding: 0.1 });
+      reactFlowInstance.zoomTo?.(scale);
     });
     return () => cancelAnimationFrame(id);
   }, [flow, viewMode, reactFlowInstance, setRfSize]);
@@ -769,7 +736,10 @@ const SampleGraph = ({
 
   return (
     <div className="relative">
-      <Card className="w-full bg-card border-border">
+      <Card
+        className="w-full bg-card border-border mx-auto"
+        style={{ maxWidth }}
+      >
         <CardContent className="relative px-6 py-6 lg:px-8 lg:py-8 flex justify-center overflow-auto">
           <div className="w-full overflow-hidden flex flex-col gap-4">
             {summary && (
