@@ -23,6 +23,7 @@ import RecordNode from "@/components/nodes/RecordNode.jsx";
 import GroupNode from "@/components/nodes/GroupNode.jsx";
 import ReactFlow from "./ReactFlow.jsx";
 import ColorFlow from "./ColorFlow.jsx";
+import { Input } from "@/components/ui/input.jsx";
 
 import { Maximize, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 
@@ -107,6 +108,40 @@ const SampleGraph = ({
     width: parseSize(maxWidth, 1280),
     height: parseSize(height, 1113),
   });
+
+  const [fontUrl, setFontUrl] = useState("");
+
+  const handleFontUrlChange = (e) => {
+    const url = e.target.value;
+    setFontUrl(url);
+
+    const existing = document.getElementById("dynamic-node-font");
+    if (existing) existing.remove();
+
+    if (url) {
+      const link = document.createElement("link");
+      link.id = "dynamic-node-font";
+      link.rel = "stylesheet";
+      link.href = url;
+      document.head.appendChild(link);
+
+      try {
+        const u = new URL(url);
+        const familyParam = u.searchParams.get("family");
+        if (familyParam) {
+          const family = decodeURIComponent(familyParam.split(":")[0]).replace(/\+/g, " ");
+          document.documentElement.style.setProperty(
+            "--node-font-family",
+            `'${family}', sans-serif`
+          );
+        }
+      } catch {
+        // ignore URL parse errors
+      }
+    } else {
+      document.documentElement.style.removeProperty("--node-font-family");
+    }
+  };
 
 
   const handleExportJson = useCallback(() => {
@@ -747,11 +782,20 @@ const SampleGraph = ({
                 <h2 className="font-semibold text-lg text-foreground">
                   {domain}
                 </h2>
-                <p className="text-sm text-muted-foreground">
-                  Levels: {summary.total_levels} • Signed:{" "}
-                  {summary.signed_levels} • Breaks:{" "}
-                  {summary.chain_breaks?.length - 1 || 0}
-                </p>
+                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                  <span>
+                    Levels: {summary.total_levels} • Signed {""}
+                    {summary.signed_levels} • Breaks {""}
+                    {summary.chain_breaks?.length - 1 || 0}
+                  </span>
+                  <Input
+                    type="text"
+                    placeholder="Font CSS URL"
+                    value={fontUrl}
+                    onChange={handleFontUrlChange}
+                    className="h-8 w-48"
+                  />
+                </div>
                 {renderTime !== null && (
                   <p className="text-xs text-muted-foreground mt-1">
                     Loaded in {renderTime} ms
