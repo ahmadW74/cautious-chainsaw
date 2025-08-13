@@ -9,6 +9,12 @@ import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import NebulaBackground from "@/components/NebulaBackground.jsx";
 import "@xyflow/react/dist/style.css";
 
+const defaultEdgeOptions = {
+  type: "smoothstep",
+  animated: true,
+  style: { stroke: "#D1D5DB", strokeWidth: 2 },
+};
+
 /**
  * ReactFlow graph with animated background.
  */
@@ -55,6 +61,7 @@ const ColorFlow = ({
               setZoom(vp.zoom);
               setFocus({ x: vp.x, y: vp.y });
             }}
+            defaultEdgeOptions={defaultEdgeOptions}
             style={{ width: "100%", height: "100%", background: "transparent" }}
           >
             <Background />

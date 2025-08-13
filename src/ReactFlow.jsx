@@ -8,6 +8,12 @@ import { Resizable } from "re-resizable";
 import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import "@xyflow/react/dist/style.css";
 
+const defaultEdgeOptions = {
+  type: "smoothstep",
+  animated: true,
+  style: { stroke: "#D1D5DB", strokeWidth: 2 },
+};
+
 /**
  * Renders a ReactFlow graph with resizing support.
  *
@@ -66,7 +72,8 @@ const ReactFlow = ({
               setZoom(vp.zoom);
               setFocus({ x: vp.x, y: vp.y });
             }}
-            style={{ width: "100%", height: "100%" }}
+            defaultEdgeOptions={defaultEdgeOptions}
+            style={{ width: "100%", height: "100%", background: "#F9FAFB" }}
           >
             <Background />
             <Controls />

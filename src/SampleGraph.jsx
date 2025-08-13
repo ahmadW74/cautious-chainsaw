@@ -27,6 +27,16 @@ import { Input } from "@/components/ui/input.jsx";
 
 import { Maximize, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 
+const EDGE_COLORS = {
+  signs: "#3B82F6",
+  delegates: "#10B981",
+};
+
+const edgeStyle = (label) => ({
+  stroke: EDGE_COLORS[label] || "#D1D5DB",
+  strokeWidth: 2,
+});
+
 const getCache = (key) => {
   try {
     return localStorage.getItem(key);
@@ -448,6 +458,7 @@ const SampleGraph = ({
 
       const nodes = [];
       const edges = [];
+      const levelType = idx === 0 ? "root" : "net";
 
       const allKsk =
         (level.records?.dnskey_records || []).filter((k) => k.is_ksk) || [];
@@ -486,6 +497,7 @@ const SampleGraph = ({
           domain: level.display_name,
           flags: ksk?.flags,
           size: ksk?.key_size,
+          nodeType: levelType,
         },
         style: { width: nodeWidth },
       });
@@ -512,18 +524,19 @@ const SampleGraph = ({
             domain: level.display_name,
             flags: zskRecord?.flags,
             size: zskRecord?.key_size,
+            nodeType: levelType,
           },
           style: { width: nodeWidth },
         });
         const signLabel = ksk && zskRecord ? "signs" : "no signing";
-        const signStyle = ksk && zskRecord ? {} : { stroke: "red" };
         edges.push({
           id: `${kskId}-${zskId}`,
           source: kskId,
           target: zskId,
           label: signLabel,
-          style: signStyle,
-          animated: !(ksk && zskRecord),
+          type: "smoothstep",
+          animated: true,
+          style: edgeStyle(signLabel),
           labelStyle: { background: "white", color: "black", padding: 2 },
         });
       }
@@ -547,6 +560,7 @@ const SampleGraph = ({
             label: ds ? "DS" : "NO DS",
             tooltip: dsTooltip,
             domain: level.display_name,
+            nodeType: "ds",
           },
           style: { width: nodeWidth },
         });
@@ -555,6 +569,9 @@ const SampleGraph = ({
           source: firstZskId,
           target: dsId,
           label: "signs",
+          type: "smoothstep",
+          animated: true,
+          style: edgeStyle("signs"),
           labelStyle: { background: "white", color: "black", padding: 2 },
         });
         crossEdges.push({
@@ -562,9 +579,10 @@ const SampleGraph = ({
           source: dsId,
           target: `ksk_${idx + 1}`,
           label: ds ? "delegates" : "no delegation",
+          type: "smoothstep",
           animated: true,
           labelStyle: { background: "white", color: "black", padding: 2 },
-          style: { stroke: ds ? "green" : "red" },
+          style: edgeStyle(ds ? "delegates" : "no delegation"),
         });
       } else {
         const recordTypes = [
@@ -591,17 +609,20 @@ const SampleGraph = ({
               label: type,
               tooltip,
               domain: level.display_name,
+              nodeType: levelType,
             },
             style: { width: nodeWidth },
           });
+          const edgeLabel = rec.signed ? "signs" : "unsigned";
           edges.push({
             id: `${firstZskId}-${recId}`,
             source: firstZskId,
             target: recId,
-            label: rec.signed ? "signs" : "unsigned",
+            label: edgeLabel,
+            type: "smoothstep",
             animated: true,
             labelStyle: { background: "white", color: "black", padding: 2 },
-            style: { stroke: rec.signed ? "green" : "red" },
+            style: edgeStyle(edgeLabel),
           });
         });
       }
