@@ -88,9 +88,12 @@ export default function App() {
   const [theme, setTheme] = useState("light");
 
   // Diagram display mode
-  const [viewMode, setViewMode] = useState(() =>
-    getCache("display_mode") || "graphviz"
-  );
+  const [viewMode, setViewMode] = useState(() => {
+    const stored = getCache("display_mode");
+    return stored === "reactflow" || stored === "reactflow-color"
+      ? "reactflow"
+      : "graphviz";
+  });
 
   useEffect(() => {
     setCache("display_mode", viewMode);
@@ -431,20 +434,12 @@ export default function App() {
               variant="secondary"
               onClick={() =>
                 setViewMode(
-                  viewMode === "graphviz"
-                    ? "reactflow"
-                    : viewMode === "reactflow"
-                      ? "reactflow-color"
-                      : "graphviz"
+                  viewMode === "graphviz" ? "reactflow" : "graphviz"
                 )
               }
               type="button"
             >
-              {viewMode === "graphviz"
-                ? "RF"
-                : viewMode === "reactflow"
-                  ? "RFC"
-                  : "GV"}
+              {viewMode === "graphviz" ? "RF" : "GV"}
             </Button>
           </div>
           <div className="flex items-center space-x-2">
