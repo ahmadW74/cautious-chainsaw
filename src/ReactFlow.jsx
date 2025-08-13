@@ -9,7 +9,7 @@ import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import "@xyflow/react/dist/style.css";
 
 const defaultEdgeOptions = {
-  type: "smoothstep",
+  type: "bezier",
   animated: true,
   style: { stroke: "#D1D5DB", strokeWidth: 2 },
 };

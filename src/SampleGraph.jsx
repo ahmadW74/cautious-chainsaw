@@ -482,6 +482,7 @@ const SampleGraph = ({
           tooltip: `${
             level.display_name || `Level ${idx}`
           }\n${securityTooltip}`,
+          nodeType: levelType,
         },
         position: { x: 0, y: 0 },
       });
@@ -534,7 +535,7 @@ const SampleGraph = ({
           source: kskId,
           target: zskId,
           label: signLabel,
-          type: "smoothstep",
+          type: "bezier",
           animated: true,
           style: edgeStyle(signLabel),
           labelStyle: { background: "white", color: "black", padding: 2 },
@@ -569,7 +570,7 @@ const SampleGraph = ({
           source: firstZskId,
           target: dsId,
           label: "signs",
-          type: "smoothstep",
+          type: "bezier",
           animated: true,
           style: edgeStyle("signs"),
           labelStyle: { background: "white", color: "black", padding: 2 },
@@ -579,7 +580,7 @@ const SampleGraph = ({
           source: dsId,
           target: `ksk_${idx + 1}`,
           label: ds ? "delegates" : "no delegation",
-          type: "smoothstep",
+          type: "bezier",
           animated: true,
           labelStyle: { background: "white", color: "black", padding: 2 },
           style: edgeStyle(ds ? "delegates" : "no delegation"),
@@ -619,7 +620,7 @@ const SampleGraph = ({
             source: firstZskId,
             target: recId,
             label: edgeLabel,
-            type: "smoothstep",
+          type: "bezier",
             animated: true,
             labelStyle: { background: "white", color: "black", padding: 2 },
             style: edgeStyle(edgeLabel),
