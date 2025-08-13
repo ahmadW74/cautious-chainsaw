@@ -243,3 +243,18 @@ span {
     transform: translate(20%, -30%);
   }
 }
+
+.react-flow__edge-path {
+  transition: stroke 0.2s;
+}
+
+.react-flow__edge-path.animated {
+  stroke-dasharray: 6;
+  animation: edge-flow 2s linear infinite;
+}
+
+@keyframes edge-flow {
+  to {
+    stroke-dashoffset: -12;
+  }
+}
