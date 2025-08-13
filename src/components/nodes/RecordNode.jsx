@@ -44,7 +44,7 @@ export default function RecordNode({ data }) {
         <PinnedTooltipTrigger asChild>
           <div className="relative">
             <div
-              className="absolute top-0 left-0 right-0 z-0 text-gray-100 text-sm font-semibold tracking-[0.04em] pl-2 pr-2 pt-1 flex items-start gap-1 select-none"
+              className="absolute top-0 left-0 right-0 z-0 text-white text-base font-semibold tracking-[0.04em] pl-2 pr-2 pt-1 flex items-start gap-1 select-none"
               style={{
                 height: HEADER_STYLE.height,
                 background: headerBackground,
@@ -58,7 +58,7 @@ export default function RecordNode({ data }) {
               <span>{truncated}</span>
             </div>
             <div
-              className="relative z-10 px-5 py-3 text-lg transition-all duration-200 text-center"
+                className="relative z-10 px-5 py-3 text-xl transition-all duration-200 text-center"
               style={{
                 marginTop: HEADER_STYLE.visibleHeight,
                 backgroundColor: "var(--color-background)",
@@ -79,12 +79,12 @@ export default function RecordNode({ data }) {
               {(data.flags || data.size) && (
                 <div className="mt-1 flex gap-1 flex-wrap justify-center">
                   {data.flags && (
-                    <Badge variant="secondary" className="text-[10px] px-1 py-0">
+                    <Badge variant="secondary" className="text-xs px-1 py-0">
                       Flags: {data.flags}
                     </Badge>
                   )}
                   {data.size && (
-                    <Badge variant="secondary" className="text-[10px] px-1 py-0">
+                    <Badge variant="secondary" className="text-xs px-1 py-0">
                       Size: {data.size}
                     </Badge>
                   )}
