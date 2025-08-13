@@ -440,12 +440,10 @@ const SampleGraph = ({
     if (!data || !Array.isArray(data.levels)) return { nodes: [], edges: [] };
 
     const nodeWidth = 260;
-    const recordNodeWidth = 320;
     const nodeHeight = 100;
     const nodeGap = 40;
     const groupGap = 120;
     const nodeScale = 1.2;
-    const WIDE_RECORDS = new Set(["A", "AAAA", "MX", "SOA"]);
 
     const levelNodes = [];
     const levelEdges = [];
@@ -459,7 +457,7 @@ const SampleGraph = ({
 
       const nodes = [];
       const edges = [];
-      const levelType = idx === 0 ? "root" : idx === 1 ? "net" : levelNodes[idx - 1]?.[0]?.data?.nodeType || "net";
+      const levelType = idx === 0 ? "root" : "net";
 
       const allKsk =
         (level.records?.dnskey_records || []).filter((k) => k.is_ksk) || [];
@@ -500,8 +498,6 @@ const SampleGraph = ({
           flags: ksk?.flags,
           size: ksk?.key_size,
           nodeType: levelType,
-          signed: !!ksk,
-          isBroken: !ksk,
         },
         style: { width: nodeWidth },
       });
@@ -529,8 +525,6 @@ const SampleGraph = ({
             flags: zskRecord?.flags,
             size: zskRecord?.key_size,
             nodeType: levelType,
-            signed: !!zskRecord,
-            isBroken: !zskRecord,
           },
           style: { width: nodeWidth },
         });
@@ -567,8 +561,6 @@ const SampleGraph = ({
             tooltip: dsTooltip,
             domain: level.display_name,
             nodeType: "ds",
-            signed: !!ds,
-            isBroken: !ds,
           },
           style: { width: nodeWidth },
         });
@@ -618,10 +610,8 @@ const SampleGraph = ({
               tooltip,
               domain: level.display_name,
               nodeType: levelType,
-              signed: !!rec.signed,
-              isBroken: !rec.signed,
             },
-            style: { width: WIDE_RECORDS.has(type) ? recordNodeWidth : nodeWidth },
+            style: { width: nodeWidth },
           });
           const edgeLabel = rec.signed ? "signs" : "unsigned";
           edges.push({
@@ -650,8 +640,7 @@ const SampleGraph = ({
       g.setGraph({ rankdir: "TB", nodesep: nodeGap, ranksep: nodeGap });
 
       nodes.forEach((node) => {
-        const width = node.style?.width || nodeWidth;
-        g.setNode(node.id, { width, height: nodeHeight });
+        g.setNode(node.id, { width: nodeWidth, height: nodeHeight });
       });
       levelEdges[idx].forEach((edge) => {
         g.setEdge(edge.source, edge.target);
@@ -679,15 +668,14 @@ const SampleGraph = ({
 
       nodes.forEach((node) => {
         const { x, y } = g.node(node.id);
-        const width = node.style?.width || nodeWidth;
-        const relX = x + width / 2;
+        const relX = x + nodeWidth / 2;
         const relY = y - nodeHeight / 2 + nodeGap / 2;
-        const scaledWidth = width * nodeScale;
+        const scaledWidth = nodeWidth * nodeScale;
         const scaledHeight = nodeHeight * nodeScale;
         layoutedNodes.push({
           ...node,
           position: {
-            x: relX - (scaledWidth - width) / 2,
+            x: relX - (scaledWidth - nodeWidth) / 2,
             y: relY - (scaledHeight - nodeHeight) / 2,
           },
           sourcePosition: "bottom",
