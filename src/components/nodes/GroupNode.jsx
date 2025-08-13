@@ -8,7 +8,7 @@ import {
 const ACCENT_GRADIENTS = {
   root: ["#3B82F6", "#60A5FA"],
   tld: ["#3B82F6", "#60A5FA"],
-  net: ["#3B82F6", "#60A5FA"],
+  net: ["#10B981", "#34D399"],
   ds: ["#8B5CF6", "#A78BFA"],
 };
 

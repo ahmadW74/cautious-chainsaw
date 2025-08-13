@@ -457,7 +457,7 @@ const SampleGraph = ({
 
       const nodes = [];
       const edges = [];
-      const levelType = idx === 0 ? "root" : "net";
+      const levelType = idx === 0 ? "root" : idx === 1 ? "tld" : "net";
 
       const allKsk =
         (level.records?.dnskey_records || []).filter((k) => k.is_ksk) || [];
