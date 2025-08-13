@@ -6,9 +6,8 @@ import {
   PinnedTooltipContent,
 } from "@/components/ui/tooltip";
 import { computeDomain, HEADER_STYLE } from "@/lib/domain";
-import "./RecordNode.css";
 
-export default function RecordNode({ data, selected }) {
+export default function RecordNode({ data }) {
   const { full: domainFull, truncated } = useMemo(
     () => computeDomain(data),
     [data]
@@ -21,23 +20,25 @@ export default function RecordNode({ data, selected }) {
         <PinnedTooltipTrigger asChild>
           <div className="relative">
             <div
-              className="absolute top-0 left-0 right-0 z-0 rounded-t-[15px] text-white text-sm font-bold tracking-[0.04em] pl-2 pt-2 select-none"
+              className="absolute top-0 left-0 right-0 z-0 rounded-t-2xl text-white text-sm font-bold tracking-[0.04em] pl-2 pt-2 select-none"
               style={{ height: HEADER_STYLE.height, backgroundColor: headerColor }}
               title={domainFull}
             >
               {truncated}
             </div>
             <div
-              className={`record-node relative z-10 px-5 py-3 text-[12px] transition-all duration-200 hover:ring-2 text-center ${selected ? "selected" : ""}`}
+              className="relative z-10 px-5 py-3 rounded-2xl border text-base transition-all duration-200 hover:ring-2 text-center"
               style={{
                 marginTop: HEADER_STYLE.visibleHeight,
-                "--tw-ring-color": "#00ffff",
+                backgroundColor: "var(--color-background)",
+                borderColor: "var(--color-primary)",
+                "--tw-ring-color": "var(--color-primary)",
                 fontFamily: "var(--node-font-family, inherit)",
               }}
             >
-              <div className="font-semibold">{data.label}</div>
+              <div>{data.label}</div>
               {(data.flags || data.size) && (
-                <div className="mt-1 text-[10px] opacity-80">
+                <div className="mt-1 text-xs">
                   {data.flags && <>Flags: {data.flags}</>}
                   {data.flags && data.size && " | "}
                   {data.size && <>Size: {data.size}</>}
