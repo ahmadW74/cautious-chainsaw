@@ -6,7 +6,7 @@ import {
   PinnedTooltipContent,
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { Globe, Shield, Check, X } from "lucide-react";
+import { Globe, Shield } from "lucide-react";
 import { computeDomain, HEADER_STYLE } from "@/lib/domain";
 
 const ACCENT_GRADIENTS = {
@@ -34,7 +34,6 @@ export default function RecordNode({ data }) {
   const headerBackground = `linear-gradient(to right, ${start}, ${end})`;
   const Icon = NODE_ICONS[data.nodeType] || Globe;
   const [hovered, setHovered] = useState(false);
-  const StatusIcon = data.isBroken ? X : data.signed ? Check : null;
 
   return (
     <div className="relative flex flex-col items-center">
@@ -43,7 +42,7 @@ export default function RecordNode({ data }) {
         <PinnedTooltipTrigger asChild>
           <div className="relative">
             <div
-              className="absolute top-0 left-0 right-0 z-0 text-white text-base font-semibold tracking-[0.04em] pl-2 pr-2 pt-1 flex items-center gap-1 select-none"
+              className="absolute top-0 left-0 right-0 z-0 text-white text-base font-semibold tracking-[0.04em] pl-2 pr-2 pt-1 flex items-start gap-1 select-none"
               style={{
                 height: HEADER_STYLE.height,
                 background: headerBackground,
@@ -55,7 +54,6 @@ export default function RecordNode({ data }) {
             >
               <Icon className="w-4 h-4" />
               <span>{truncated}</span>
-              {StatusIcon && <StatusIcon className="w-4 h-4 ml-auto" />}
             </div>
             <div
                 className="relative z-10 px-5 py-3 text-xl transition-all duration-200 text-center"
