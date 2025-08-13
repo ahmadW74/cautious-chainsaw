@@ -6,7 +6,7 @@ import {
   PinnedTooltipContent,
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { Globe, Shield } from "lucide-react";
+import { Globe, ShieldCheck, Anchor, Check, X } from "lucide-react";
 import { computeDomain, HEADER_STYLE } from "@/lib/domain";
 
 const ACCENT_GRADIENTS = {
@@ -18,7 +18,7 @@ const ACCENT_GRADIENTS = {
 const NODE_ICONS = {
   root: Globe,
   net: Globe,
-  ds: Shield,
+  ds: ShieldCheck,
 };
 
 const fontStack =
@@ -32,7 +32,14 @@ export default function RecordNode({ data }) {
 
   const [start, end] = ACCENT_GRADIENTS[data.nodeType] || ACCENT_GRADIENTS.root;
   const headerBackground = `linear-gradient(to right, ${start}, ${end})`;
-  const Icon = NODE_ICONS[data.nodeType] || Globe;
+  const Icon = useMemo(() => {
+    if (data.nodeType === "root" && data.label === "KSK") {
+      return Anchor;
+    }
+    return NODE_ICONS[data.nodeType] || Globe;
+  }, [data.nodeType, data.label]);
+  const isBroken = /^NO\s/i.test(data.label);
+  const StatusIcon = isBroken ? X : Check;
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -42,7 +49,7 @@ export default function RecordNode({ data }) {
         <PinnedTooltipTrigger asChild>
           <div className="relative">
             <div
-              className="absolute top-0 left-0 right-0 z-0 text-white text-base font-semibold tracking-[0.04em] pl-2 pr-2 pt-1 flex items-start gap-1 select-none"
+              className="absolute top-0 left-0 right-0 z-0 text-white text-base font-semibold tracking-[0.04em] pl-2 pr-2 pt-1 flex items-start gap-2 select-none"
               style={{
                 height: HEADER_STYLE.height,
                 background: headerBackground,
@@ -52,8 +59,9 @@ export default function RecordNode({ data }) {
               }}
               title={domainFull}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="w-5 h-5" />
               <span>{truncated}</span>
+              <StatusIcon className="w-5 h-5" />
             </div>
             <div
                 className="relative z-10 px-5 py-3 text-xl transition-all duration-200 text-center"
