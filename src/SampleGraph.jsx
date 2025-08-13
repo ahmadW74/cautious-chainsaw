@@ -22,7 +22,6 @@ import { Button } from "@/components/ui/button";
 import RecordNode from "@/components/nodes/RecordNode.jsx";
 import GroupNode from "@/components/nodes/GroupNode.jsx";
 import ReactFlow from "./ReactFlow.jsx";
-import ColorFlow from "./ColorFlow.jsx";
 import { Input } from "@/components/ui/input.jsx";
 
 import { Maximize, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
@@ -62,7 +61,7 @@ const setCache = (key, value) => {
  * @param {Function} [props.onRefresh] - Callback when the reload button is clicked
  * @param {string} [props.userId] - ID of the logged in user
  * @param {string} [props.selectedDate] - Month selected from the timeline slider (YYYY-MM)
- * @param {string} props.viewMode - Display mode (graphviz, reactflow, or reactflow-color)
+ * @param {string} props.viewMode - Display mode (graphviz or reactflow)
  * @param {string} [props.maxWidth="80rem"] - Max width of the graph container
  * @param {number|string} [props.height=1113] - Height of the graph container
  */
@@ -766,7 +765,7 @@ const SampleGraph = ({
   }, [flow, setNodes, setEdges]);
 
   useEffect(() => {
-    if (viewMode !== "reactflow" && viewMode !== "reactflow-color") return;
+    if (viewMode !== "reactflow") return;
     const nodes = reactFlowInstance.getNodes?.() || [];
     if (!nodes.length) return;
     const bounds = getNodesBounds(nodes);
@@ -842,19 +841,8 @@ const SampleGraph = ({
                   </ErrorBoundary>
                 </div>
               </div>
-            ) : viewMode === "reactflow" ? (
-              <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                nodeTypes={nodeTypes}
-                rfSize={rfSize}
-                setRfSize={setRfSize}
-                graphContainerRef={graphContainerRef}
-              />
             ) : (
-              <ColorFlow
+              <ReactFlow
                 nodes={nodes}
                 edges={edges}
                 onNodesChange={onNodesChange}
@@ -896,7 +884,7 @@ const SampleGraph = ({
         >
           <RotateCcw className="h-6 w-6" />
         </Button>
-          {(viewMode === "reactflow" || viewMode === "reactflow-color") && (
+          {viewMode === "reactflow" && (
           <>
             <Button
               size="icon"

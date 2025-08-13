@@ -73,7 +73,13 @@ const ReactFlow = ({
               setFocus({ x: vp.x, y: vp.y });
             }}
             defaultEdgeOptions={defaultEdgeOptions}
-            style={{ width: "100%", height: "100%", background: "#F9FAFB" }}
+            style={{
+              width: "100%",
+              height: "100%",
+              background: "#F9FAFB",
+              fontFamily: "'Source Sans Pro', sans-serif",
+              "--node-font-family": "'Source Sans Pro', sans-serif",
+            }}
           >
             <Background />
             <Controls />

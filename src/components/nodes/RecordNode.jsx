@@ -6,25 +6,25 @@ import {
   PinnedTooltipContent,
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { Globe, Network, Shield } from "lucide-react";
+import { Globe, Shield } from "lucide-react";
 import { computeDomain, HEADER_STYLE } from "@/lib/domain";
 
 const ACCENT_GRADIENTS = {
   root: ["#3B82F6", "#60A5FA"],
   tld: ["#3B82F6", "#60A5FA"],
-  net: ["#10B981", "#34D399"],
+  net: ["#3B82F6", "#60A5FA"],
   ds: ["#8B5CF6", "#A78BFA"],
 };
 
 const NODE_ICONS = {
   root: Globe,
   tld: Globe,
-  net: Network,
+  net: Globe,
   ds: Shield,
 };
 
 const fontStack =
-  "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif";
+  "'Source Sans Pro', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif";
 
 export default function RecordNode({ data }) {
   const { full: domainFull, truncated } = useMemo(
