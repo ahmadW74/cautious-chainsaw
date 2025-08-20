@@ -111,7 +111,7 @@ const SampleGraph = ({
       return value.endsWith("rem") ? num * 16 : num;
     }
     return fallback;
-    };
+  };
 
   const [rfSize, setRfSize] = useState({
     width: parseSize(maxWidth, 1280),
@@ -138,7 +138,10 @@ const SampleGraph = ({
         const u = new URL(url);
         const familyParam = u.searchParams.get("family");
         if (familyParam) {
-          const family = decodeURIComponent(familyParam.split(":")[0]).replace(/\+/g, " ");
+          const family = decodeURIComponent(familyParam.split(":")[0]).replace(
+            /\+/g,
+            " "
+          );
           document.documentElement.style.setProperty(
             "--node-font-family",
             `'${family}', sans-serif`
@@ -151,7 +154,6 @@ const SampleGraph = ({
       document.documentElement.style.removeProperty("--node-font-family");
     }
   };
-
 
   const handleExportJson = useCallback(() => {
     if (!reactFlowInstance) return;
@@ -343,15 +345,17 @@ const SampleGraph = ({
 
       const zskNodes = idx === 0 ? allZsk.slice(0, 3) : [allZsk[0]];
       const kskTooltip = ksk
-        ? `Key Tag: ${ksk.key_tag}\nFlags: ${ksk.flags}\nTTL: ${ksk.ttl}s (${ksk.ttl_human})\nAlg: ${
-            ksk.algorithm_name || ksk.algorithm
-          }\nSize: ${ksk.key_size}`
+        ? `Key Tag: ${ksk.key_tag}\nFlags: ${ksk.flags}\nTTL: ${ksk.ttl}s (${
+            ksk.ttl_human
+          })\nAlg: ${ksk.algorithm_name || ksk.algorithm}\nSize: ${
+            ksk.key_size
+          }`
         : "No KSK";
       const zskTooltips = zskNodes.map((z) =>
         z
-          ? `Key Tag: ${z.key_tag}\nFlags: ${z.flags}\nTTL: ${z.ttl}s (${z.ttl_human})\nAlg: ${
-              z.algorithm_name || z.algorithm
-            }\nSize: ${z.key_size}`
+          ? `Key Tag: ${z.key_tag}\nFlags: ${z.flags}\nTTL: ${z.ttl}s (${
+              z.ttl_human
+            })\nAlg: ${z.algorithm_name || z.algorithm}\nSize: ${z.key_size}`
           : "No ZSK"
       );
       const nsTooltip = escape((level.records?.ns_records || []).join("\n"));
@@ -389,7 +393,7 @@ const SampleGraph = ({
               ds.algorithm_name || ds.algorithm
             }\nDigest: ${ds.digest}`
           : "NO DS";
-        const label = ds ? "DS" : "NO DS";
+        const label = ds ? "Delegation Signer (DS)" : "NO DS";
         const extra = ds ? "" : " style=dashed";
         dotStr += `    ds_${idx}_${
           idx + 1
@@ -463,9 +467,11 @@ const SampleGraph = ({
         (level.records?.dnskey_records || []).filter((k) => k.is_ksk) || [];
       const ksk = allKsk[0] || level.key_hierarchy?.ksk_keys?.[0] || null;
       const kskTooltip = ksk
-        ? `Key Tag: ${ksk.key_tag}\nFlags: ${ksk.flags}\nTTL: ${ksk.ttl}s (${ksk.ttl_human})\nAlg: ${
-            ksk.algorithm_name || ksk.algorithm
-          }\nSize: ${ksk.key_size}`
+        ? `Key Tag: ${ksk.key_tag}\nFlags: ${ksk.flags}\nTTL: ${ksk.ttl}s (${
+            ksk.ttl_human
+          })\nAlg: ${ksk.algorithm_name || ksk.algorithm}\nSize: ${
+            ksk.key_size
+          }`
         : "No KSK";
       const kskId = `ksk_${idx}`;
       const zskRecords = (level.records?.dnskey_records || []).filter(
@@ -508,7 +514,9 @@ const SampleGraph = ({
         const zskId = `zsk_${idx}_${j}`;
         const zskRecord = zskRecords[j];
         const zskTooltip = zskRecord
-          ? `Key Tag: ${zskRecord.key_tag}\nFlags: ${zskRecord.flags}\nTTL: ${zskRecord.ttl}s (${zskRecord.ttl_human})\nAlg: ${
+          ? `Key Tag: ${zskRecord.key_tag}\nFlags: ${zskRecord.flags}\nTTL: ${
+              zskRecord.ttl
+            }s (${zskRecord.ttl_human})\nAlg: ${
               zskRecord.algorithm_name || zskRecord.algorithm
             }\nSize: ${zskRecord.key_size}`
           : "No ZSK";
@@ -557,7 +565,7 @@ const SampleGraph = ({
           extent: "parent",
           draggable: true,
           data: {
-            label: ds ? "DS" : "NO DS",
+            label: ds ? "Delegation Signer (DS)" : "NO DS",
             tooltip: dsTooltip,
             domain: level.display_name,
             nodeType: "ds",
@@ -586,11 +594,11 @@ const SampleGraph = ({
         });
       } else {
         const recordLabels = {
-          TXT: "Text",
-          MX: "Mail Exchange",
-          A: "Address",
-          AAAA: "IPv6 Address",
-          SOA: "Start of Authority",
+          TXT: "Text (TXT)",
+          MX: "Mail Exchange (MX)",
+          A: "IPV4 Address (A)",
+          AAAA: "IPv6 Address (AAAA)",
+          SOA: "Start of Authority (SOA)",
         };
         const recordTypes = [
           ["TXT", level.records?.txt_records],
@@ -604,7 +612,7 @@ const SampleGraph = ({
           const rec = recs[0];
           const recId = `${type.toLowerCase()}_${idx}_${rIdx}`;
           const tooltip = Array.isArray(recs)
-            ? recs.map((r) => r.value || `${r.mname || ''}`.trim()).join("\n")
+            ? recs.map((r) => r.value || `${r.mname || ""}`.trim()).join("\n")
             : JSON.stringify(recs);
           nodes.push({
             id: recId,
@@ -891,7 +899,7 @@ const SampleGraph = ({
         >
           <RotateCcw className="h-6 w-6" />
         </Button>
-          {viewMode === "reactflow" && (
+        {viewMode === "reactflow" && (
           <>
             <Button
               size="icon"
@@ -908,11 +916,7 @@ const SampleGraph = ({
             >
               JSON
             </Button>
-            <Button
-              variant="secondary"
-              onClick={handleExportPng}
-              type="button"
-            >
+            <Button variant="secondary" onClick={handleExportPng} type="button">
               PNG
             </Button>
           </>
