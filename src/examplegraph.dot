@@ -91,11 +91,11 @@ digraph DNS_Hierarchy {
         bottom_root [label="KSK", fillcolor="#ffcccc"];
         bottom_dns  [label="ZSK", fillcolor="#ffdddd"];
 
-        soa   [label="dnsviz.net/SOA",   shape=rectangle, fillcolor=white];
-        a     [label="dnsviz.net/A",     shape=rectangle, fillcolor=white];
-        aaaa  [label="dnsviz.net/AAAA",  shape=rectangle, fillcolor=white];
-        mx    [label="dnsviz.net/MX",    shape=rectangle, fillcolor=white];
-        ns    [label="dnsviz.net/NS",    shape=rectangle, fillcolor=white];
+        soa   [label="dnsviz.net/Start of Authority",   shape=rectangle, fillcolor=white];
+        a     [label="dnsviz.net/Address",               shape=rectangle, fillcolor=white];
+        aaaa  [label="dnsviz.net/IPv6 Address",          shape=rectangle, fillcolor=white];
+        mx    [label="dnsviz.net/Mail Exchange",         shape=rectangle, fillcolor=white];
+        ns    [label="dnsviz.net/Name Server",           shape=rectangle, fillcolor=white];
 
         bottom_root -> bottom_dns [label="signs"];
         bottom_dns  -> soa        [label="signs"];

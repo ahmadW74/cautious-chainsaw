@@ -585,6 +585,13 @@ const SampleGraph = ({
           style: edgeStyle(ds ? "delegates" : "no delegation"),
         });
       } else {
+        const recordLabels = {
+          TXT: "Text",
+          MX: "Mail Exchange",
+          A: "Address",
+          AAAA: "IPv6 Address",
+          SOA: "Start of Authority",
+        };
         const recordTypes = [
           ["TXT", level.records?.txt_records],
           ["MX", level.records?.mx_records],
@@ -606,7 +613,7 @@ const SampleGraph = ({
             extent: "parent",
             draggable: true,
             data: {
-              label: type,
+              label: recordLabels[type] || type,
               tooltip,
               domain: level.display_name,
               nodeType: levelType,
@@ -619,7 +626,7 @@ const SampleGraph = ({
             source: firstZskId,
             target: recId,
             label: edgeLabel,
-          type: "bezier",
+            type: "bezier",
             animated: true,
             labelStyle: { background: "white", color: "black", padding: 2 },
             style: edgeStyle(edgeLabel),
