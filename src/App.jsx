@@ -491,7 +491,7 @@ export default function App() {
 
       {/* Main content */}
       <main className="flex-grow flex items-start justify-center p-6 lg:p-10">
-        <div className="w-full max-w-6xl space-y-6 lg:space-y-8">
+        <div className="w-full max-w-[100rem] space-y-6 lg:space-y-8">
           {/* Search bar */}
           <div className="flex justify-center mb-4 lg:mb-6">
             <Input
