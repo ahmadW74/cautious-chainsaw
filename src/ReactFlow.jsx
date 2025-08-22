@@ -48,7 +48,7 @@ const ReactFlow = ({
           height: rfSize.height + d.height,
         })
       }
-      className="relative border border-border rounded overflow-hidden mx-auto"
+      className="relative border border-border rounded overflow-hidden w-full"
     >
       <div className="absolute top-1 left-1 z-10 text-xs bg-secondary/80 px-2 py-1 rounded">
         Zoom: {zoom.toFixed(2)} • {Math.round(rfSize.width)}×
@@ -76,8 +76,8 @@ const ReactFlow = ({
               width: "100%",
               height: "100%",
               background: "#F9FAFB",
-              fontFamily: "'Source Sans Pro', sans-serif",
-              "--node-font-family": "'Source Sans Pro', sans-serif",
+              fontFamily:
+                "var(--node-font-family, 'Source Sans Pro', sans-serif)",
             }}
           >
             <Controls showInteractive />

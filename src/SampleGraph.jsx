@@ -24,7 +24,7 @@ import GroupNode from "@/components/nodes/GroupNode.jsx";
 import ReactFlow from "./ReactFlow.jsx";
 import { Input } from "@/components/ui/input.jsx";
 
-import { Maximize, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
+import { Download, Maximize, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 
 const EDGE_COLORS = {
   signs: "#3B82F6",
@@ -127,6 +127,28 @@ const SampleGraph = ({
   });
 
   const [fontUrl, setFontUrl] = useState("");
+  const defaultFont = "'Source Sans Pro', sans-serif";
+  const [currentFont, setCurrentFont] = useState(defaultFont);
+  const [exportOpen, setExportOpen] = useState(false);
+  const exportRef = useRef(null);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      "--node-font-family",
+      currentFont
+    );
+  }, [currentFont]);
+
+  useEffect(() => {
+    if (!exportOpen) return;
+    const handle = (e) => {
+      if (exportRef.current && !exportRef.current.contains(e.target)) {
+        setExportOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, [exportOpen]);
 
   const handleFontUrlChange = (e) => {
     const url = e.target.value;
@@ -140,26 +162,26 @@ const SampleGraph = ({
       link.id = "dynamic-node-font";
       link.rel = "stylesheet";
       link.href = url;
-      document.head.appendChild(link);
-
-      try {
-        const u = new URL(url);
-        const familyParam = u.searchParams.get("family");
-        if (familyParam) {
-          const family = decodeURIComponent(familyParam.split(":")[0]).replace(
-            /\+/g,
-            " "
-          );
-          document.documentElement.style.setProperty(
-            "--node-font-family",
-            `'${family}', sans-serif`
-          );
+      link.onload = () => {
+        try {
+          const u = new URL(url);
+          const familyParam = u.searchParams.get("family");
+          if (familyParam) {
+            const family = decodeURIComponent(
+              familyParam.split(":")[0]
+            ).replace(/\+/g, " ");
+            setCurrentFont(`'${family}', sans-serif`);
+          }
+        } catch {
+          // ignore URL parse errors
         }
-      } catch {
-        // ignore URL parse errors
-      }
+      };
+      link.onerror = () => {
+        setFontUrl("");
+      };
+      document.head.appendChild(link);
     } else {
-      document.documentElement.style.removeProperty("--node-font-family");
+      setCurrentFont(defaultFont);
     }
   };
 
@@ -244,7 +266,7 @@ const SampleGraph = ({
     const maxW = parseSize(maxWidth, 1600);
     const maxH = parseSize(height, 1113);
     setRfSize({
-      width: Math.min(bounds.width / scale, maxW),
+      width: maxW,
       height: Math.min(bounds.height / scale, maxH),
     });
     requestAnimationFrame(() => {
@@ -799,13 +821,16 @@ const SampleGraph = ({
     if (!nodes.length) return;
     const bounds = getNodesBounds(nodes);
     const scale = 0.7;
-    setRfSize({ width: bounds.width / scale, height: bounds.height / scale });
+    setRfSize({
+      width: parseSize(maxWidth, 1600),
+      height: bounds.height / scale,
+    });
     const id = requestAnimationFrame(() => {
       reactFlowInstance.fitView({ includeHiddenNodes: true, padding: 0.1 });
       reactFlowInstance.zoomTo?.(scale);
     });
     return () => cancelAnimationFrame(id);
-  }, [flow, viewMode, reactFlowInstance, setRfSize]);
+  }, [flow, viewMode, reactFlowInstance, setRfSize, maxWidth]);
 
   if (!domain) {
     return (
@@ -825,8 +850,8 @@ const SampleGraph = ({
         className="w-full bg-card border-border mx-auto"
         style={{ maxWidth }}
       >
-        <CardContent className="relative px-6 py-6 lg:px-8 lg:py-8 flex justify-center overflow-auto">
-          <div className="w-full overflow-hidden flex flex-col gap-4">
+        <CardContent className="relative p-0 overflow-hidden">
+          <div className="px-6 py-6 lg:px-8 lg:py-8 flex justify-between items-start">
             {summary && (
               <div className="text-left">
                 <h2 className="font-semibold text-lg text-foreground">
@@ -854,35 +879,78 @@ const SampleGraph = ({
                 )}
               </div>
             )}
-            {viewMode === "graphviz" ? (
-              <div
-                ref={graphContainerRef}
-                className="relative w-full border border-border rounded overflow-hidden mx-auto"
-                style={{ maxWidth, height }}
+            <div className="flex items-center gap-2" ref={exportRef}>
+              <Button
+                size="icon"
+                variant="secondary"
+                onClick={onRefresh}
+                disabled={!domain}
+                type="button"
               >
-                <div className="w-full h-full">
-                  <ErrorBoundary>
-                    <Graphviz
-                      dot={dot}
-                      options={graphvizOptions}
-                      style={{ width: "100%", height: "100%" }}
-                    />
-                  </ErrorBoundary>
-                </div>
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+              <div className="relative">
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  onClick={() => setExportOpen((o) => !o)}
+                  type="button"
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+                {exportOpen && (
+                  <div className="absolute right-0 mt-2 w-32 bg-card border border-border rounded shadow-md">
+                    <button
+                      className="block w-full text-left px-2 py-1 text-sm hover:bg-accent"
+                      onClick={() => {
+                        handleExportPng();
+                        setExportOpen(false);
+                      }}
+                    >
+                      Export PNG
+                    </button>
+                    <button
+                      className="block w-full text-left px-2 py-1 text-sm hover:bg-accent"
+                      onClick={() => {
+                        handleExportJson();
+                        setExportOpen(false);
+                      }}
+                    >
+                      Export JSON
+                    </button>
+                  </div>
+                )}
               </div>
-            ) : (
-              <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                nodeTypes={nodeTypes}
-                rfSize={rfSize}
-                setRfSize={setRfSize}
-                graphContainerRef={graphContainerRef}
-              />
-            )}
+            </div>
           </div>
+          {viewMode === "graphviz" ? (
+            <div
+              ref={graphContainerRef}
+              className="relative w-full border border-border rounded overflow-hidden"
+              style={{ height }}
+            >
+              <div className="w-full h-full">
+                <ErrorBoundary>
+                  <Graphviz
+                    dot={dot}
+                    options={graphvizOptions}
+                    style={{ width: "100%", height: "100%" }}
+                  />
+                </ErrorBoundary>
+              </div>
+            </div>
+          ) : (
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              nodeTypes={nodeTypes}
+              rfSize={rfSize}
+              setRfSize={setRfSize}
+              graphContainerRef={graphContainerRef}
+            />
+          )}
         </CardContent>
       </Card>
       {tooltip.visible && (
@@ -903,37 +971,15 @@ const SampleGraph = ({
         </div>
       )}
       <div className="absolute -right-16 top-4 flex flex-col gap-2 items-center">
-        <Button
-          size="icon"
-          variant="secondary"
-          onClick={onRefresh}
-          disabled={!domain}
-          className="h-12 w-12"
-          type="button"
-        >
-          <RotateCcw className="h-6 w-6" />
-        </Button>
         {viewMode === "reactflow" && (
-          <>
-            <Button
-              size="icon"
-              variant="secondary"
-              onClick={handleFitView}
-              type="button"
-            >
-              <Maximize className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={handleExportJson}
-              type="button"
-            >
-              JSON
-            </Button>
-            <Button variant="secondary" onClick={handleExportPng} type="button">
-              PNG
-            </Button>
-          </>
+          <Button
+            size="icon"
+            variant="secondary"
+            onClick={handleFitView}
+            type="button"
+          >
+            <Maximize className="h-4 w-4" />
+          </Button>
         )}
         {viewMode === "graphviz" && (
           <>
