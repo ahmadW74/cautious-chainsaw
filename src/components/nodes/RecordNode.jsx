@@ -9,11 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Globe, ShieldCheck, Anchor, Check, X } from "lucide-react";
 import { computeDomain, HEADER_STYLE } from "@/lib/domain";
 
-const ACCENT_GRADIENTS = {
-  root: ["#3B82F6", "#60A5FA"],
-  net: ["#10B981", "#34D399"],
-  ds: ["#8B5CF6", "#A78BFA"],
+const COLOR_MAP = {
+  KSK: ["#10B981", "#34D399"],
+  ZSK: ["#10B981", "#34D399"],
+  DS: ["#8B5CF6", "#A78BFA"],
 };
+const DEFAULT_GRADIENT = ["#3B82F6", "#60A5FA"];
 
 const NODE_ICONS = {
   root: Globe,
@@ -30,7 +31,12 @@ export default function RecordNode({ data }) {
     [data]
   );
 
-  const [start, end] = ACCENT_GRADIENTS[data.nodeType] || ACCENT_GRADIENTS.root;
+  const label = data.label || "";
+  const [start, end] = label.includes("KSK") || label.includes("ZSK")
+    ? COLOR_MAP.KSK
+    : label.includes("DS")
+    ? COLOR_MAP.DS
+    : DEFAULT_GRADIENT;
   const headerBackground = `linear-gradient(to right, ${start}, ${end})`;
   const Icon = useMemo(() => {
     if (data.nodeType === "root" && data.label === "KSK") {
