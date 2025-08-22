@@ -13,6 +13,21 @@ import {
 import SampleGraph from "./SampleGraph.jsx";
 import { ReactFlowProvider } from "@xyflow/react";
 
+const getCache = (key) => {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+
+const setCache = (key, value) => {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // ignore write errors
+  }
+};
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { API_BASE } from "@/lib/api";
@@ -72,6 +87,17 @@ export default function App() {
   // Theme state
   const [theme, setTheme] = useState("light");
 
+  // Diagram display mode
+  const [viewMode, setViewMode] = useState(() => {
+    const stored = getCache("display_mode");
+    return stored === "reactflow" || stored === "reactflow-color"
+      ? "reactflow"
+      : "graphviz";
+  });
+
+  useEffect(() => {
+    setCache("display_mode", viewMode);
+  }, [viewMode]);
 
   // Signup state
   const [signupName, setSignupName] = useState("");
@@ -109,7 +135,7 @@ export default function App() {
       }
     };
     document.body.appendChild(script);
-  }, [handleGoogleCredential]);
+  }, []);
 
   const handleGoogleCredential = async (credential) => {
     try {
@@ -403,6 +429,18 @@ export default function App() {
         <div className="mx-auto max-w-7xl p-6 flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <h1 className="text-3xl font-semibold tracking-tight">DNSCAP</h1>
+            <Button
+              size="icon"
+              variant="secondary"
+              onClick={() =>
+                setViewMode(
+                  viewMode === "graphviz" ? "reactflow" : "graphviz"
+                )
+              }
+              type="button"
+            >
+              {viewMode === "graphviz" ? "RF" : "GV"}
+            </Button>
           </div>
           <div className="flex items-center space-x-2">
             {profilePic ? (
@@ -453,7 +491,7 @@ export default function App() {
 
       {/* Main content */}
       <main className="flex-grow flex items-start justify-center p-6 lg:p-10">
-        <div className="w-full max-w-[100rem] space-y-6 lg:space-y-8">
+        <div className="w-full max-w-6xl space-y-6 lg:space-y-8">
           {/* Search bar */}
           <div className="flex justify-center mb-4 lg:mb-6">
             <Input
@@ -507,6 +545,7 @@ export default function App() {
               domain={currentDomain}
               refreshTrigger={refreshTrigger}
               theme={theme}
+              viewMode={viewMode}
               onRefresh={handleRefresh}
               userId={userId}
               selectedDate={selectedDate.toISOString().slice(0, 7)}

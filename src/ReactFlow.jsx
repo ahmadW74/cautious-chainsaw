@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import {
   ReactFlow as ReactFlowBase,
+  Background,
   Controls,
 } from "@xyflow/react";
 import { Resizable } from "re-resizable";
@@ -36,7 +37,8 @@ const ReactFlow = ({
   setRfSize,
   graphContainerRef,
 }) => {
-  const [interactive, setInteractive] = useState(true);
+  const [zoom, setZoom] = useState(0.7);
+  const [focus, setFocus] = useState({ x: 0, y: 0 });
 
   return (
     <Resizable
@@ -49,6 +51,11 @@ const ReactFlow = ({
       }
       className="relative border border-border rounded overflow-hidden mx-auto"
     >
+      <div className="absolute top-1 left-1 z-10 text-xs bg-secondary/80 px-2 py-1 rounded">
+        Zoom: {zoom.toFixed(2)} • {Math.round(rfSize.width)}×
+        {Math.round(rfSize.height)} • Focus: {Math.round(focus.x)},
+        {Math.round(focus.y)}
+      </div>
       <div
         className="w-full h-full"
         ref={graphContainerRef}
@@ -61,14 +68,11 @@ const ReactFlow = ({
             onEdgesChange={onEdgesChange}
             nodeTypes={nodeTypes}
             defaultViewport={{ x: 0, y: 0, zoom: 0.7 }}
+            onMove={(e, vp) => {
+              setZoom(vp.zoom);
+              setFocus({ x: vp.x, y: vp.y });
+            }}
             defaultEdgeOptions={defaultEdgeOptions}
-            nodesDraggable={interactive}
-            nodesConnectable={interactive}
-            elementsSelectable={interactive}
-            panOnDrag={interactive}
-            zoomOnScroll={interactive}
-            zoomOnPinch={interactive}
-            panOnScroll={interactive}
             style={{
               width: "100%",
               height: "100%",
@@ -77,7 +81,8 @@ const ReactFlow = ({
               "--node-font-family": "'Source Sans Pro', sans-serif",
             }}
           >
-            <Controls showInteractive onInteractiveChange={setInteractive} />
+            <Background />
+            <Controls />
           </ReactFlowBase>
         </ErrorBoundary>
       </div>
