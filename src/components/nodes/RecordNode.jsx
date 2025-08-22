@@ -24,6 +24,7 @@ const NODE_ICONS = {
 
 const fontStack =
   "'Source Sans Pro', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif";
+const defaultFont = `var(--node-font-family, ${fontStack})`;
 
 export default function RecordNode({ data }) {
   const { full: domainFull, truncated } = useMemo(
@@ -61,7 +62,7 @@ export default function RecordNode({ data }) {
                 background: headerBackground,
                 borderTopLeftRadius: 16,
                 borderTopRightRadius: 16,
-                fontFamily: fontStack,
+                fontFamily: data.fontFamily || defaultFont,
               }}
               title={domainFull}
             >
@@ -81,7 +82,7 @@ export default function RecordNode({ data }) {
                 boxShadow: hovered
                   ? `0 2px 4px rgba(0,0,0,0.06), 0 0 0 2px ${start}, 0 0 8px ${start}`
                   : `0 2px 4px rgba(0,0,0,0.06), 0 0 0 1px ${start}80`,
-                fontFamily: data.fontFamily || fontStack,
+                fontFamily: data.fontFamily || defaultFont,
                 lineHeight: 1.2,
               }}
               onMouseEnter={() => setHovered(true)}
@@ -109,7 +110,7 @@ export default function RecordNode({ data }) {
           <PinnedTooltipContent
             className="whitespace-pre"
             color={start}
-            style={{ fontFamily: data.fontFamily || fontStack }}
+            style={{ fontFamily: data.fontFamily || defaultFont }}
           >
             {data.tooltip}
           </PinnedTooltipContent>
