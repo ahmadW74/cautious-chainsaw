@@ -28,12 +28,19 @@ import { Maximize, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 
 const EDGE_COLORS = {
   signs: "#3B82F6",
-  delegates: "#10B981",
+  delegates: "#3B82F6",
 };
 
 const edgeStyle = (label) => ({
   stroke: EDGE_COLORS[label] || "#D1D5DB",
   strokeWidth: 2,
+});
+
+const edgeLabelStyle = (label) => ({
+  background: "white",
+  color: "black",
+  padding: 2,
+  fontSize: label === "delegates" || label === "signs" ? 16 : 12,
 });
 
 const getCache = (key) => {
@@ -371,16 +378,16 @@ const SampleGraph = ({
       dotStr += "    labeljust=l;\n";
       dotStr += "    style=dotted;\n";
       dotStr += "    penwidth=2;\n";
-      dotStr += "    color=green;\n";
-      dotStr += '    fillcolor="#e6ffe6";\n\n';
+      dotStr += "    color=gray;\n";
+      dotStr += '    fillcolor="white";\n\n';
 
       dotStr += `    ksk_${idx} [label="${
         ksk ? "KSK" : "NO KSK"
-      }" fillcolor="#ffcccc" tooltip="${escape(kskTooltip)}"];\n`;
+      }" fillcolor="#d1fae5" tooltip="${escape(kskTooltip)}"];\n`;
 
       zskNodes.forEach((z, j) => {
         const zLabel = zskNodes[j] ? "ZSK" : "NO ZSK";
-        dotStr += `    zsk_${idx}_${j} [label="${zLabel}" fillcolor="#ffdddd" tooltip="${escape(
+        dotStr += `    zsk_${idx}_${j} [label="${zLabel}" fillcolor="#d1fae5" tooltip="${escape(
           zskTooltips[j]
         )}"];\n`;
       });
@@ -397,20 +404,21 @@ const SampleGraph = ({
         const extra = ds ? "" : " style=dashed";
         dotStr += `    ds_${idx}_${
           idx + 1
-        } [label="${label}" fillcolor="#ccccff" tooltip="${escape(
+        } [label="${label}" fillcolor="#ede9fe" tooltip="${escape(
           dsTooltip
         )}"${extra}];\n`;
       }
 
       zskNodes.forEach((z, j) => {
         const signLabel = ksk && z ? "signs" : "no signing";
-        const color = ksk && z ? "" : " color=red";
-        dotStr += `    ksk_${idx} -> zsk_${idx}_${j} [label="${signLabel}"${color}];\n`;
+        const color = ksk && z ? ' color="#3B82F6"' : " color=red";
+        const font = signLabel === "signs" ? " fontsize=16" : "";
+        dotStr += `    ksk_${idx} -> zsk_${idx}_${j} [label="${signLabel}"${color}${font}];\n`;
       });
       if (idx < data.levels.length - 1) {
         dotStr += `    zsk_${idx}_0 -> ds_${idx}_${
           idx + 1
-        } [label="delegates"];\n`;
+        } [label="delegates" color="#3B82F6" fontsize=16];\n`;
       }
 
       dotStr += "  }\n";
@@ -422,7 +430,7 @@ const SampleGraph = ({
       if (ds) {
         dotStr += `  ds_${i}_${i + 1} -> ksk_${
           i + 1
-        } [ltail=cluster_${i}, lhead=cluster_${i + 1}, label="delegates"];\n`;
+        } [ltail=cluster_${i}, lhead=cluster_${i + 1}, label="delegates", color="#3B82F6", fontsize=16];\n`;
         dotStr += `  ds_${i}_${i + 1} -> zsk_${
           i + 1
         }_0 [ltail=cluster_${i}, lhead=cluster_${i + 1}];\n`;
@@ -448,6 +456,9 @@ const SampleGraph = ({
     const nodeGap = 40;
     const groupGap = 120;
     const nodeScale = 1.2;
+    const horizontalPadding = nodeWidth / 2;
+    const topPadding = nodeGap;
+    const bottomPadding = nodeGap / 2;
 
     const levelNodes = [];
     const levelEdges = [];
@@ -545,7 +556,7 @@ const SampleGraph = ({
           type: "bezier",
           animated: true,
           style: edgeStyle(signLabel),
-          labelStyle: { background: "white", color: "black", padding: 2 },
+          labelStyle: edgeLabelStyle(signLabel),
         });
       }
 
@@ -580,7 +591,7 @@ const SampleGraph = ({
           type: "bezier",
           animated: true,
           style: edgeStyle("signs"),
-          labelStyle: { background: "white", color: "black", padding: 2 },
+          labelStyle: edgeLabelStyle("signs"),
         });
         crossEdges.push({
           id: `${dsId}-ksk_${idx + 1}`,
@@ -589,7 +600,7 @@ const SampleGraph = ({
           label: ds ? "delegates" : "no delegation",
           type: "bezier",
           animated: true,
-          labelStyle: { background: "white", color: "black", padding: 2 },
+          labelStyle: edgeLabelStyle(ds ? "delegates" : "no delegation"),
           style: edgeStyle(ds ? "delegates" : "no delegation"),
         });
       } else {
@@ -636,7 +647,7 @@ const SampleGraph = ({
             label: edgeLabel,
             type: "bezier",
             animated: true,
-            labelStyle: { background: "white", color: "black", padding: 2 },
+            labelStyle: edgeLabelStyle(edgeLabel),
             style: edgeStyle(edgeLabel),
           });
         });
@@ -666,16 +677,16 @@ const SampleGraph = ({
       const { width: gw, height: gh } = g.graph();
 
       const groupNode = groupNodes[idx];
-      const groupPosition = { x: -nodeWidth, y: currentY - nodeGap / 2 };
-      const groupWidth = gw + nodeWidth * 2;
-      const groupHeight = gh + nodeGap;
+      const groupPosition = { x: -horizontalPadding, y: currentY - topPadding };
+      const groupWidth = gw + horizontalPadding * 2;
+      const groupHeight = gh + topPadding + bottomPadding;
       layoutedNodes.push({
         ...groupNode,
         position: groupPosition,
         style: {
           width: groupWidth,
           height: groupHeight,
-          padding: 10,
+          padding: 0,
           background: "transparent",
         },
         data: groupNode.data,
@@ -683,15 +694,13 @@ const SampleGraph = ({
 
       nodes.forEach((node) => {
         const { x, y } = g.node(node.id);
-        const relX = x + nodeWidth / 2;
-        const relY = y - nodeHeight / 2 + nodeGap / 2;
         const scaledWidth = nodeWidth * nodeScale;
         const scaledHeight = nodeHeight * nodeScale;
         layoutedNodes.push({
           ...node,
           position: {
-            x: relX - (scaledWidth - nodeWidth) / 2,
-            y: relY - (scaledHeight - nodeHeight) / 2,
+            x: horizontalPadding + x - scaledWidth / 2,
+            y: topPadding + y - scaledHeight / 2,
           },
           sourcePosition: "bottom",
           targetPosition: "top",
