@@ -5,6 +5,8 @@ import React, {
   useRef,
   useState,
 } from "react";
+import Graphviz from "graphviz-react";
+import { graphviz } from "d3-graphviz";
 import {
   useNodesState,
   useEdgesState,
@@ -14,6 +16,7 @@ import {
 } from "@xyflow/react";
 import { toPng } from "html-to-image";
 import dagre from "dagre";
+import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import RecordNode from "@/components/nodes/RecordNode.jsx";
@@ -21,7 +24,7 @@ import GroupNode from "@/components/nodes/GroupNode.jsx";
 import ReactFlow from "./ReactFlow.jsx";
 import { Input } from "@/components/ui/input.jsx";
 
-import { Maximize, RotateCcw } from "lucide-react";
+import { Maximize, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 
 const EDGE_COLORS = {
   signs: "#3B82F6",
@@ -57,7 +60,7 @@ const setCache = (key, value) => {
 };
 
 /**
- * Renders a DNSSEC chain using ReactFlow.
+ * Renders a DNSSEC chain as a Graphviz diagram.
  *
  * @param {object} props
  * @param {string} props.domain - Domain to visualize
@@ -65,7 +68,9 @@ const setCache = (key, value) => {
  * @param {Function} [props.onRefresh] - Callback when the reload button is clicked
  * @param {string} [props.userId] - ID of the logged in user
  * @param {string} [props.selectedDate] - Month selected from the timeline slider (YYYY-MM)
- * @param {string} [props.maxWidth="100rem"] - Max width of the graph container
+ * @param {string} props.viewMode - Display mode (graphviz or reactflow)
+ * @param {string} [props.maxWidth="80rem"] - Max width of the graph container
+ * @param {number|string} [props.height=1113] - Height of the graph container
  */
 const SampleGraph = ({
   domain,
@@ -73,16 +78,31 @@ const SampleGraph = ({
   onRefresh,
   userId,
   selectedDate,
-  maxWidth = "100rem",
+  viewMode,
+  maxWidth = "80rem",
+  height = 1113,
 }) => {
+  const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
   const [renderTime, setRenderTime] = useState(null);
   const [dataSource, setDataSource] = useState(null);
+  const [tooltip, setTooltip] = useState({
+    visible: false,
+    text: "",
+    x: 0,
+    y: 0,
+  });
+  const [pinnedTooltip, setPinnedTooltip] = useState(null);
   const [flow, setFlow] = useState({ nodes: [], edges: [] });
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const cleanupRef = useRef(null);
   const graphContainerRef = useRef(null);
+  const graphvizOptions = useMemo(
+    () => ({ engine: "dot", width: "100%", height: "100%", zoom: true }),
+    []
+  );
   const nodeTypes = useMemo(
     () => ({ record: RecordNode, dnsGroup: GroupNode }),
     []
@@ -102,7 +122,7 @@ const SampleGraph = ({
 
   const [rfSize, setRfSize] = useState({
     width: parseSize(maxWidth, 1280),
-    height: 600,
+    height: parseSize(height, 1113),
   });
 
   const [fontUrl, setFontUrl] = useState("");
@@ -222,12 +242,211 @@ const SampleGraph = ({
     const scale = 0.7;
     setRfSize({ width: bounds.width / scale, height: bounds.height / scale });
     requestAnimationFrame(() => {
-      reactFlowInstance.fitView({ includeHiddenNodes: true, padding: 0.01 });
+      reactFlowInstance.fitView({ includeHiddenNodes: true, padding: 0.1 });
       reactFlowInstance.zoomTo?.(scale);
     });
   }, [reactFlowInstance]);
 
+  const handleZoom = useCallback((factor) => {
+    if (!graphContainerRef.current) return;
+    const el = graphContainerRef.current.querySelector("[id^='graphviz']");
+    if (!el) return;
+    const gv = graphviz(`#${el.id}`);
+    const behavior = gv.zoomBehavior();
+    const selection = gv.zoomSelection();
+    if (behavior && selection) {
+      behavior.scaleBy(selection, factor);
+    }
+  }, []);
 
+  const zoomIn = useCallback(() => handleZoom(1.2), [handleZoom]);
+  const zoomOut = useCallback(() => handleZoom(0.8), [handleZoom]);
+
+  useEffect(() => {
+    const container = graphContainerRef.current;
+    if (!container) return;
+
+    const attach = () => {
+      const el = container.querySelector('[id^="graphviz"]');
+      if (!el) return;
+      const titles = el.querySelectorAll("title");
+      const listeners = [];
+      titles.forEach((title) => {
+        const parent = title.parentElement;
+        const text = title.textContent || "";
+        title.remove();
+        if (parent) {
+          const show = (e) => {
+            setTooltip({
+              visible: true,
+              text,
+              x: e.clientX + 10,
+              y: e.clientY + 10,
+            });
+          };
+          const move = (e) => {
+            setTooltip((t) =>
+              t.visible ? { ...t, x: e.clientX + 10, y: e.clientY + 10 } : t
+            );
+          };
+          const hide = () => setTooltip((t) => ({ ...t, visible: false }));
+          const pin = (e) => {
+            setPinnedTooltip({ text, x: e.clientX + 10, y: e.clientY + 10 });
+          };
+          parent.addEventListener("mouseenter", show);
+          parent.addEventListener("mousemove", move);
+          parent.addEventListener("mouseleave", hide);
+          parent.addEventListener("click", pin);
+          listeners.push({ parent, show, move, hide, pin });
+        }
+      });
+      cleanupRef.current = () => {
+        listeners.forEach(({ parent, show, move, hide, pin }) => {
+          parent.removeEventListener("mouseenter", show);
+          parent.removeEventListener("mousemove", move);
+          parent.removeEventListener("mouseleave", hide);
+          parent.removeEventListener("click", pin);
+        });
+      };
+    };
+
+    const id = setTimeout(attach, 0);
+    return () => {
+      clearTimeout(id);
+      if (cleanupRef.current) cleanupRef.current();
+    };
+  }, [dot]);
+  /**
+   * Build a Graphviz dot string from API data.
+   * The graph places each DNS level in a cluster box and connects
+   * parent ZSKs to DS records and then to the child's KSK.
+   * Unsigned levels are rendered in gray with red connecting arrows.
+   */
+  const buildDot = useCallback((data) => {
+    if (!data || !Array.isArray(data.levels)) return "digraph{}";
+
+    const escape = (s) =>
+      String(s || "")
+        .replace(/\n/g, "\\n")
+        .replace(/"/g, '\\"');
+
+    let dotStr =
+      "digraph DNSSEC_Chain {\n" +
+      "  rankdir=TB;\n" +
+      "  compound=true;\n" +
+      "  splines=curved;\n" +
+      "  nodesep=0.6;\n" +
+      "  ranksep=0.6;\n" +
+      '  fontname="Arial";\n' +
+      '  node [shape=ellipse, style=filled, fontname="Arial", fontsize=14, width=1.5, height=0.9];\n' +
+      '  edge [color=black, penwidth=2, fontname="Arial", fontsize=12];\n';
+
+    // Render each zone cluster
+    data.levels.forEach((level, idx) => {
+      const allKsk =
+        (level.records?.dnskey_records || []).filter((k) => k.is_ksk) || [];
+      const allZsk =
+        (level.records?.dnskey_records || []).filter((k) => k.is_zsk) || [];
+
+      const ksk = allKsk[0] || level.key_hierarchy?.ksk_keys?.[0] || null;
+
+      const zskNodes = idx === 0 ? allZsk.slice(0, 3) : [allZsk[0]];
+      const kskTooltip = ksk
+        ? `Key Tag: ${ksk.key_tag}\nFlags: ${ksk.flags}\nTTL: ${ksk.ttl}s (${
+            ksk.ttl_human
+          })\nAlg: ${ksk.algorithm_name || ksk.algorithm}\nSize: ${
+            ksk.key_size
+          }`
+        : "No KSK";
+      const zskTooltips = zskNodes.map((z) =>
+        z
+          ? `Key Tag: ${z.key_tag}\nFlags: ${z.flags}\nTTL: ${z.ttl}s (${
+              z.ttl_human
+            })\nAlg: ${z.algorithm_name || z.algorithm}\nSize: ${z.key_size}`
+          : "No ZSK"
+      );
+      const nsTooltip = escape((level.records?.ns_records || []).join("\n"));
+
+      const securityTooltip =
+        level.dnssec_status?.status === "signed" ? "SECURE" : "INSECURE";
+
+      dotStr += `  subgraph cluster_${idx} {\n`;
+      dotStr += `    label="${level.display_name}";\n`;
+      dotStr += `    labeltooltip="${nsTooltip}";\n`;
+      dotStr += `    tooltip="${securityTooltip}";\n`;
+      dotStr += "    labelloc=t;\n";
+      dotStr += "    labeljust=l;\n";
+      dotStr += "    style=dotted;\n";
+      dotStr += "    penwidth=2;\n";
+      dotStr += "    color=gray;\n";
+      dotStr += '    fillcolor="white";\n\n';
+
+      dotStr += `    ksk_${idx} [label="${
+        ksk ? "KSK" : "NO KSK"
+      }" fillcolor="#d1fae5" tooltip="${escape(kskTooltip)}"];\n`;
+
+      zskNodes.forEach((z, j) => {
+        const zLabel = zskNodes[j] ? "ZSK" : "NO ZSK";
+        dotStr += `    zsk_${idx}_${j} [label="${zLabel}" fillcolor="#d1fae5" tooltip="${escape(
+          zskTooltips[j]
+        )}"];\n`;
+      });
+
+      if (idx < data.levels.length - 1) {
+        const child = data.levels[idx + 1];
+        const ds = child.records?.ds_records?.[0];
+        const dsTooltip = ds
+          ? `Key Tag: ${ds.key_tag}\nTTL: ${ds.ttl}s (${ds.ttl_human})\nAlg: ${
+              ds.algorithm_name || ds.algorithm
+            }\nDigest: ${ds.digest}`
+          : "NO DS";
+        const label = ds ? "Delegation Signer (DS)" : "NO DS";
+        const extra = ds ? "" : " style=dashed";
+        dotStr += `    ds_${idx}_${
+          idx + 1
+        } [label="${label}" fillcolor="#ede9fe" tooltip="${escape(
+          dsTooltip
+        )}"${extra}];\n`;
+      }
+
+      zskNodes.forEach((z, j) => {
+        const signLabel = ksk && z ? "signs" : "no signing";
+        const color = ksk && z ? ' color="#3B82F6"' : " color=red";
+        const font = signLabel === "signs" ? " fontsize=16" : "";
+        dotStr += `    ksk_${idx} -> zsk_${idx}_${j} [label="${signLabel}"${color}${font}];\n`;
+      });
+      if (idx < data.levels.length - 1) {
+        dotStr += `    zsk_${idx}_0 -> ds_${idx}_${
+          idx + 1
+        } [label="delegates" color="#3B82F6" fontsize=16];\n`;
+      }
+
+      dotStr += "  }\n";
+    });
+
+    for (let i = 0; i < data.levels.length - 1; i++) {
+      const child = data.levels[i + 1];
+      const ds = child.records?.ds_records?.[0];
+      if (ds) {
+        dotStr += `  ds_${i}_${i + 1} -> ksk_${
+          i + 1
+        } [ltail=cluster_${i}, lhead=cluster_${i + 1}, label="delegates", color="#3B82F6", fontsize=16];\n`;
+        dotStr += `  ds_${i}_${i + 1} -> zsk_${
+          i + 1
+        }_0 [ltail=cluster_${i}, lhead=cluster_${i + 1}];\n`;
+      } else {
+        dotStr += `  ds_${i}_${i + 1} -> ksk_${
+          i + 1
+        } [ltail=cluster_${i}, lhead=cluster_${
+          i + 1
+        }, label="no delegation", color=red];\n`;
+      }
+    }
+
+    // Delegation edges between zones
+    dotStr += "}";
+    return dotStr;
+  }, []);
 
   const buildFlow = useCallback((data) => {
     if (!data || !Array.isArray(data.levels)) return { nodes: [], edges: [] };
@@ -499,6 +718,7 @@ const SampleGraph = ({
 
   const fetchData = useCallback(async () => {
     if (!domain) {
+      setDot("digraph DNSSEC {}");
       setFlow({ nodes: [], edges: [] });
       setNodes([]);
       setEdges([]);
@@ -538,6 +758,7 @@ const SampleGraph = ({
         setCache(key, JSON.stringify(json));
       }
 
+      setDot(buildDot(json));
       const layouted = buildFlow(json);
       setFlow(layouted);
       setNodes(layouted.nodes);
@@ -545,6 +766,7 @@ const SampleGraph = ({
       setSummary(json.chain_summary || null);
     } catch (err) {
       console.error("Failed to fetch DNSSEC chain", err);
+      setDot("digraph DNSSEC {}");
       setSummary(null);
     } finally {
       setLoading(false);
@@ -555,7 +777,7 @@ const SampleGraph = ({
         `Chain data for ${domain} loaded in ${elapsed} ms from ${source}`
       );
     }
-  }, [domain, buildFlow, userId, selectedDate, setNodes, setEdges]);
+  }, [domain, buildDot, buildFlow, userId, selectedDate, setNodes, setEdges]);
 
   useEffect(() => {
     fetchData();
@@ -567,17 +789,18 @@ const SampleGraph = ({
   }, [flow, setNodes, setEdges]);
 
   useEffect(() => {
+    if (viewMode !== "reactflow") return;
     const nodes = reactFlowInstance.getNodes?.() || [];
     if (!nodes.length) return;
     const bounds = getNodesBounds(nodes);
     const scale = 0.7;
     setRfSize({ width: bounds.width / scale, height: bounds.height / scale });
     const id = requestAnimationFrame(() => {
-      reactFlowInstance.fitView({ includeHiddenNodes: true, padding: 0.01 });
+      reactFlowInstance.fitView({ includeHiddenNodes: true, padding: 0.1 });
       reactFlowInstance.zoomTo?.(scale);
     });
     return () => cancelAnimationFrame(id);
-  }, [flow, reactFlowInstance, setRfSize]);
+  }, [flow, viewMode, reactFlowInstance, setRfSize]);
 
   if (!domain) {
     return (
@@ -626,6 +849,23 @@ const SampleGraph = ({
                 )}
               </div>
             )}
+            {viewMode === "graphviz" ? (
+              <div
+                ref={graphContainerRef}
+                className="relative w-full border border-border rounded overflow-hidden mx-auto"
+                style={{ maxWidth, height }}
+              >
+                <div className="w-full h-full">
+                  <ErrorBoundary>
+                    <Graphviz
+                      dot={dot}
+                      options={graphvizOptions}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  </ErrorBoundary>
+                </div>
+              </div>
+            ) : (
               <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -636,9 +876,27 @@ const SampleGraph = ({
                 setRfSize={setRfSize}
                 graphContainerRef={graphContainerRef}
               />
-            </div>
+            )}
+          </div>
         </CardContent>
       </Card>
+      {tooltip.visible && (
+        <div
+          className="pointer-events-none fixed z-50 bg-primary text-primary-foreground rounded-md px-2 py-1 text-xs"
+          style={{ left: tooltip.x, top: tooltip.y }}
+        >
+          {tooltip.text}
+        </div>
+      )}
+      {pinnedTooltip && (
+        <div
+          className="fixed z-50 bg-primary text-primary-foreground rounded-md px-2 py-1 text-xs cursor-pointer"
+          style={{ left: pinnedTooltip.x, top: pinnedTooltip.y }}
+          onClick={() => setPinnedTooltip(null)}
+        >
+          {pinnedTooltip.text}
+        </div>
+      )}
       <div className="absolute -right-16 top-4 flex flex-col gap-2 items-center">
         <Button
           size="icon"
@@ -650,20 +908,48 @@ const SampleGraph = ({
         >
           <RotateCcw className="h-6 w-6" />
         </Button>
-        <Button
-          size="icon"
-          variant="secondary"
-          onClick={handleFitView}
-          type="button"
-        >
-          <Maximize className="h-4 w-4" />
-        </Button>
-        <Button variant="secondary" onClick={handleExportJson} type="button">
-          JSON
-        </Button>
-        <Button variant="secondary" onClick={handleExportPng} type="button">
-          PNG
-        </Button>
+        {viewMode === "reactflow" && (
+          <>
+            <Button
+              size="icon"
+              variant="secondary"
+              onClick={handleFitView}
+              type="button"
+            >
+              <Maximize className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={handleExportJson}
+              type="button"
+            >
+              JSON
+            </Button>
+            <Button variant="secondary" onClick={handleExportPng} type="button">
+              PNG
+            </Button>
+          </>
+        )}
+        {viewMode === "graphviz" && (
+          <>
+            <Button
+              size="icon"
+              variant="secondary"
+              onClick={zoomIn}
+              type="button"
+            >
+              <ZoomIn className="h-4 w-4" />
+            </Button>
+            <Button
+              size="icon"
+              variant="secondary"
+              onClick={zoomOut}
+              type="button"
+            >
+              <ZoomOut className="h-4 w-4" />
+            </Button>
+          </>
+        )}
       </div>
     </div>
   );
