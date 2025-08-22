@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   ReactFlow as ReactFlowBase,
-  Background,
   Controls,
 } from "@xyflow/react";
 import { Resizable } from "re-resizable";
@@ -81,8 +80,7 @@ const ReactFlow = ({
               "--node-font-family": "'Source Sans Pro', sans-serif",
             }}
           >
-            <Background />
-            <Controls />
+            <Controls showInteractive />
           </ReactFlowBase>
         </ErrorBoundary>
       </div>

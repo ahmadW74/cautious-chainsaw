@@ -69,7 +69,7 @@ const setCache = (key, value) => {
  * @param {string} [props.userId] - ID of the logged in user
  * @param {string} [props.selectedDate] - Month selected from the timeline slider (YYYY-MM)
  * @param {string} props.viewMode - Display mode (graphviz or reactflow)
- * @param {string} [props.maxWidth="80rem"] - Max width of the graph container
+ * @param {string} [props.maxWidth="100rem"] - Max width of the graph container
  * @param {number|string} [props.height=1113] - Height of the graph container
  */
 const SampleGraph = ({
@@ -79,7 +79,7 @@ const SampleGraph = ({
   userId,
   selectedDate,
   viewMode,
-  maxWidth = "80rem",
+  maxWidth = "100rem",
   height = 1113,
 }) => {
   const [dot, setDot] = useState("digraph DNSSEC {}");
@@ -94,7 +94,6 @@ const SampleGraph = ({
     y: 0,
   });
   const [pinnedTooltip, setPinnedTooltip] = useState(null);
-  const [flow, setFlow] = useState({ nodes: [], edges: [] });
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const cleanupRef = useRef(null);
@@ -110,6 +109,8 @@ const SampleGraph = ({
 
   const reactFlowInstance = useReactFlow();
 
+  const [flow, setFlow] = useState({ nodes: [], edges: [] });
+
   const parseSize = (value, fallback) => {
     if (typeof value === "number") return value;
     if (typeof value === "string") {
@@ -121,7 +122,7 @@ const SampleGraph = ({
   };
 
   const [rfSize, setRfSize] = useState({
-    width: parseSize(maxWidth, 1280),
+    width: parseSize(maxWidth, 1600),
     height: parseSize(height, 1113),
   });
 
@@ -240,12 +241,21 @@ const SampleGraph = ({
     if (!nodes.length) return;
     const bounds = getNodesBounds(nodes);
     const scale = 0.7;
-    setRfSize({ width: bounds.width / scale, height: bounds.height / scale });
+    const maxW = parseSize(maxWidth, 1600);
+    const maxH = parseSize(height, 1113);
+    setRfSize({
+      width: Math.min(bounds.width / scale, maxW),
+      height: Math.min(bounds.height / scale, maxH),
+    });
     requestAnimationFrame(() => {
-      reactFlowInstance.fitView({ includeHiddenNodes: true, padding: 0.1 });
+      reactFlowInstance.fitView({ includeHiddenNodes: true, padding: 0.02 });
       reactFlowInstance.zoomTo?.(scale);
     });
-  }, [reactFlowInstance]);
+  }, [reactFlowInstance, maxWidth, height]);
+
+  useEffect(() => {
+    handleFitView();
+  }, [nodes, edges, handleFitView, viewMode]);
 
   const handleZoom = useCallback((factor) => {
     if (!graphContainerRef.current) return;
@@ -456,7 +466,7 @@ const SampleGraph = ({
     const nodeGap = 40;
     const groupGap = 120;
     const nodeScale = 1.2;
-    const horizontalPadding = nodeWidth / 2;
+    const horizontalPadding = nodeWidth / 8;
     const topPadding = nodeGap;
     const bottomPadding = nodeGap / 2;
 
@@ -492,7 +502,6 @@ const SampleGraph = ({
       groupNodes.push({
         id: groupId,
         type: "dnsGroup",
-        draggable: true,
         data: {
           label: level.display_name || `Level ${idx}`,
           tooltip: `${
@@ -507,7 +516,6 @@ const SampleGraph = ({
         type: "record",
         parentId: groupId,
         extent: "parent",
-        draggable: true,
         data: {
           label: ksk ? "KSK" : "NO KSK",
           tooltip: kskTooltip,
@@ -536,7 +544,6 @@ const SampleGraph = ({
           type: "record",
           parentId: groupId,
           extent: "parent",
-          draggable: true,
           data: {
             label: zskRecord ? "ZSK" : "NO ZSK",
             tooltip: zskTooltip,
@@ -574,7 +581,6 @@ const SampleGraph = ({
           type: "record",
           parentId: groupId,
           extent: "parent",
-          draggable: true,
           data: {
             label: ds ? "Delegation Signer (DS)" : "NO DS",
             tooltip: dsTooltip,
@@ -630,7 +636,6 @@ const SampleGraph = ({
             type: "record",
             parentId: groupId,
             extent: "parent",
-            draggable: true,
             data: {
               label: recordLabels[type] || type,
               tooltip,
