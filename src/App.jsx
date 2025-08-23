@@ -276,8 +276,9 @@ export default function App() {
     return (
       <>
         {/* Hero Section with 3D background */}
-        <section className="relative text-white text-center py-20 px-4 overflow-hidden min-h-[26rem]">
+        <section className="relative text-white text-center py-20 px-4 overflow-hidden min-h-[26rem] bg-[radial-gradient(circle_at_center,#001f3f,#4169e1,#7fdbff)]">
           <ThreeHero />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
           <div className="relative z-10 max-w-4xl mx-auto">
             <h1 className="text-4xl font-bold mb-4">DNSSEC Explorer</h1>
             <p className="mb-10">Visualize and understand domain security chains.</p>
