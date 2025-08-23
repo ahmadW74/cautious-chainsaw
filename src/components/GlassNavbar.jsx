@@ -38,7 +38,7 @@ export default function GlassNavbar() {
 
   return (
     <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50">
-      <div className="group/nav relative flex items-center rounded-full bg-white/10 px-4 py-2 backdrop-blur-md transition-all duration-300 w-[240px] hover:w-[800px] text-white overflow-visible">
+      <div className="group/nav relative flex items-center rounded-full bg-white/20 border border-white/30 px-4 py-2 backdrop-blur-lg transition-all duration-300 delay-200 group-hover/nav:delay-0 w-[240px] hover:w-[800px] text-white overflow-visible">
         <Link to="/" className="logo-text text-xl mr-2">
           DNSX
         </Link>
