@@ -1,5 +1,5 @@
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from google.oauth2 import id_token
@@ -24,6 +24,9 @@ import base64
 import time
 import logging
 import memcache
+import smtplib
+from email.message import EmailMessage
+import uuid
 
 # Helper to consistently normalize domain names for caching
 def normalize_domain(domain: str) -> str:
@@ -1059,4 +1062,62 @@ def google_auth(payload: TokenPayload):
         file.write(f"\n{file_entry}")
     append_log("login", uid)
     return {"success": name, "id": uid, "email": email, "picture": picture}
+
+
+@app.post("/support")
+async def support_request(
+    email: str = Form(""),
+    subject: str = Form("Support Request"),
+    message: str = Form(""),
+    images: List[UploadFile] = File(default_factory=list),
+):
+    tracking_id = f"TRK-{uuid.uuid4().hex[:8].upper()}"
+
+    msg = EmailMessage()
+    msg["Subject"] = f"{subject} (Tracking ID: {tracking_id})"
+    msg["From"] = email
+    msg["To"] = "ahmadwaq2008@gmail.com"
+    msg.set_content(
+        f"Tracking ID: {tracking_id}\nFrom: {email}\n\n{message}"
+    )
+
+    for upload in images:
+        try:
+            data = await upload.read()
+            maintype, subtype = upload.content_type.split("/", 1)
+            msg.add_attachment(
+                data,
+                maintype=maintype,
+                subtype=subtype,
+                filename=upload.filename,
+            )
+        except Exception:
+            pass
+
+    smtp_server = os.environ.get("SMTP_SERVER")
+    smtp_port = int(os.environ.get("SMTP_PORT", 587))
+    smtp_user = os.environ.get("SMTP_USER")
+    smtp_password = os.environ.get("SMTP_PASSWORD")
+
+    if smtp_server and smtp_user and smtp_password:
+        try:
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                server.starttls()
+                server.login(smtp_user, smtp_password)
+                server.send_message(msg)
+
+                confirmation = EmailMessage()
+                confirmation["Subject"] = (
+                    f"Support Request Received - {tracking_id}"
+                )
+                confirmation["From"] = smtp_user
+                confirmation["To"] = email
+                confirmation.set_content(
+                    f"Your request has been received. Tracking ID: {tracking_id}"
+                )
+                server.send_message(confirmation)
+        except Exception:
+            pass
+
+    return {"trackingId": tracking_id}
 
