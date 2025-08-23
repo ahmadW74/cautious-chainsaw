@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Search, User } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
@@ -68,8 +68,8 @@ export default function App() {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
-  const [username, setUsername] = useState("");
-  const [profilePic, setProfilePic] = useState(null);
+  const [, setUsername] = useState("");
+  const [, setProfilePic] = useState(null);
   const [userId, setUserId] = useState(null);
   const [rememberMe, setRememberMe] = useState(false);
 
@@ -95,10 +95,10 @@ export default function App() {
   }, []);
 
   // Theme state
-  const [theme, setTheme] = useState("light");
+  const [theme] = useState("light");
 
   // Diagram display mode
-  const [viewMode, setViewMode] = useState(() => {
+  const [viewMode] = useState(() => {
     const stored = getCache("display_mode");
     return stored === "reactflow" || stored === "reactflow-color"
       ? "reactflow"
@@ -259,33 +259,7 @@ export default function App() {
       setRefreshTrigger((prev) => prev + 1);
     }
   };
-
-  const toggleTheme = () => {
-    if (theme === "dark") {
-      setTheme("high-contrast");
-    } else if (theme === "high-contrast") {
-      setTheme("light");
-    } else {
-      setTheme("dark");
-    }
-  };
-
-  const handleLogout = () => {
-    if (window.google?.accounts?.id) {
-      window.google.accounts.id.disableAutoSelect();
-    }
-    if (userId) {
-      fetch(`/logout/${userId}`).catch(() => {});
-    }
-    setUsername("");
-    setProfilePic(null);
-    setUserId(null);
-    setLoginEmail("");
-    setLoginPassword("");
-    setLoginOpen(true);
-    setRememberMe(false);
-    localStorage.removeItem("rememberMe");
-  };
+  // Removed theme toggle and logout handlers with the new navbar
 
   //tooltip
   const selectedDate = dateOptions[timelineIndex] || new Date();
@@ -527,90 +501,6 @@ export default function App() {
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Header */}
-      <header className="border-b border-border bg-white">
-        <div className="mx-auto max-w-7xl p-6 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <Link to="/">
-              <h1 className="text-3xl font-semibold tracking-tight">DNSCAP</h1>
-            </Link>
-            <Button
-              size="icon"
-              variant="secondary"
-              onClick={() =>
-                setViewMode(
-                  viewMode === "graphviz" ? "reactflow" : "graphviz"
-                )
-              }
-              type="button"
-            >
-              {viewMode === "graphviz" ? "RF" : "GV"}
-            </Button>
-          </div>
-          <nav className="hidden md:flex space-x-2">
-            <Button variant="link" asChild className="text-[#7f8c8d]">
-              <Link to="/blog">Blog</Link>
-            </Button>
-            <Button variant="link" asChild className="text-[#7f8c8d]">
-              <Link to="/about">About</Link>
-            </Button>
-            <Button variant="link" asChild className="text-[#7f8c8d]">
-              <Link to="/support">Support</Link>
-            </Button>
-            <Button variant="link" asChild className="text-[#7f8c8d]">
-              <Link to="/policy">Policy</Link>
-            </Button>
-            <Button variant="link" asChild className="text-[#7f8c8d]">
-              <Link to="/license">License</Link>
-            </Button>
-          </nav>
-          <div className="flex items-center space-x-2">
-            {profilePic ? (
-              <img
-                src={profilePic}
-                alt={username}
-                className="h-8 w-8 rounded-full"
-              />
-            ) : (
-              <User className="h-6 w-6 text-foreground" />
-            )}
-            {username && <p className="text-lg text-foreground">{username}</p>}
-            {!username && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setLoginOpen(true)}
-                type="button"
-              >
-                Sign in
-              </Button>
-            )}
-            {username && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleLogout}
-                type="button"
-              >
-                Log out
-              </Button>
-            )}
-            <Button
-              size="icon"
-              variant="secondary"
-              onClick={toggleTheme}
-              type="button"
-            >
-              {theme === "dark" && <div className="text-primary">🌙</div>}
-              {theme === "high-contrast" && (
-                <div className="text-primary">⚡</div>
-              )}
-              {theme === "light" && <div className="text-primary">☀️</div>}
-            </Button>
-          </div>
-        </div>
-      </header>
 
       {/* Main content */}
       <main className="flex-grow">
