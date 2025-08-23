@@ -180,6 +180,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+.logo-text {
+  font-family: 'Bungee', cursive;
+  -webkit-text-stroke: 1px white;
+  color: #1e3a8a; /* blue-800 */
+  font-weight: 700;
+}
 span {
   color: var(--foreground);
 }

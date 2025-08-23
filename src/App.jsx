@@ -19,6 +19,8 @@ import About from "@/pages/About.jsx";
 import Support from "@/pages/Support.jsx";
 import Policy from "@/pages/Policy.jsx";
 import License from "@/pages/License.jsx";
+import Goals from "@/pages/Goals.jsx";
+import GlassNavbar from "@/components/GlassNavbar.jsx";
 
 const getCache = (key) => {
   try {
@@ -394,6 +396,7 @@ export default function App() {
       } bg-background text-foreground min-h-screen flex flex-col text-base lg:text-lg`}
     >
       <div className="bg-gradient-animate" />
+      <GlassNavbar />
       {/* Login dialog */}
       <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
         <DialogContent className="sm:max-w-lg text-base space-y-6">
@@ -613,6 +616,7 @@ export default function App() {
       <main className="flex-grow">
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/goals" element={<Goals />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/about" element={<About />} />
           <Route path="/support" element={<Support />} />
