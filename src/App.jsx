@@ -13,6 +13,12 @@ import {
 import SampleGraph from "./SampleGraph.jsx";
 import { ReactFlowProvider } from "@xyflow/react";
 import FillerContent from "@/components/FillerContent.jsx";
+import { Routes, Route, Link } from "react-router-dom";
+import Blog from "@/pages/Blog.jsx";
+import About from "@/pages/About.jsx";
+import Support from "@/pages/Support.jsx";
+import Policy from "@/pages/Policy.jsx";
+import License from "@/pages/License.jsx";
 
 const getCache = (key) => {
   try {
@@ -289,6 +295,98 @@ export default function App() {
           year: "numeric",
         });
 
+  function HomePage() {
+    return (
+      <>
+        {/* Hero Section with search and slider */}
+        <section className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white text-center py-20 px-4">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-4xl font-bold mb-4">DNSSEC Explorer</h1>
+            <p className="mb-10">Visualize and understand domain security chains.</p>
+            <div className="flex justify-center mb-6">
+              <Input
+                placeholder="example.com"
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+                className="w-80 h-12 lg:h-14 text-lg rounded-l-full rounded-r-none shadow-inner text-black"
+              />
+              <Button
+                size="icon"
+                variant="secondary"
+                onClick={handleAnalyze}
+                disabled={!domain.trim()}
+                className="rounded-r-full rounded-l-none border-l-0 h-12 lg:h-14"
+                type="button"
+              >
+                <Search className="h-6 w-6" />
+              </Button>
+            </div>
+            <div className="relative mb-6 h-6 lg:h-8 max-w-3xl mx-auto">
+              <div className="absolute -top-10 left-0 w-full pointer-events-none">
+                <div
+                  style={{ left: `${(timelineIndex / (dateOptions.length - 1)) * 100}%` }}
+                  className="absolute transform -translate-x-1/2 bg-white text-black text-sm lg:text-base px-3 py-2 rounded shadow"
+                >
+                  {tooltipLabel}
+                </div>
+              </div>
+              <div className="relative h-full">
+                <Slider
+                  min={0}
+                  max={dateOptions.length - 1}
+                  step={1}
+                  value={[timelineIndex]}
+                  onValueChange={(v) => setTimelineIndex(v[0])}
+                  className="h-full"
+                />
+                {dateOptions.map((_, i) => (
+                  <div
+                    key={i}
+                    style={{ left: `${(i / (dateOptions.length - 1)) * 100}%` }}
+                    className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-full bg-white/50 pointer-events-none"
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+        {/* Filler content or graph */}
+        <div className="relative">
+          <div
+            className={`transition-all duration-500 ${
+              graphGenerated ? "opacity-0 max-h-0 overflow-hidden" : "opacity-100"
+            }`}
+          >
+            <FillerContent />
+          </div>
+          <div
+            className={`transition-opacity duration-500 ${
+              graphGenerated ? "opacity-100" : "opacity-0 max-h-0 overflow-hidden"
+            }`}
+          >
+            {graphGenerated && (
+              <div className="p-6 lg:p-10 flex justify-center">
+                <div className="w-full max-w-[100rem]">
+                  <ReactFlowProvider>
+                    <SampleGraph
+                      domain={currentDomain}
+                      refreshTrigger={refreshTrigger}
+                      theme={theme}
+                      viewMode={viewMode}
+                      onRefresh={handleRefresh}
+                      userId={userId}
+                      selectedDate={selectedDate.toISOString().slice(0, 7)}
+                    />
+                  </ReactFlowProvider>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <div
       className={`${
@@ -445,6 +543,23 @@ export default function App() {
               {viewMode === "graphviz" ? "RF" : "GV"}
             </Button>
           </div>
+          <nav className="hidden md:flex space-x-2">
+            <Button variant="link" asChild>
+              <Link to="/blog">Blog</Link>
+            </Button>
+            <Button variant="link" asChild>
+              <Link to="/about">About</Link>
+            </Button>
+            <Button variant="link" asChild>
+              <Link to="/support">Support</Link>
+            </Button>
+            <Button variant="link" asChild>
+              <Link to="/policy">Policy</Link>
+            </Button>
+            <Button variant="link" asChild>
+              <Link to="/license">License</Link>
+            </Button>
+          </nav>
           <div className="flex items-center space-x-2">
             {profilePic ? (
               <img
@@ -494,87 +609,14 @@ export default function App() {
 
       {/* Main content */}
       <main className="flex-grow">
-        {/* Hero Section with search and slider */}
-        <section className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white text-center py-20 px-4">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl font-bold mb-4">DNSSEC Explorer</h1>
-            <p className="mb-10">Visualize and understand domain security chains.</p>
-            <div className="flex justify-center mb-6">
-              <Input
-                placeholder="example.com"
-                value={domain}
-                onChange={(e) => setDomain(e.target.value)}
-                className="w-80 h-12 lg:h-14 text-lg rounded-l-full rounded-r-none shadow-inner text-black"
-              />
-              <Button
-                size="icon"
-                variant="secondary"
-                onClick={handleAnalyze}
-                disabled={!domain.trim()}
-                className="rounded-r-full rounded-l-none border-l-0 h-12 lg:h-14"
-                type="button"
-              >
-                <Search className="h-6 w-6" />
-              </Button>
-            </div>
-            <div className="relative mb-6 h-6 lg:h-8 max-w-3xl mx-auto">
-              <div className="absolute -top-10 left-0 w-full pointer-events-none">
-                <div
-                  style={{ left: `${(timelineIndex / (dateOptions.length - 1)) * 100}%` }}
-                  className="absolute transform -translate-x-1/2 bg-white text-black text-sm lg:text-base px-3 py-2 rounded shadow"
-                >
-                  {tooltipLabel}
-                </div>
-              </div>
-              <div className="relative h-full">
-                <Slider
-                  min={0}
-                  max={dateOptions.length - 1}
-                  step={1}
-                  value={[timelineIndex]}
-                  onValueChange={(v) => setTimelineIndex(v[0])}
-                  className="h-full"
-                />
-                {dateOptions.map((_, i) => (
-                  <div
-                    key={i}
-                    style={{ left: `${(i / (dateOptions.length - 1)) * 100}%` }}
-                    className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-full bg-white/50 pointer-events-none"
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-        {/* Filler content or graph */}
-        <div className="relative">
-          <div
-            className={`transition-all duration-500 ${graphGenerated ? "opacity-0 max-h-0 overflow-hidden" : "opacity-100"}`}
-          >
-            <FillerContent />
-          </div>
-          <div
-            className={`transition-opacity duration-500 ${graphGenerated ? "opacity-100" : "opacity-0 max-h-0 overflow-hidden"}`}
-          >
-            {graphGenerated && (
-              <div className="p-6 lg:p-10 flex justify-center">
-                <div className="w-full max-w-[100rem]">
-                  <ReactFlowProvider>
-                    <SampleGraph
-                      domain={currentDomain}
-                      refreshTrigger={refreshTrigger}
-                      theme={theme}
-                      viewMode={viewMode}
-                      onRefresh={handleRefresh}
-                      userId={userId}
-                      selectedDate={selectedDate.toISOString().slice(0, 7)}
-                    />
-                  </ReactFlowProvider>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/policy" element={<Policy />} />
+          <Route path="/license" element={<License />} />
+        </Routes>
       </main>
       <footer className="border-t border-border bg-card text-card-foreground p-4 text-sm">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between gap-4">
@@ -583,15 +625,21 @@ export default function App() {
             <p className="text-xs">Demo dashboard for domain analysis.</p>
           </div>
           <div className="flex space-x-4">
-            <a href="#" className="hover:underline">
-              Docs
-            </a>
-            <a href="#" className="hover:underline">
-              API
-            </a>
-            <a href="#" className="hover:underline">
+            <Link to="/blog" className="hover:underline">
+              Blog
+            </Link>
+            <Link to="/about" className="hover:underline">
+              About
+            </Link>
+            <Link to="/support" className="hover:underline">
               Support
-            </a>
+            </Link>
+            <Link to="/policy" className="hover:underline">
+              Policy
+            </Link>
+            <Link to="/license" className="hover:underline">
+              License
+            </Link>
           </div>
           <p className="text-xs sm:text-sm">
             &copy; 2025 EUNOMATIX. All rights reserved.
