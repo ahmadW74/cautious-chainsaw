@@ -12,10 +12,10 @@ function NavLink({ to, label, hidden }) {
           : "px-2"
       } whitespace-nowrap flex-shrink-0`}
     >
-      <span className="block text-white transition-transform duration-300 group-hover:-translate-y-full">
+      <span className="block !text-white transition-transform duration-300 group-hover:-translate-y-full">
         {label}
       </span>
-      <span className="absolute inset-0 block translate-y-full text-white transition-transform duration-300 group-hover:translate-y-0">
+      <span className="absolute inset-0 block translate-y-full !text-white transition-transform duration-300 group-hover:translate-y-0">
         {label}
       </span>
     </Link>

@@ -5,7 +5,7 @@ const licenseText = `MIT License\n\nCopyright (c) 2025 DNSCAP\n\nPermission is h
 
 export default function License() {
   return (
-    <div className="max-w-3xl mx-auto p-6">
+    <div className="max-w-3xl mx-auto p-6 pt-24">
       <Card>
         <CardHeader>
           <CardTitle>License</CardTitle>

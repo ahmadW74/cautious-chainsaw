@@ -25,7 +25,7 @@ const posts = [
 
 export default function Blog() {
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="max-w-4xl mx-auto p-6 pt-24 space-y-6">
       {posts.map((post) => (
         <Card key={post.title}>
           <CardHeader>

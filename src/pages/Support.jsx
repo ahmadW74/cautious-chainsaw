@@ -54,7 +54,7 @@ export default function Support() {
   ];
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
+    <div className="max-w-3xl mx-auto p-6 pt-24">
       <Tabs defaultValue="faq" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-4">
           <TabsTrigger value="faq">FAQ</TabsTrigger>
