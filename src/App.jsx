@@ -526,7 +526,7 @@ export default function App() {
       </Dialog>
 
       {/* Header */}
-      <header className="border-b border-border">
+      <header className="border-b border-border bg-white">
         <div className="mx-auto max-w-7xl p-6 flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <Link to="/">
@@ -546,19 +546,19 @@ export default function App() {
             </Button>
           </div>
           <nav className="hidden md:flex space-x-2">
-            <Button variant="link" asChild>
+            <Button variant="link" asChild className="text-[#7f8c8d]">
               <Link to="/blog">Blog</Link>
             </Button>
-            <Button variant="link" asChild>
+            <Button variant="link" asChild className="text-[#7f8c8d]">
               <Link to="/about">About</Link>
             </Button>
-            <Button variant="link" asChild>
+            <Button variant="link" asChild className="text-[#7f8c8d]">
               <Link to="/support">Support</Link>
             </Button>
-            <Button variant="link" asChild>
+            <Button variant="link" asChild className="text-[#7f8c8d]">
               <Link to="/policy">Policy</Link>
             </Button>
-            <Button variant="link" asChild>
+            <Button variant="link" asChild className="text-[#7f8c8d]">
               <Link to="/license">License</Link>
             </Button>
           </nav>
