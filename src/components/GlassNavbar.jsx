@@ -23,7 +23,7 @@ function NavLink({ to, label, hidden }) {
 export default function GlassNavbar() {
   return (
     <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50">
-      <div className="group flex items-center gap-4 rounded-full bg-white/10 px-4 py-2 backdrop-blur-md transition-all duration-300 overflow-hidden w-[240px] group-hover:w-[680px] text-white">
+      <div className="group flex items-center gap-4 rounded-full bg-white/10 px-4 py-2 backdrop-blur-md transition-all duration-300 overflow-hidden w-[240px] hover:w-[680px] text-white">
         <Link to="/" className="logo-text text-xl mr-2">
           DNSX
         </Link>
