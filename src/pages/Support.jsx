@@ -23,7 +23,7 @@ export default function Support() {
     formData.append("message", message);
     files.forEach((file) => formData.append("images", file));
 
-    const res = await fetch("/support", {
+    const res = await fetch("http://127.0.0.1:8000/support", {
       method: "POST",
       body: formData,
     });
@@ -56,7 +56,7 @@ export default function Support() {
   return (
     <div className="max-w-3xl mx-auto p-6">
       <Tabs defaultValue="faq" className="w-full">
-      <TabsList className="grid w-full grid-cols-2 mb-4">
+        <TabsList className="grid w-full grid-cols-2 mb-4">
           <TabsTrigger value="faq">FAQ</TabsTrigger>
           <TabsTrigger value="contact">Contact</TabsTrigger>
         </TabsList>
