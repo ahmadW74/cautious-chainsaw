@@ -21,6 +21,7 @@ import Policy from "@/pages/Policy.jsx";
 import License from "@/pages/License.jsx";
 import Goals from "@/pages/Goals.jsx";
 import GlassNavbar from "@/components/GlassNavbar.jsx";
+import ThreeHero from "@/components/ThreeHero.jsx";
 
 const getCache = (key) => {
   try {
@@ -274,9 +275,10 @@ export default function App() {
   function HomePage() {
     return (
       <>
-        {/* Hero Section with search and slider */}
-        <section className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white text-center py-20 px-4">
-          <div className="max-w-4xl mx-auto">
+        {/* Hero Section with 3D background */}
+        <section className="relative text-white text-center py-20 px-4 overflow-hidden min-h-[26rem]">
+          <ThreeHero />
+          <div className="relative z-10 max-w-4xl mx-auto">
             <h1 className="text-4xl font-bold mb-4">DNSSEC Explorer</h1>
             <p className="mb-10">Visualize and understand domain security chains.</p>
             <div className="flex justify-center mb-6">
