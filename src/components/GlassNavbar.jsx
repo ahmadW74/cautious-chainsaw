@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { User } from "lucide-react";
 
@@ -24,22 +24,36 @@ function NavLink({ to, label, hidden }) {
 
 export default function GlassNavbar() {
   const [open, setOpen] = useState(false);
+  const { pathname } = useLocation();
+
+  const navItems = [
+    { to: "/", label: "Home" },
+    { to: "/goals", label: "Goals" },
+    { to: "/about", label: "About" },
+    { to: "/blog", label: "Blog" },
+    { to: "/support", label: "Support" },
+    { to: "/policy", label: "Policy" },
+    { to: "/license", label: "License" },
+  ];
 
   return (
     <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50">
-      <div className="group/nav relative flex items-center rounded-full bg-white/10 px-4 py-2 backdrop-blur-md transition-all duration-300 w-[240px] hover:w-[800px] text-white gap-0 hover:gap-4 overflow-visible">
+      <div className="group/nav relative flex items-center rounded-full bg-white/10 px-4 py-2 backdrop-blur-md transition-all duration-300 w-[240px] hover:w-[800px] text-white overflow-visible">
         <Link to="/" className="logo-text text-xl mr-2">
           DNSX
         </Link>
-        <NavLink to="/" label="Home" />
-        <NavLink to="/goals" label="Goals" hidden />
-        <NavLink to="/about" label="About" hidden />
-        <NavLink to="/blog" label="Blog" hidden />
-        <NavLink to="/support" label="Support" hidden />
-        <NavLink to="/policy" label="Policy" hidden />
-        <NavLink to="/license" label="License" hidden />
+        <div className="flex-1 flex justify-center group-hover/nav:justify-start gap-0 group-hover/nav:gap-4">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              label={item.label}
+              hidden={pathname !== item.to}
+            />
+          ))}
+        </div>
         <div
-          className="ml-auto relative flex-shrink-0"
+          className="relative flex-shrink-0"
           onMouseEnter={() => setOpen(true)}
           onMouseLeave={() => setOpen(false)}
         >
