@@ -5,7 +5,6 @@ from pydantic import BaseModel
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 import os
-import tempfile
 import dns.resolver
 import dns.name
 import dns.rdatatype
@@ -23,7 +22,6 @@ import hashlib
 import base64
 import time
 import logging
-import memcache
 import smtplib
 from email.message import EmailMessage
 import uuid
@@ -45,9 +43,8 @@ app.add_middleware(
 DATA_FILE_PATH = os.path.join(os.path.dirname(__file__), "data.txt")
 # Store logs outside the project directory to avoid triggering frontend hot reloads
 LOG_FILE_PATH = os.path.join("C:\\Users\\ahmad\\Desktop\\logs.txt")
-# Cache data should also be stored outside the project directory to prevent
-# the frontend dev server from reloading when new domains are analyzed.
-CACHE_FILE_PATH = os.path.join(tempfile.gettempdir(), "dnscap_chain_cache.txt")
+# Cache data is stored in a simple text file in the project directory
+CACHE_FILE_PATH = os.path.join(os.path.dirname(__file__), "chain_cache.txt")
 
 # Configure application logging
 logger = logging.getLogger("dnscap")
@@ -56,12 +53,7 @@ handler = logging.FileHandler(LOG_FILE_PATH)
 handler.setFormatter(logging.Formatter('%(asctime)s,%(message)s'))
 logger.addHandler(handler)
 
-# Initialize Memcached client for chain caching
-memcached_client = memcache.Client(['127.0.0.1:11211'], socket_timeout=3)
-
-# Basic file-based cache used when Memcached is unavailable. This avoids
-# repeated expensive DNS lookups in development environments where a
-# Memcached server may not be running.
+# Basic file-based cache for storing DNS chain data.
 def _read_file_cache() -> Dict[str, Any]:
     """Load cache dictionary from disk."""
     try:
@@ -175,41 +167,22 @@ def append_log(event: str, user_id: Optional[str] = "", domain: str = "", date: 
 
 
 def get_cached_chain(domain: str) -> Optional[Dict[str, Any]]:
-    """Retrieve cached chain data from Memcached or file cache."""
+    """Retrieve cached chain data from the cache file."""
     key = normalize_domain(domain)
-
-    # Try Memcached first
-    try:
-        result = memcached_client.get(key)
-        if result is not None:
-            return result
-    except Exception:
-        pass
-
-    # Fallback to file-based cache
     cache = _read_file_cache()
     entry = cache.get(key)
     if entry and time.time() < entry.get("expires", 0):
         return entry.get("data")
-    elif entry:
+    if entry:
         cache.pop(key, None)
         _write_file_cache(cache)
     return None
 
 
 def set_cached_chain(domain: str, chain: Dict[str, Any], ttl: int = 3600) -> None:
-    """Store chain data in Memcached and file cache."""
+    """Store chain data in the cache file."""
     key = normalize_domain(domain)
     expires = time.time() + ttl
-
-    # Store in Memcached if available
-    try:
-        memcached_client.set(key, chain, time=ttl)
-    except Exception:
-        pass
-
-    # Always store to file cache so repeated requests are fast even without
-    # Memcached running.
     cache = _read_file_cache()
     cache[key] = {"data": chain, "expires": expires}
     _write_file_cache(cache)
