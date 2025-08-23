@@ -529,7 +529,9 @@ export default function App() {
       <header className="border-b border-border">
         <div className="mx-auto max-w-7xl p-6 flex justify-between items-center">
           <div className="flex items-center space-x-2">
-            <h1 className="text-3xl font-semibold tracking-tight">DNSCAP</h1>
+            <Link to="/">
+              <h1 className="text-3xl font-semibold tracking-tight">DNSCAP</h1>
+            </Link>
             <Button
               size="icon"
               variant="secondary"

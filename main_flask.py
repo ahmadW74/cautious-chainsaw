@@ -22,6 +22,9 @@ import hashlib
 import base64
 import time
 import logging
+import smtplib
+from email.message import EmailMessage
+import uuid
 
 # Helper to consistently normalize domain names for caching
 def normalize_domain(domain: str) -> str:
@@ -1039,6 +1042,55 @@ def google_auth():
         file.write(f"\n{file_entry}")
     append_log("login", uid)
     return jsonify({"success": name, "id": uid, "email": email, "picture": picture})
+
+
+@app.route("/support", methods=["POST"])
+def support_request():
+    email = request.form.get("email", "")
+    subject = request.form.get("subject", "Support Request")
+    message_body = request.form.get("message", "")
+    tracking_id = f"TRK-{uuid.uuid4().hex[:8].upper()}"
+
+    msg = EmailMessage()
+    msg["Subject"] = f"{subject} (Tracking ID: {tracking_id})"
+    msg["From"] = email
+    msg["To"] = "ahmadwaq2008@gmail.com"
+    msg.set_content(
+        f"Tracking ID: {tracking_id}\nFrom: {email}\n\n{message_body}"
+    )
+
+    for file in request.files.getlist("images"):
+        try:
+            data = file.read()
+            maintype, subtype = file.content_type.split("/", 1)
+            msg.add_attachment(data, maintype=maintype, subtype=subtype, filename=file.filename)
+        except Exception:
+            pass
+
+    smtp_server = os.environ.get("SMTP_SERVER")
+    smtp_port = int(os.environ.get("SMTP_PORT", 587))
+    smtp_user = os.environ.get("SMTP_USER")
+    smtp_password = os.environ.get("SMTP_PASSWORD")
+
+    if smtp_server and smtp_user and smtp_password:
+        try:
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                server.starttls()
+                server.login(smtp_user, smtp_password)
+                server.send_message(msg)
+
+                confirmation = EmailMessage()
+                confirmation["Subject"] = f"Support Request Received - {tracking_id}"
+                confirmation["From"] = smtp_user
+                confirmation["To"] = email
+                confirmation.set_content(
+                    f"Your request has been received. Tracking ID: {tracking_id}"
+                )
+                server.send_message(confirmation)
+        except Exception:
+            pass
+
+    return jsonify({"trackingId": tracking_id})
 
 
 if __name__ == "__main__":
