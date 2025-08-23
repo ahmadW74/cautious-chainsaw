@@ -183,8 +183,8 @@
 
 .logo-text {
   font-family: 'Bungee', cursive;
-  -webkit-text-stroke: 1px white;
-  color: #1e3a8a; /* blue-800 */
+  -webkit-text-stroke: 1px #1e3a8a;
+  color: #ffffff;
   font-weight: 700;
 }
 span {

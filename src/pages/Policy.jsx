@@ -2,7 +2,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 export default function Policy() {
   return (
-    <div className="max-w-3xl mx-auto p-6">
+    <div className="max-w-3xl mx-auto p-6 pt-24">
       <Card>
         <CardHeader>
           <CardTitle>Privacy Policy</CardTitle>
