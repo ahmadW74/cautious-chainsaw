@@ -276,7 +276,7 @@ export default function App() {
     return (
       <>
         {/* Hero Section with 3D background */}
-        <section className="relative text-white text-center py-20 px-4 overflow-hidden min-h-[26rem]">
+        <section className="relative text-white text-center py-20 px-4 overflow-hidden min-h-[92vh]">
           <ThreeHero />
           <div className="relative z-10 max-w-4xl mx-auto">
             <h1 className="text-4xl font-bold mb-4">DNSSEC Explorer</h1>
