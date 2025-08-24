@@ -4,6 +4,7 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { SSAOPass } from "three/examples/jsm/postprocessing/SSAOPass.js";
+import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
 
 // 3D hero background matching DNSSEC blue spec
 export default function ThreeHero() {
@@ -33,6 +34,7 @@ export default function ThreeHero() {
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.setClearColor(0x0077b6, 1);
     mount.appendChild(renderer.domElement);
 
     // lights
@@ -215,6 +217,20 @@ export default function ThreeHero() {
     const composer = new EffectComposer(renderer);
     const renderPass = new RenderPass(scene, camera);
     composer.addPass(renderPass);
+
+    const outlinePass = new OutlinePass(
+      new THREE.Vector2(mount.clientWidth, mount.clientHeight),
+      scene,
+      camera
+    );
+    outlinePass.edgeStrength = 3;
+    outlinePass.edgeGlow = 0;
+    outlinePass.edgeThickness = 1;
+    outlinePass.visibleEdgeColor = new THREE.Color(0xffffff);
+    outlinePass.hiddenEdgeColor = new THREE.Color(0xffffff);
+    outlinePass.selectedObjects = layers;
+    composer.addPass(outlinePass);
+
     const ssaoPass = new SSAOPass(scene, camera, mount.clientWidth, mount.clientHeight);
     ssaoPass.aoClamp = 0.25;
     composer.addPass(ssaoPass);
@@ -231,6 +247,7 @@ export default function ThreeHero() {
       const { clientWidth, clientHeight } = mount;
       renderer.setSize(clientWidth, clientHeight);
       composer.setSize(clientWidth, clientHeight);
+      outlinePass.setSize(clientWidth, clientHeight);
       camera.aspect = clientWidth / clientHeight;
       camera.updateProjectionMatrix();
     };
