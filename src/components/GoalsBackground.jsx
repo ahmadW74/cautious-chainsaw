@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 
-export default function GoalsBackground() {
+export default function GoalsBackground({ modelUrls = [] }) {
   const mountRef = useRef(null);
 
   useEffect(() => {
@@ -29,25 +30,18 @@ export default function GoalsBackground() {
     dir.position.set(3, 4, 5);
     scene.add(dir);
 
-    const balls = [];
-    const count = Math.floor(Math.random() * 10) + 10; // 10-19 balls
+    const models = [];
+    const count = Math.floor(Math.random() * 10) + 10; // 10-19 models
 
-    // Base geometries reused for all balls
-    const topGeo = new THREE.SphereGeometry(1, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
-    const bottomGeo = new THREE.SphereGeometry(1, 16, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2);
-
-    const randomizeBall = (group) => {
+    const randomizeModel = (obj) => {
       const radius = Math.random() * 0.3 + 0.2;
-      group.scale.set(radius, radius, radius);
-      group.userData.radius = radius;
-      group.userData.rot = new THREE.Vector3(
+      obj.scale.set(radius, radius, radius);
+      obj.userData.radius = radius;
+      obj.userData.rot = new THREE.Vector3(
         (Math.random() - 0.5) * 0.02,
         (Math.random() - 0.5) * 0.02,
         (Math.random() - 0.5) * 0.02
       );
-
-      group.children[0].material.color.set(Math.random() * 0xffffff);
-      group.children[1].material.color.set(Math.random() * 0xffffff);
 
       const pos = new THREE.Vector3();
       let tries = 0;
@@ -60,21 +54,42 @@ export default function GoalsBackground() {
         tries++;
       } while (
         tries < 20 &&
-        balls.some(
-          (b) => b !== group && pos.distanceTo(b.position) < radius + b.userData.radius + 0.1
+        models.some(
+          (m) => m !== obj && pos.distanceTo(m.position) < radius + m.userData.radius + 0.1
         )
       );
-      group.position.copy(pos);
+      obj.position.copy(pos);
     };
 
-    for (let i = 0; i < count; i++) {
-      const group = new THREE.Group();
-      group.add(new THREE.Mesh(topGeo, new THREE.MeshStandardMaterial()));
-      group.add(new THREE.Mesh(bottomGeo, new THREE.MeshStandardMaterial()));
-      randomizeBall(group);
-      scene.add(group);
-      balls.push(group);
-    }
+    const loader = new OBJLoader();
+    const urls =
+      modelUrls.length > 0
+        ? modelUrls
+        : [
+            "/models/model1.obj",
+            "/models/model2.obj",
+            "/models/model3.obj",
+          ];
+
+    const loadModels = async () => {
+      const templates = await Promise.all(
+        urls.map((url) => loader.loadAsync(url))
+      );
+
+      for (let i = 0; i < count; i++) {
+        const template = templates[Math.floor(Math.random() * templates.length)].clone(true);
+        template.traverse((child) => {
+          if (child.isMesh) {
+            child.material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+          }
+        });
+        randomizeModel(template);
+        scene.add(template);
+        models.push(template);
+      }
+    };
+
+    loadModels();
 
     let speed = 0;
     const onWheel = (e) => {
@@ -93,14 +108,14 @@ export default function GoalsBackground() {
     const animate = () => {
       requestAnimationFrame(animate);
       speed *= 0.95;
-      balls.forEach((ball) => {
-        ball.position.y += speed;
-        if (ball.position.y > 5 || ball.position.y < -5) {
-          randomizeBall(ball);
+      models.forEach((model) => {
+        model.position.y += speed;
+        if (model.position.y > 5 || model.position.y < -5) {
+          randomizeModel(model);
         }
-        ball.rotation.x += ball.userData.rot.x;
-        ball.rotation.y += ball.userData.rot.y;
-        ball.rotation.z += ball.userData.rot.z;
+        model.rotation.x += model.userData.rot.x;
+        model.rotation.y += model.userData.rot.y;
+        model.rotation.z += model.userData.rot.z;
       });
       renderer.render(scene, camera);
     };
@@ -112,7 +127,7 @@ export default function GoalsBackground() {
       mount.removeChild(renderer.domElement);
       renderer.dispose();
     };
-  }, []);
+  }, [modelUrls]);
 
   return <div ref={mountRef} className="absolute inset-0" />;
 }
