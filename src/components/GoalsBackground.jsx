@@ -2,7 +2,13 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 
-export default function GoalsBackground({ modelUrls = [] }) {
+export default function GoalsBackground({
+  modelUrls = [
+    "C:\\Users\\ahmad\\Desktop\\69-low-poly-key\\key.obj",
+    "C:\\Users\\ahmad\\Desktop\\Lock_link_chain_v1_L1.123c6495f56b-0254-43a2-9969-4a9600272f18\\17363_Lock_link_chain_v1_NEW.obj",
+    "C:\\Users\\ahmad\\Desktop\\simple_padlock_v1_L1.123cd23f2dd2-4d44-4d98-9bf1-485b2dd7a3e7\\16884_simple_padlock_v1.obj",
+  ],
+}) {
   const mountRef = useRef(null);
 
   useEffect(() => {
@@ -18,7 +24,10 @@ export default function GoalsBackground({ modelUrls = [] }) {
     );
     camera.position.z = 5;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      powerPreference: "high-performance",
+    });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.setClearColor(0xf8f8f8); // offwhite background
@@ -55,7 +64,9 @@ export default function GoalsBackground({ modelUrls = [] }) {
       } while (
         tries < 20 &&
         models.some(
-          (m) => m !== obj && pos.distanceTo(m.position) < radius + m.userData.radius + 0.1
+          (m) =>
+            m !== obj &&
+            pos.distanceTo(m.position) < radius + m.userData.radius + 0.1
         )
       );
       obj.position.copy(pos);
@@ -65,11 +76,7 @@ export default function GoalsBackground({ modelUrls = [] }) {
     const urls =
       modelUrls.length > 0
         ? modelUrls
-        : [
-            "/models/model1.obj",
-            "/models/model2.obj",
-            "/models/model3.obj",
-          ];
+        : ["/models/model1.obj", "/models/model2.obj", "/models/model3.obj"];
 
     const loadModels = async () => {
       const templates = await Promise.all(
@@ -77,10 +84,13 @@ export default function GoalsBackground({ modelUrls = [] }) {
       );
 
       for (let i = 0; i < count; i++) {
-        const template = templates[Math.floor(Math.random() * templates.length)].clone(true);
+        const template =
+          templates[Math.floor(Math.random() * templates.length)].clone(true);
         template.traverse((child) => {
           if (child.isMesh) {
-            child.material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+            child.material = new THREE.MeshStandardMaterial({
+              color: 0x00ff00,
+            });
           }
         });
         randomizeModel(template);
@@ -131,4 +141,3 @@ export default function GoalsBackground({ modelUrls = [] }) {
 
   return <div ref={mountRef} className="absolute inset-0" />;
 }
-
