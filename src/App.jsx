@@ -14,7 +14,7 @@ import SampleGraph from "./SampleGraph.jsx";
 import { ReactFlowProvider } from "@xyflow/react";
 import FillerContent from "@/components/FillerContent.jsx";
 import ThreeHero from "@/components/ThreeHero.jsx";
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, Link, useLocation } from "react-router-dom";
 import Blog from "@/pages/Blog.jsx";
 import About from "@/pages/About.jsx";
 import Support from "@/pages/Support.jsx";
@@ -64,6 +64,7 @@ export default function App() {
   );
   const [loginOpen, setLoginOpen] = useState(true);
   const [signupOpen, setSignupOpen] = useState(false);
+  const location = useLocation();
 
   // Login state
   const [loginEmail, setLoginEmail] = useState("");
@@ -516,34 +517,36 @@ export default function App() {
           <Route path="/license" element={<License />} />
         </Routes>
       </main>
-      <footer className="border-t border-border bg-card text-card-foreground p-4 text-sm">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between gap-4">
-          <div>
-            <p className="font-semibold">DNSCAP</p>
-            <p className="text-xs">Demo dashboard for domain analysis.</p>
+      {location.pathname !== "/goals" && (
+        <footer className="border-t border-border bg-card text-card-foreground p-4 text-sm">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between gap-4">
+            <div>
+              <p className="font-semibold">DNSCAP</p>
+              <p className="text-xs">Demo dashboard for domain analysis.</p>
+            </div>
+            <div className="flex space-x-4">
+              <Link to="/blog" className="hover:underline">
+                Blog
+              </Link>
+              <Link to="/about" className="hover:underline">
+                About
+              </Link>
+              <Link to="/support" className="hover:underline">
+                Support
+              </Link>
+              <Link to="/policy" className="hover:underline">
+                Policy
+              </Link>
+              <Link to="/license" className="hover:underline">
+                License
+              </Link>
+            </div>
+            <p className="text-xs sm:text-sm">
+              &copy; 2025 EUNOMATIX. All rights reserved.
+            </p>
           </div>
-          <div className="flex space-x-4">
-            <Link to="/blog" className="hover:underline">
-              Blog
-            </Link>
-            <Link to="/about" className="hover:underline">
-              About
-            </Link>
-            <Link to="/support" className="hover:underline">
-              Support
-            </Link>
-            <Link to="/policy" className="hover:underline">
-              Policy
-            </Link>
-            <Link to="/license" className="hover:underline">
-              License
-            </Link>
-          </div>
-          <p className="text-xs sm:text-sm">
-            &copy; 2025 EUNOMATIX. All rights reserved.
-          </p>
-        </div>
-      </footer>
+        </footer>
+      )}
     </div>
   );
 }
