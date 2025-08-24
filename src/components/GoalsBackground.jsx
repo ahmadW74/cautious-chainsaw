@@ -44,7 +44,7 @@ export default function GoalsBackground({
     const models = [];
     const count = Math.floor(Math.random() * 6) + 6; // 6-11 models
 
-    const randomizeModel = (obj, offscreen = true) => {
+    const randomizeModel = (obj) => {
       const baseRadius = Math.random() * 0.1 + 0.05; // smaller model size
       const scaleMultiplier = obj.userData.scaleMultiplier || 1;
       const radius = baseRadius * scaleMultiplier;
@@ -56,27 +56,12 @@ export default function GoalsBackground({
         (Math.random() - 0.5) * 0.02
       );
 
-      // give the model a random color each time it is (re)generated
-      obj.traverse((child) => {
-        if (child.isMesh && child.material) {
-          child.material = child.material.clone();
-          child.material.color.setHex(Math.random() * 0xffffff);
-        }
-      });
-
-      // position the model, optionally off screen to avoid popping into view
       const pos = new THREE.Vector3();
       let tries = 0;
-      const randomY = () =>
-        offscreen
-          ? Math.random() > 0.5
-            ? 6 + Math.random() * 4
-            : -6 - Math.random() * 4
-          : (Math.random() - 0.5) * 6;
       do {
         pos.set(
           (Math.random() - 0.5) * 10,
-          randomY(),
+          (Math.random() - 0.5) * 10,
           (Math.random() - 0.5) * 4
         );
         tries++;
@@ -105,7 +90,7 @@ export default function GoalsBackground({
       templates.forEach((template, i) => {
         const url = urls[i];
         let scaleMultiplier = 1;
-        if (url.includes("key")) scaleMultiplier = 0.2; // further shrink key
+        if (url.includes("key")) scaleMultiplier = 0.4; // shrink key
         else if (url.includes("lock")) scaleMultiplier = 2; // enlarge lock
         template.userData.scaleMultiplier = scaleMultiplier;
       });
@@ -115,8 +100,14 @@ export default function GoalsBackground({
           templates[Math.floor(Math.random() * templates.length)];
         const template = baseTemplate.clone(true);
         template.userData.scaleMultiplier = baseTemplate.userData.scaleMultiplier;
-        // initially place some models within view so background is visible
-        randomizeModel(template, false);
+        template.traverse((child) => {
+          if (child.isMesh) {
+            child.material = new THREE.MeshStandardMaterial({
+              color: 0x00ff00,
+            });
+          }
+        });
+        randomizeModel(template);
         scene.add(template);
         models.push(template);
       }
