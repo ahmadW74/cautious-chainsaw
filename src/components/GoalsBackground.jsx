@@ -55,12 +55,23 @@ export default function GoalsBackground({
         (Math.random() - 0.5) * 0.02
       );
 
+      // give the model a random color each time it is (re)generated
+      obj.traverse((child) => {
+        if (child.isMesh && child.material) {
+          child.material = child.material.clone();
+          child.material.color.setHex(Math.random() * 0xffffff);
+        }
+      });
+
+      // position the model off screen to avoid popping into view
       const pos = new THREE.Vector3();
       let tries = 0;
       do {
         pos.set(
           (Math.random() - 0.5) * 10,
-          (Math.random() - 0.5) * 10,
+          Math.random() > 0.5
+            ? 6 + Math.random() * 4
+            : -6 - Math.random() * 4,
           (Math.random() - 0.5) * 4
         );
         tries++;
@@ -89,7 +100,7 @@ export default function GoalsBackground({
       templates.forEach((template, i) => {
         const url = urls[i];
         let scaleMultiplier = 1;
-        if (url.includes("key")) scaleMultiplier = 0.4; // shrink key
+        if (url.includes("key")) scaleMultiplier = 0.2; // further shrink key
         else if (url.includes("lock")) scaleMultiplier = 2; // enlarge lock
         template.userData.scaleMultiplier = scaleMultiplier;
       });
@@ -99,13 +110,6 @@ export default function GoalsBackground({
           templates[Math.floor(Math.random() * templates.length)];
         const template = baseTemplate.clone(true);
         template.userData.scaleMultiplier = baseTemplate.userData.scaleMultiplier;
-        template.traverse((child) => {
-          if (child.isMesh) {
-            child.material = new THREE.MeshStandardMaterial({
-              color: 0x00ff00,
-            });
-          }
-        });
         randomizeModel(template);
         scene.add(template);
         models.push(template);
