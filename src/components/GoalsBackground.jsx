@@ -17,7 +17,8 @@ export default function GoalsBackground() {
     );
     camera.position.z = 5;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.setClearColor(0xf8f8f8); // offwhite background
     mount.appendChild(renderer.domElement);
@@ -30,40 +31,47 @@ export default function GoalsBackground() {
 
     const balls = [];
     const count = Math.floor(Math.random() * 10) + 10; // 10-19 balls
-    for (let i = 0; i < count; i++) {
-      const group = new THREE.Group();
-      const radius = Math.random() * 0.3 + 0.2;
-      const topGeo = new THREE.SphereGeometry(
-        radius,
-        32,
-        16,
-        0,
-        Math.PI * 2,
-        0,
-        Math.PI / 2
-      );
-      const bottomGeo = new THREE.SphereGeometry(
-        radius,
-        32,
-        16,
-        0,
-        Math.PI * 2,
-        Math.PI / 2,
-        Math.PI / 2
-      );
-      const topMat = new THREE.MeshStandardMaterial({ color: 0x0000ff });
-      const bottomMat = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-      group.add(new THREE.Mesh(topGeo, topMat));
-      group.add(new THREE.Mesh(bottomGeo, bottomMat));
 
-      group.position.x = (Math.random() - 0.5) * 10;
-      group.position.y = (Math.random() - 0.5) * 10;
-      group.position.z = (Math.random() - 0.5) * 4;
+    // Base geometries reused for all balls
+    const topGeo = new THREE.SphereGeometry(1, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+    const bottomGeo = new THREE.SphereGeometry(1, 16, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2);
+
+    const randomizeBall = (group, yPos) => {
+      const radius = Math.random() * 0.3 + 0.2;
+      group.scale.set(radius, radius, radius);
+      group.userData.radius = radius;
       group.userData.rot = new THREE.Vector3(
         (Math.random() - 0.5) * 0.02,
         (Math.random() - 0.5) * 0.02,
         (Math.random() - 0.5) * 0.02
       );
+
+      group.children[0].material.color.set(Math.random() * 0xffffff);
+      group.children[1].material.color.set(Math.random() * 0xffffff);
+
+      const pos = new THREE.Vector3();
+      let tries = 0;
+      do {
+        pos.set(
+          (Math.random() - 0.5) * 10,
+          yPos !== undefined ? yPos : (Math.random() - 0.5) * 10,
+          (Math.random() - 0.5) * 4
+        );
+        tries++;
+      } while (
+        tries < 20 &&
+        balls.some(
+          (b) => b !== group && pos.distanceTo(b.position) < radius + b.userData.radius + 0.1
+        )
+      );
+      group.position.copy(pos);
+    };
+
+    for (let i = 0; i < count; i++) {
+      const group = new THREE.Group();
+      group.add(new THREE.Mesh(topGeo, new THREE.MeshStandardMaterial()));
+      group.add(new THREE.Mesh(bottomGeo, new THREE.MeshStandardMaterial()));
+      randomizeBall(group);
       scene.add(group);
       balls.push(group);
     }
@@ -87,8 +95,12 @@ export default function GoalsBackground() {
       speed *= 0.95;
       balls.forEach((ball) => {
         ball.position.y += speed;
-        if (ball.position.y > 5) ball.position.y = -5;
-        if (ball.position.y < -5) ball.position.y = 5;
+        if (ball.position.y > 5) {
+          randomizeBall(ball, -5);
+        }
+        if (ball.position.y < -5) {
+          randomizeBall(ball, 5);
+        }
         ball.rotation.x += ball.userData.rot.x;
         ball.rotation.y += ball.userData.rot.y;
         ball.rotation.z += ball.userData.rot.z;
