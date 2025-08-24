@@ -1,9 +1,9 @@
-import GoalsBackground from "@/components/GoalsBackground.jsx";
-import cubeModel from "@/assets/models/cube.obj";
-import pyramidModel from "@/assets/models/pyramid.obj";
+import chainModel from "@/assets/models/chain.obj";
+import lockModel from "@/assets/models/lock.obj";
+import keyModel from "@/assets/models/key.obj";
 
 // Use locally imported models so the background works offline
-const modelUrls = [cubeModel, pyramidModel];
+const modelUrls = [chainModel, lockModel, keyModel];
 
 export default function Goals() {
   return (
@@ -16,4 +16,3 @@ export default function Goals() {
     </section>
   );
 }
-

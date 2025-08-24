@@ -3,11 +3,12 @@ import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 
 // Import small default models so the component works without external URLs
-import cubeModel from "@/assets/models/cube.obj";
-import pyramidModel from "@/assets/models/pyramid.obj";
+import chainModel from "@/assets/models/chain.obj";
+import lockModel from "@/assets/models/lock.obj";
+import keyModel from "@/assets/models/key.obj";
 
 export default function GoalsBackground({
-  modelUrls = [cubeModel, pyramidModel],
+  modelUrls = [chainModel, lockModel, keyModel],
 }) {
   const mountRef = useRef(null);
 
