@@ -3,9 +3,9 @@ import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 
 // Import small default models so the component works without external URLs
-import chainModel from "@/assets/models/chain.obj";
-import lockModel from "@/assets/models/lock.obj";
-import keyModel from "@/assets/models/key.obj";
+import chainModel from "@/assets/models/chain.obj?url";
+import lockModel from "@/assets/models/lock.obj?url";
+import keyModel from "@/assets/models/key.obj?url";
 
 export default function GoalsBackground({
   modelUrls = [chainModel, lockModel, keyModel],
