@@ -2,12 +2,12 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 
+// Import small default models so the component works without external URLs
+import cubeModel from "@/assets/models/cube.obj";
+import pyramidModel from "@/assets/models/pyramid.obj";
+
 export default function GoalsBackground({
-  modelUrls = [
-    "C:\\Users\\ahmad\\Desktop\\69-low-poly-key\\key.obj",
-    "C:\\Users\\ahmad\\Desktop\\Lock_link_chain_v1_L1.123c6495f56b-0254-43a2-9969-4a9600272f18\\17363_Lock_link_chain_v1_NEW.obj",
-    "C:\\Users\\ahmad\\Desktop\\simple_padlock_v1_L1.123cd23f2dd2-4d44-4d98-9bf1-485b2dd7a3e7\\16884_simple_padlock_v1.obj",
-  ],
+  modelUrls = [cubeModel, pyramidModel],
 }) {
   const mountRef = useRef(null);
 
@@ -40,10 +40,10 @@ export default function GoalsBackground({
     scene.add(dir);
 
     const models = [];
-    const count = Math.floor(Math.random() * 10) + 10; // 10-19 models
+    const count = Math.floor(Math.random() * 6) + 6; // 6-11 models
 
     const randomizeModel = (obj) => {
-      const radius = Math.random() * 0.3 + 0.2;
+      const radius = Math.random() * 0.1 + 0.05; // smaller model size
       obj.scale.set(radius, radius, radius);
       obj.userData.radius = radius;
       obj.userData.rot = new THREE.Vector3(
