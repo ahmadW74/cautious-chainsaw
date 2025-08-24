@@ -270,3 +270,12 @@ span {
 .react-flow__node {
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
 }
+
+/* Utility to hide scrollbars */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
