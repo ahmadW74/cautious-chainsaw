@@ -89,26 +89,34 @@ export default function GoalsBackground({
       templates.forEach((template, i) => {
         const url = urls[i];
         let scaleMultiplier = 1;
-        if (url.includes("key")) scaleMultiplier = 0.4; // shrink key
-        else if (url.includes("lock")) scaleMultiplier = 2; // enlarge lock
+        if (url.includes("key")) scaleMultiplier = 0.2; // further shrink key
+        else if (url.includes("lock")) scaleMultiplier = 1.5; // keep lock reasonable
         template.userData.scaleMultiplier = scaleMultiplier;
       });
 
-      for (let i = 0; i < count; i++) {
-        const baseTemplate =
-          templates[Math.floor(Math.random() * templates.length)];
+      const addModelInstance = (baseTemplate) => {
         const template = baseTemplate.clone(true);
         template.userData.scaleMultiplier = baseTemplate.userData.scaleMultiplier;
         template.traverse((child) => {
           if (child.isMesh) {
             child.material = new THREE.MeshStandardMaterial({
-              color: 0x00ff00,
+              color: new THREE.Color(Math.random(), Math.random(), Math.random()),
             });
           }
         });
         randomizeModel(template);
         scene.add(template);
         models.push(template);
+      };
+
+      // Ensure at least one of each model (chain, lock, key) is present
+      templates.forEach((template) => addModelInstance(template));
+
+      // Add remaining models randomly
+      for (let i = templates.length; i < count; i++) {
+        const baseTemplate =
+          templates[Math.floor(Math.random() * templates.length)];
+        addModelInstance(baseTemplate);
       }
     };
 
