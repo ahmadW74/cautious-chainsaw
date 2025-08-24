@@ -1,10 +1,9 @@
 import GoalsBackground from "@/components/GoalsBackground.jsx";
+import cubeModel from "@/assets/models/cube.obj";
+import pyramidModel from "@/assets/models/pyramid.obj";
 
-const modelUrls = [
-  "https://threejs.org/examples/models/obj/walt/WaltHead.obj",
-  "https://threejs.org/examples/models/obj/female02/female02.obj",
-  "https://threejs.org/examples/models/obj/male02/male02.obj",
-];
+// Use locally imported models so the background works offline
+const modelUrls = [cubeModel, pyramidModel];
 
 export default function Goals() {
   return (
