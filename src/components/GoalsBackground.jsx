@@ -46,8 +46,6 @@ export default function GoalsBackground() {
         (Math.random() - 0.5) * 0.02
       );
 
-      group.userData.offset = Math.random() * 0.5 + 0.25;
-
       group.children[0].material.color.set(Math.random() * 0xffffff);
       group.children[1].material.color.set(Math.random() * 0xffffff);
 
@@ -85,12 +83,11 @@ export default function GoalsBackground() {
     };
     window.addEventListener("wheel", onWheel);
 
-    const cursor = { x: 0, y: 0 };
-    const target = { x: 0, y: 0 };
+    const mouse = new THREE.Vector2(0, 0);
     const onPointerMove = (e) => {
       const rect = mount.getBoundingClientRect();
-      target.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      target.y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
     };
     window.addEventListener("pointermove", onPointerMove);
 
@@ -105,21 +102,27 @@ export default function GoalsBackground() {
     const animate = () => {
       requestAnimationFrame(animate);
       speed *= 0.95;
-      cursor.x = THREE.MathUtils.lerp(cursor.x, target.x, 0.1);
-      cursor.y = THREE.MathUtils.lerp(cursor.y, target.y, 0.1);
+      const mouseWorldX = mouse.x * 5;
+      const mouseWorldZ = mouse.y * 2;
       balls.forEach((ball) => {
         const base = ball.userData.base;
-        const offset = ball.userData.offset;
-        ball.position.x = THREE.MathUtils.lerp(
-          ball.position.x,
-          base.x + cursor.x * offset,
-          0.1
-        );
-        ball.position.z = THREE.MathUtils.lerp(
-          ball.position.z,
-          base.z + cursor.y * offset,
-          0.1
-        );
+
+        const dx = ball.position.x - mouseWorldX;
+        const dz = ball.position.z - mouseWorldZ;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+        const repulseRadius = 2;
+
+        if (dist < repulseRadius && dist > 0) {
+          const force = (repulseRadius - dist) / repulseRadius;
+          ball.position.x += (dx / dist) * force * 0.2;
+          ball.position.z += (dz / dist) * force * 0.2;
+          ball.rotation.x += (dz / dist) * force * 0.1;
+          ball.rotation.y += (dx / dist) * force * 0.1;
+        } else {
+          ball.position.x = THREE.MathUtils.lerp(ball.position.x, base.x, 0.02);
+          ball.position.z = THREE.MathUtils.lerp(ball.position.z, base.z, 0.02);
+        }
+
         ball.position.y += speed;
         if (ball.position.y > 5) {
           randomizeBall(ball, -5);
