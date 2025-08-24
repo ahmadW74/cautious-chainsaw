@@ -46,8 +46,6 @@ export default function GoalsBackground() {
         (Math.random() - 0.5) * 0.02
       );
 
-      group.userData.offset = Math.random() * 0.5 + 0.25;
-
       group.children[0].material.color.set(Math.random() * 0xffffff);
       group.children[1].material.color.set(Math.random() * 0xffffff);
 
@@ -67,7 +65,6 @@ export default function GoalsBackground() {
         )
       );
       group.position.copy(pos);
-      group.userData.base = pos.clone();
     };
 
     for (let i = 0; i < count; i++) {
@@ -81,18 +78,9 @@ export default function GoalsBackground() {
 
     let speed = 0;
     const onWheel = (e) => {
-      speed -= e.deltaY * 0.002; // scroll wheel down -> move down
+      speed += -e.deltaY * 0.002; // scroll up -> move up
     };
     window.addEventListener("wheel", onWheel);
-
-    const cursor = { x: 0, y: 0 };
-    const target = { x: 0, y: 0 };
-    const onPointerMove = (e) => {
-      const rect = mount.getBoundingClientRect();
-      target.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      target.y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-    };
-    window.addEventListener("pointermove", onPointerMove);
 
     const resize = () => {
       const { clientWidth, clientHeight } = mount;
@@ -105,21 +93,7 @@ export default function GoalsBackground() {
     const animate = () => {
       requestAnimationFrame(animate);
       speed *= 0.95;
-      cursor.x = THREE.MathUtils.lerp(cursor.x, target.x, 0.1);
-      cursor.y = THREE.MathUtils.lerp(cursor.y, target.y, 0.1);
       balls.forEach((ball) => {
-        const base = ball.userData.base;
-        const offset = ball.userData.offset;
-        ball.position.x = THREE.MathUtils.lerp(
-          ball.position.x,
-          base.x + cursor.x * offset,
-          0.1
-        );
-        ball.position.z = THREE.MathUtils.lerp(
-          ball.position.z,
-          base.z + cursor.y * offset,
-          0.1
-        );
         ball.position.y += speed;
         if (ball.position.y > 5) {
           randomizeBall(ball, -5);
@@ -138,7 +112,6 @@ export default function GoalsBackground() {
     return () => {
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("resize", resize);
-      window.removeEventListener("pointermove", onPointerMove);
       mount.removeChild(renderer.domElement);
       renderer.dispose();
     };
