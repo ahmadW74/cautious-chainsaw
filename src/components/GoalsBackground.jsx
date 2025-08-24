@@ -44,7 +44,9 @@ export default function GoalsBackground({
     const count = Math.floor(Math.random() * 6) + 6; // 6-11 models
 
     const randomizeModel = (obj) => {
-      const radius = Math.random() * 0.1 + 0.05; // smaller model size
+      const baseRadius = Math.random() * 0.1 + 0.05; // smaller model size
+      const scaleMultiplier = obj.userData.scaleMultiplier || 1;
+      const radius = baseRadius * scaleMultiplier;
       obj.scale.set(radius, radius, radius);
       obj.userData.radius = radius;
       obj.userData.rot = new THREE.Vector3(
@@ -84,9 +86,19 @@ export default function GoalsBackground({
         urls.map((url) => loader.loadAsync(url))
       );
 
+      templates.forEach((template, i) => {
+        const url = urls[i];
+        let scaleMultiplier = 1;
+        if (url.includes("key")) scaleMultiplier = 0.4; // shrink key
+        else if (url.includes("lock")) scaleMultiplier = 2; // enlarge lock
+        template.userData.scaleMultiplier = scaleMultiplier;
+      });
+
       for (let i = 0; i < count; i++) {
-        const template =
-          templates[Math.floor(Math.random() * templates.length)].clone(true);
+        const baseTemplate =
+          templates[Math.floor(Math.random() * templates.length)];
+        const template = baseTemplate.clone(true);
+        template.userData.scaleMultiplier = baseTemplate.userData.scaleMultiplier;
         template.traverse((child) => {
           if (child.isMesh) {
             child.material = new THREE.MeshStandardMaterial({
