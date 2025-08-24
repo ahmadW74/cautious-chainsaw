@@ -13,6 +13,7 @@ import {
 import SampleGraph from "./SampleGraph.jsx";
 import { ReactFlowProvider } from "@xyflow/react";
 import FillerContent from "@/components/FillerContent.jsx";
+import ThreeHero from "@/components/ThreeHero.jsx";
 import { Routes, Route, Link } from "react-router-dom";
 import Blog from "@/pages/Blog.jsx";
 import About from "@/pages/About.jsx";
@@ -275,7 +276,8 @@ export default function App() {
     return (
       <>
         {/* Hero Section */}
-        <section className="relative text-center py-20 px-4 overflow-hidden min-h-[92vh]">
+        <section className="relative text-center py-20 px-4 overflow-hidden min-h-[92vh] bg-[#0077b6]">
+          <ThreeHero />
           <div className="relative z-10 max-w-4xl mx-auto">
             <h1 className="text-4xl font-bold mb-4">DNSSEC Explorer</h1>
             <p className="mb-10">Visualize and understand domain security chains.</p>
