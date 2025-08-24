@@ -9,8 +9,10 @@ import keyModel from "@/assets/models/key.obj?url";
 
 export default function GoalsBackground({
   modelUrls = [chainModel, lockModel, keyModel],
+  bgColor = "#f8f8f8",
 }) {
   const mountRef = useRef(null);
+  const rendererRef = useRef(null);
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -29,9 +31,9 @@ export default function GoalsBackground({
       antialias: true,
       powerPreference: "high-performance",
     });
+    rendererRef.current = renderer;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(mount.clientWidth, mount.clientHeight);
-    renderer.setClearColor(0xf8f8f8); // offwhite background
     mount.appendChild(renderer.domElement);
 
     const ambient = new THREE.AmbientLight(0xffffff, 0.8);
@@ -159,6 +161,12 @@ export default function GoalsBackground({
       renderer.dispose();
     };
   }, [modelUrls]);
+
+  useEffect(() => {
+    if (rendererRef.current) {
+      rendererRef.current.setClearColor(bgColor);
+    }
+  }, [bgColor]);
 
   return <div ref={mountRef} className="absolute inset-0" />;
 }
