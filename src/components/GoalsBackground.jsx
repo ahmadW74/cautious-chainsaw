@@ -28,10 +28,11 @@ export default function GoalsBackground({
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
       powerPreference: "high-performance",
+      alpha: true,
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(mount.clientWidth, mount.clientHeight);
-    renderer.setClearColor(0xf8f8f8); // offwhite background
+    renderer.setClearColor(0x000000, 0); // transparent background
     mount.appendChild(renderer.domElement);
 
     const ambient = new THREE.AmbientLight(0xffffff, 0.8);
@@ -156,5 +157,10 @@ export default function GoalsBackground({
     };
   }, [modelUrls]);
 
-  return <div ref={mountRef} className="absolute inset-0" />;
+  return (
+    <div
+      ref={mountRef}
+      className="absolute inset-0 -z-10 pointer-events-none"
+    />
+  );
 }
