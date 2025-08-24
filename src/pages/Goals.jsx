@@ -1,6 +1,7 @@
 import chainModel from "@/assets/models/chain.obj?url";
 import lockModel from "@/assets/models/lock.obj?url";
 import keyModel from "@/assets/models/key.obj?url";
+import GoalsBackground from "@/components/GoalsBackground";
 
 // Use locally imported models so the background works offline
 const modelUrls = [chainModel, lockModel, keyModel];
