@@ -36,7 +36,7 @@ export default function GoalsBackground() {
     const topGeo = new THREE.SphereGeometry(1, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
     const bottomGeo = new THREE.SphereGeometry(1, 16, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2);
 
-    const randomizeBall = (group, yPos) => {
+    const randomizeBall = (group) => {
       const radius = Math.random() * 0.3 + 0.2;
       group.scale.set(radius, radius, radius);
       group.userData.radius = radius;
@@ -54,7 +54,7 @@ export default function GoalsBackground() {
       do {
         pos.set(
           (Math.random() - 0.5) * 10,
-          yPos !== undefined ? yPos : (Math.random() - 0.5) * 10,
+          (Math.random() - 0.5) * 10,
           (Math.random() - 0.5) * 4
         );
         tries++;
@@ -78,7 +78,7 @@ export default function GoalsBackground() {
 
     let speed = 0;
     const onWheel = (e) => {
-      speed += -e.deltaY * 0.002; // scroll up -> move up
+      speed += e.deltaY * 0.002; // scroll up -> move down
     };
     window.addEventListener("wheel", onWheel);
 
@@ -95,11 +95,8 @@ export default function GoalsBackground() {
       speed *= 0.95;
       balls.forEach((ball) => {
         ball.position.y += speed;
-        if (ball.position.y > 5) {
-          randomizeBall(ball, -5);
-        }
-        if (ball.position.y < -5) {
-          randomizeBall(ball, 5);
+        if (ball.position.y > 5 || ball.position.y < -5) {
+          randomizeBall(ball);
         }
         ball.rotation.x += ball.userData.rot.x;
         ball.rotation.y += ball.userData.rot.y;
