@@ -40,6 +40,11 @@ export default function GlobeScene({
     const loader = new OBJLoader();
     loader.load(modelUrl, (obj) => {
       globeRef.current = obj;
+      globeRef.current.traverse((child) => {
+        if (child.isMesh) {
+          child.material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        }
+      });
       scene.add(globeRef.current);
     });
 
