@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
+import defaultGlobeModel from "@/assets/models/globe.obj?url";
 
-export default function GlobeScene({ modelUrl = "/models/globe.obj" }) {
+export default function GlobeScene({ modelUrl = defaultGlobeModel }) {
   const mountRef = useRef(null);
 
   useEffect(() => {
