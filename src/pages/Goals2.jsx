@@ -1,8 +1,7 @@
 import GlobeScene from "@/components/GlobeScene";
 
 // Update this path to point to your local globe model
-const globeModel =
-  "C:\\Users\\ahmad\\Downloads\\uploads_files_2501044_Low+Poly+Earth.obj";
+const globeModel = "/models/globe.obj";
 
 export default function Goals2() {
   return (
