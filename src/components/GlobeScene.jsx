@@ -27,11 +27,10 @@ export default function GlobeScene({
     camera.position.set(2, 0, 0.5);
     camera.lookAt(0, 0, 0);
 
-      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-      renderer.setSize(mount.clientWidth, mount.clientHeight);
-      // Use an opaque black background to avoid showing the page's white default
-      renderer.setClearColor("#000000", 1);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.setSize(mount.clientWidth, mount.clientHeight);
+    renderer.setClearColor("#000000", 0);
     if (clipOppositeHemisphere) {
       renderer.clippingPlanes = [new THREE.Plane(new THREE.Vector3(1, 0, 0), 0)];
       renderer.localClippingEnabled = true;
