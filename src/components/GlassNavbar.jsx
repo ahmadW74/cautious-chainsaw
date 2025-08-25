@@ -65,6 +65,7 @@ export default function GlassNavbar() {
   const navItems = [
     { to: "/", label: "Home" },
     { to: "/goals", label: "Goals" },
+    { to: "/goals2", label: "Goals2" },
     { to: "/about", label: "About" },
     { to: "/blog", label: "Blog" },
     { to: "/support", label: "Support" },

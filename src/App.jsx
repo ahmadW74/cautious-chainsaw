@@ -20,6 +20,7 @@ import Support from "@/pages/Support.jsx";
 import Policy from "@/pages/Policy.jsx";
 import License from "@/pages/License.jsx";
 import Goals from "@/pages/Goals.jsx";
+import Goals2 from "@/pages/Goals2.jsx";
 import GlassNavbar from "@/components/GlassNavbar.jsx";
 
 const getCache = (key) => {
@@ -508,6 +509,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/goals" element={<Goals />} />
+          <Route path="/goals2" element={<Goals2 />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/about" element={<About />} />
           <Route path="/support" element={<Support />} />
@@ -515,7 +517,7 @@ export default function App() {
           <Route path="/license" element={<License />} />
         </Routes>
       </main>
-      {location.pathname !== "/goals" && (
+      {location.pathname !== "/goals" && location.pathname !== "/goals2" && (
         <footer className="border-t border-border bg-card text-card-foreground p-4 text-sm">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between gap-4">
             <div>
