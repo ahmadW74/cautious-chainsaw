@@ -55,7 +55,7 @@ export default function Goals2() {
 
   return (
     <section className="min-h-screen flex flex-col md:flex-row bg-gradient-to-b from-black via-indigo-900 to-black">
-      <div className="md:w-1/2 w-full md:h-screen md:sticky md:top-0 p-4 bg-gradient-to-b from-black via-indigo-900 to-black">
+      <div className="md:w-1/2 w-full md:h-screen md:sticky md:top-0 p-4">
         <GlobeScene
           onSetRotation={(fn) =>
             (setRotationRef.current = (rot) => {
