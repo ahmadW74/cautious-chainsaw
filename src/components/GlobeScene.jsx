@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 
-export default function GlobeScene() {
+export default function GlobeScene({ modelUrl = "/models/globe.obj" }) {
   const mountRef = useRef(null);
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function GlobeScene() {
     const loader = new OBJLoader();
     let globe;
 
-    loader.load("/models/globe.obj", (obj) => {
+    loader.load(modelUrl, (obj) => {
       globe = obj;
       globe.traverse((child) => {
         if (child.isMesh) {
@@ -62,7 +62,7 @@ export default function GlobeScene() {
       mount.removeChild(renderer.domElement);
       renderer.dispose();
     };
-  }, []);
+  }, [modelUrl]);
 
   return <div ref={mountRef} className="absolute inset-0" />;
 }
