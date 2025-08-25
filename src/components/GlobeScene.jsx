@@ -2,7 +2,12 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import globeModel from "@/assets/models/globe.obj?url";
-export default function GlobeScene({ modelUrl = globeModel, onSetRotation }) {
+
+export default function GlobeScene({
+  modelUrl = globeModel,
+  onSetRotation,
+  clipOppositeHemisphere = true,
+}) {
   const mountRef = useRef(null);
   const globeRef = useRef();
   const rotationRef = useRef({ x: 0, y: 0 });
@@ -13,19 +18,23 @@ export default function GlobeScene({ modelUrl = globeModel, onSetRotation }) {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
-      60,
+      25,
       mount.clientWidth / mount.clientHeight,
       0.1,
       1000
     );
-    // Offset camera so about 60% of the globe is visible
-    camera.position.set(1.2, 0, 3);
+    // Sit near the globe's side so only a slim slice is shown
+    camera.position.set(2, 0, 0.5);
     camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.setClearColor("#000000", 0);
+    if (clipOppositeHemisphere) {
+      renderer.clippingPlanes = [new THREE.Plane(new THREE.Vector3(1, 0, 0), 0)];
+      renderer.localClippingEnabled = true;
+    }
     mount.appendChild(renderer.domElement);
 
     const loader = new OBJLoader();
@@ -79,7 +88,10 @@ export default function GlobeScene({ modelUrl = globeModel, onSetRotation }) {
       requestAnimationFrame(animate);
       if (paused) return;
       if (globeRef.current) {
-        rotationRef.current.y += 0.001; // idle spin
+        rotationRef.current.y = Math.min(
+          Math.PI / 2,
+          rotationRef.current.y + 0.001
+        ); // idle spin without exposing the far side
         globeRef.current.rotation.x = rotationRef.current.x;
         globeRef.current.rotation.y = rotationRef.current.y;
       }
@@ -96,7 +108,7 @@ export default function GlobeScene({ modelUrl = globeModel, onSetRotation }) {
       window.removeEventListener("pointerup", onPointerUp);
       renderer.dispose();
     };
-  }, [modelUrl, onSetRotation]);
+  }, [modelUrl, onSetRotation, clipOppositeHemisphere]);
 
   return <div ref={mountRef} className="w-full h-full" />;
 }
