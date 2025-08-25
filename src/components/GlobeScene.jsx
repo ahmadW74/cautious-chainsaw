@@ -2,12 +2,12 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 
-export default function GlobeScene({ modelUrl = "/models/globe.obj" }) {
+export default function GlobeScene({ modelUrl }) {
   const mountRef = useRef(null);
 
   useEffect(() => {
     const mount = mountRef.current;
-    if (!mount) return;
+    if (!mount || !modelUrl) return;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
