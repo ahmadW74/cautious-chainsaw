@@ -1,6 +1,9 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 
 // Import small default models so the component works without external URLs
 import chainModel from "@/assets/models/chain.obj?url";
@@ -40,6 +43,16 @@ export default function GoalsBackground({
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     mount.appendChild(renderer.domElement);
 
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    const bloom = new UnrealBloomPass(
+      new THREE.Vector2(mount.clientWidth, mount.clientHeight),
+      0.5,
+      0.4,
+      0.85
+    );
+    composer.addPass(bloom);
+
     const ambient = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambient);
     const dir = new THREE.DirectionalLight(0xffffff, 0.5);
@@ -47,6 +60,7 @@ export default function GoalsBackground({
     scene.add(dir);
 
     const models = [];
+    const materials = [];
 
     const randomizeModel = (obj) => {
       const baseRadius = Math.random() * 0.1 + 0.05;
@@ -93,13 +107,36 @@ export default function GoalsBackground({
           template.userData.scaleMultiplier = baseTemplate.userData.scaleMultiplier;
           template.traverse((child) => {
             if (child.isMesh) {
-              child.material = new THREE.MeshStandardMaterial({
-                color: new THREE.Color(
-                  Math.random(),
-                  Math.random(),
-                  Math.random()
-                ),
+              const material = new THREE.ShaderMaterial({
+                uniforms: {
+                  time: { value: 0 },
+                  baseColor: {
+                    value: new THREE.Color(
+                      Math.random(),
+                      Math.random(),
+                      Math.random()
+                    ),
+                  },
+                },
+                vertexShader: `
+                  varying vec3 vPos;
+                  void main() {
+                    vPos = position;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                  }
+                `,
+                fragmentShader: `
+                  uniform float time;
+                  uniform vec3 baseColor;
+                  varying vec3 vPos;
+                  void main() {
+                    float pulse = 0.5 + 0.5 * sin(time + length(vPos));
+                    gl_FragColor = vec4(baseColor * pulse, 1.0);
+                  }
+                `,
               });
+              child.material = material;
+              materials.push(material);
             }
           });
           randomizeModel(template);
@@ -115,6 +152,7 @@ export default function GoalsBackground({
     const resize = () => {
       const { clientWidth, clientHeight } = mount;
       renderer.setSize(clientWidth, clientHeight);
+      composer.setSize(clientWidth, clientHeight);
       camera.aspect = clientWidth / clientHeight;
       camera.updateProjectionMatrix();
     };
@@ -127,14 +165,18 @@ export default function GoalsBackground({
         model.rotation.y += model.userData.rot.y;
         model.rotation.z += model.userData.rot.z;
       });
+      materials.forEach((mat) => {
+        mat.uniforms.time.value += 0.01;
+      });
       camera.position.z += (targetZRef.current - camera.position.z) * 0.05;
-      renderer.render(scene, camera);
+      composer.render();
     };
     animate();
 
     return () => {
       window.removeEventListener("resize", resize);
       mount.removeChild(renderer.domElement);
+      composer.dispose();
       renderer.dispose();
     };
   }, [modelUrls, sectionCount]);
