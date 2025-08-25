@@ -10,9 +10,13 @@ import keyModel from "@/assets/models/key.obj?url";
 export default function GoalsBackground({
   modelUrls = [chainModel, lockModel, keyModel],
   bgColor = "#f8f8f8",
+  activeIndex = 0,
+  sectionCount = modelUrls.length,
 }) {
   const mountRef = useRef(null);
   const rendererRef = useRef(null);
+  const targetZRef = useRef(0);
+  const layerDistance = 12;
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -25,7 +29,7 @@ export default function GoalsBackground({
       0.1,
       1000
     );
-    camera.position.z = 5;
+    camera.position.z = 0;
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -43,38 +47,22 @@ export default function GoalsBackground({
     scene.add(dir);
 
     const models = [];
-    const count = Math.floor(Math.random() * 6) + 6; // 6-11 models
 
     const randomizeModel = (obj) => {
-      const baseRadius = Math.random() * 0.1 + 0.05; // smaller model size
+      const baseRadius = Math.random() * 0.1 + 0.05;
       const scaleMultiplier = obj.userData.scaleMultiplier || 1;
       const radius = baseRadius * scaleMultiplier;
       obj.scale.set(radius, radius, radius);
-      obj.userData.radius = radius;
       obj.userData.rot = new THREE.Vector3(
         (Math.random() - 0.5) * 0.02,
         (Math.random() - 0.5) * 0.02,
         (Math.random() - 0.5) * 0.02
       );
-
-      const pos = new THREE.Vector3();
-      let tries = 0;
-      do {
-        pos.set(
-          (Math.random() - 0.5) * 10,
-          (Math.random() - 0.5) * 10,
-          (Math.random() - 0.5) * 4
-        );
-        tries++;
-      } while (
-        tries < 20 &&
-        models.some(
-          (m) =>
-            m !== obj &&
-            pos.distanceTo(m.position) < radius + m.userData.radius + 0.1
-        )
+      obj.position.set(
+        (Math.random() - 0.5) * 10,
+        (Math.random() - 0.5) * 10,
+        (Math.random() - 0.5) * 2
       );
-      obj.position.copy(pos);
     };
 
     const loader = new OBJLoader();
@@ -91,44 +79,38 @@ export default function GoalsBackground({
       templates.forEach((template, i) => {
         const url = urls[i];
         let scaleMultiplier = 1;
-        if (url.includes("key")) scaleMultiplier = 0.2; // further shrink key
-        else if (url.includes("lock")) scaleMultiplier = 1.5; // keep lock reasonable
+        if (url.includes("key")) scaleMultiplier = 0.2;
+        else if (url.includes("lock")) scaleMultiplier = 1.5;
         template.userData.scaleMultiplier = scaleMultiplier;
       });
 
-      const addModelInstance = (baseTemplate) => {
-        const template = baseTemplate.clone(true);
-        template.userData.scaleMultiplier = baseTemplate.userData.scaleMultiplier;
-        template.traverse((child) => {
-          if (child.isMesh) {
-            child.material = new THREE.MeshStandardMaterial({
-              color: new THREE.Color(Math.random(), Math.random(), Math.random()),
-            });
-          }
-        });
-        randomizeModel(template);
-        scene.add(template);
-        models.push(template);
-      };
-
-      // Ensure at least one of each model (chain, lock, key) is present
-      templates.forEach((template) => addModelInstance(template));
-
-      // Add remaining models randomly
-      for (let i = templates.length; i < count; i++) {
-        const baseTemplate =
-          templates[Math.floor(Math.random() * templates.length)];
-        addModelInstance(baseTemplate);
+      for (let layer = 0; layer < sectionCount; layer++) {
+        const group = new THREE.Group();
+        group.position.z = -layer * layerDistance;
+        const baseTemplate = templates[layer % templates.length];
+        for (let i = 0; i < 10; i++) {
+          const template = baseTemplate.clone(true);
+          template.userData.scaleMultiplier = baseTemplate.userData.scaleMultiplier;
+          template.traverse((child) => {
+            if (child.isMesh) {
+              child.material = new THREE.MeshStandardMaterial({
+                color: new THREE.Color(
+                  Math.random(),
+                  Math.random(),
+                  Math.random()
+                ),
+              });
+            }
+          });
+          randomizeModel(template);
+          group.add(template);
+          models.push(template);
+        }
+        scene.add(group);
       }
     };
 
     loadModels();
-
-    let speed = 0;
-    const onWheel = (e) => {
-      speed += e.deltaY * 0.002; // scroll up -> move down
-    };
-    window.addEventListener("wheel", onWheel);
 
     const resize = () => {
       const { clientWidth, clientHeight } = mount;
@@ -140,33 +122,32 @@ export default function GoalsBackground({
 
     const animate = () => {
       requestAnimationFrame(animate);
-      speed *= 0.95;
       models.forEach((model) => {
-        model.position.y += speed;
-        if (model.position.y > 5 || model.position.y < -5) {
-          randomizeModel(model);
-        }
         model.rotation.x += model.userData.rot.x;
         model.rotation.y += model.userData.rot.y;
         model.rotation.z += model.userData.rot.z;
       });
+      camera.position.z += (targetZRef.current - camera.position.z) * 0.05;
       renderer.render(scene, camera);
     };
     animate();
 
     return () => {
-      window.removeEventListener("wheel", onWheel);
       window.removeEventListener("resize", resize);
       mount.removeChild(renderer.domElement);
       renderer.dispose();
     };
-  }, [modelUrls]);
+  }, [modelUrls, sectionCount]);
 
   useEffect(() => {
     if (rendererRef.current) {
       rendererRef.current.setClearColor(bgColor);
     }
   }, [bgColor]);
+
+  useEffect(() => {
+    targetZRef.current = -activeIndex * layerDistance;
+  }, [activeIndex, layerDistance]);
 
   return <div ref={mountRef} className="absolute inset-0" />;
 }

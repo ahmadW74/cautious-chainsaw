@@ -67,7 +67,12 @@ export default function Goals() {
       className="relative min-h-screen overflow-hidden"
       style={{ backgroundColor: bgColor, transition: "background-color 0.8s ease" }}
     >
-      <GoalsBackground modelUrls={modelUrls} bgColor={bgColor} />
+      <GoalsBackground
+        modelUrls={modelUrls}
+        bgColor={bgColor}
+        activeIndex={activeIndex}
+        sectionCount={sections.length}
+      />
       <div
         ref={containerRef}
         className="relative z-10 flex h-screen overflow-x-scroll overflow-y-hidden snap-x snap-mandatory scroll-smooth scrollbar-hide"
