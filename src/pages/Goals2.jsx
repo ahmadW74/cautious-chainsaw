@@ -1,7 +1,5 @@
 import GlobeScene from "@/components/GlobeScene";
-
-// Update this path to point to your local globe model
-const globeModel = "/models/globe.obj";
+import globeModel from "@/assets/models/globe.obj?url";
 
 export default function Goals2() {
   return (
