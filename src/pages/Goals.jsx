@@ -11,22 +11,18 @@ const sections = [
   {
     title: "Unchain Your Potential",
     text: "Explore how our platform empowers you to break barriers and reach new heights.",
-    color: "#f8f8f8",
   },
   {
     title: "Forge Strong Connections",
     text: "Collaborate with others and build meaningful networks that drive success.",
-    color: "#e0f7fa",
   },
   {
     title: "Unlock Success",
     text: "Leverage intuitive tools and insights to achieve your goals efficiently.",
-    color: "#fce4ec",
   },
   {
     title: "Secure Your Future",
     text: "Stay informed and prepared with up‑to‑date resources and guidance.",
-    color: "#e8f5e9",
   },
 ];
 
@@ -34,7 +30,6 @@ export default function Goals() {
   const containerRef = useRef(null);
   const [progress, setProgress] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [bgColor, setBgColor] = useState(sections[0].color);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -51,7 +46,6 @@ export default function Goals() {
       setProgress(pct);
       const index = Math.round(container.scrollLeft / container.clientWidth);
       setActiveIndex(index);
-      setBgColor(sections[index]?.color || sections[0].color);
     };
 
     container.addEventListener("wheel", handleWheel, { passive: false });
@@ -65,11 +59,10 @@ export default function Goals() {
   return (
     <section
       className="relative min-h-screen overflow-hidden"
-      style={{ backgroundColor: bgColor, transition: "background-color 0.8s ease" }}
+      style={{ backgroundColor: "#001f3f" }}
     >
       <GoalsBackground
         modelUrls={modelUrls}
-        bgColor={bgColor}
         activeIndex={activeIndex}
         sectionCount={sections.length}
       />
