@@ -42,7 +42,7 @@ export default function Goals() {
 
     const handleWheel = (e) => {
       e.preventDefault();
-      container.scrollBy({ left: e.deltaY, behavior: "smooth" });
+      container.scrollBy({ left: -e.deltaY, behavior: "smooth" });
     };
 
     const handleScroll = () => {
