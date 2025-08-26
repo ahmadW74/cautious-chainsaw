@@ -26,8 +26,9 @@ function NavLink({ to, label, hidden, textColor, hoverColor }) {
   );
 }
 
-export default function GlassNavbar() {
+export default function GlassNavbar({ isSignedIn, onSignIn }) {
   const [open, setOpen] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const { pathname } = useLocation();
   const [lightBg, setLightBg] = useState(false);
 
@@ -73,10 +74,14 @@ export default function GlassNavbar() {
     { to: "/license", label: "License" },
   ];
 
+  const expanded = hovered || open;
+
   return (
     <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50">
       <div
-        className={`group/nav relative flex items-center rounded-full bg-white/20 border border-white/30 px-4 py-2 backdrop-blur-lg transition-all duration-300 delay-200 group-hover/nav:delay-0 w-[240px] hover:w-[800px] overflow-visible ${textColor}`}
+        className={`group/nav relative flex items-center rounded-full bg-white/20 border border-white/30 px-4 py-2 backdrop-blur-lg transition-all duration-300 delay-200 group-hover/nav:delay-0 overflow-visible ${textColor} ${expanded ? "w-[800px]" : "w-[240px] hover:w-[800px]"}`}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
       >
         <Link to="/" className={`logo-text text-xl mr-2 ${textColor}`}>
           DNSX
@@ -94,22 +99,52 @@ export default function GlassNavbar() {
           ))}
         </div>
         <div
-          className="relative flex-shrink-0"
-          onMouseEnter={() => setOpen(true)}
-          onMouseLeave={() => setOpen(false)}
+          className="relative flex items-center gap-2 flex-shrink-0"
+          onMouseEnter={() => {
+            setHovered(true);
+            if (isSignedIn) setOpen(true);
+          }}
+          onMouseLeave={() => {
+            setHovered(false);
+            if (isSignedIn) setOpen(false);
+          }}
         >
+          {!isSignedIn && (
+            <button
+              onClick={onSignIn}
+              className={`px-3 py-1 text-sm rounded-full border border-white/30 bg-white/20 backdrop-blur-md ${textColor} ${hoverColor} hover:bg-white/30`}
+            >
+              Sign In
+            </button>
+          )}
           <button
-            onClick={() => setOpen((o) => !o)}
-            className={`flex h-8 w-8 items-center justify-center rounded-full border border-white/30 ${textColor}`}
+            onClick={() => isSignedIn && setOpen((o) => !o)}
+            className={`flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-white/20 backdrop-blur-md ${textColor}`}
           >
             <User className={`h-4 w-4 ${textColor}`} />
           </button>
-          {open && (
-            <div className="absolute right-0 top-full mt-2 w-32 rounded-md bg-black/50 backdrop-blur-md text-white py-2">
-              <Link to="/profile" className="block px-4 py-1 hover:bg-white/10">
+          {isSignedIn && open && (
+            <div
+              className={`absolute right-0 top-full mt-2 w-40 rounded-md border border-white/30 bg-white/20 backdrop-blur-lg py-2 ${textColor}`}
+              onMouseEnter={() => {
+                setHovered(true);
+                setOpen(true);
+              }}
+              onMouseLeave={() => {
+                setHovered(false);
+                setOpen(false);
+              }}
+            >
+              <Link
+                to="/profile"
+                className={`block px-4 py-1 rounded-md ${hoverColor} hover:bg-white/30`}
+              >
                 Profile
               </Link>
-              <Link to="/settings" className="block px-4 py-1 hover:bg-white/10">
+              <Link
+                to="/settings"
+                className={`block px-4 py-1 rounded-md ${hoverColor} hover:bg-white/30`}
+              >
                 Settings
               </Link>
             </div>
