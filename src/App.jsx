@@ -170,7 +170,7 @@ export default function App() {
   const [timelineIndex, setTimelineIndex] = useState(
     dateOptions.length - 1
   );
-  const [loginOpen, setLoginOpen] = useState(true);
+  const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
   const location = useLocation();
 
@@ -203,6 +203,8 @@ export default function App() {
       }
     }
   }, []);
+
+  const isSignedIn = userId !== null;
 
   // Theme state
   const [theme] = useState("light");
@@ -388,7 +390,10 @@ export default function App() {
       } bg-background text-foreground min-h-screen flex flex-col text-base lg:text-lg`}
     >
       <div className="bg-gradient-animate" />
-      <GlassNavbar />
+      <GlassNavbar
+        isSignedIn={isSignedIn}
+        onSignIn={() => setLoginOpen(true)}
+      />
       {/* Login dialog */}
       <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
         <DialogContent className="sm:max-w-lg text-base space-y-6">
