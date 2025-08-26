@@ -46,6 +46,7 @@ LOG_FILE_PATH = os.path.join("C:\\Users\\ahmad\\Desktop\\logs.txt")
 # Cache data is stored in a simple text file in the project directory
 CACHE_FILE_PATH = os.path.join(os.path.dirname(__file__), "chain_cache.txt")
 STATS_FILE_PATH = os.path.join(os.path.dirname(__file__), "stats.json")
+STATS_HISTORY_FILE_PATH = os.path.join(os.path.dirname(__file__), "stats_history.json")
 
 # Configure application logging
 logger = logging.getLogger("dnscap")
@@ -91,6 +92,26 @@ def _write_stats(stats: Dict[str, Any]) -> None:
     try:
         with open(STATS_FILE_PATH, "w") as f:
             json.dump(stats, f)
+    except Exception:
+        pass
+
+
+def _read_stats_history() -> Dict[str, List[str]]:
+    """Load per-domain statistics history from disk."""
+    try:
+        if os.path.exists(STATS_HISTORY_FILE_PATH):
+            with open(STATS_HISTORY_FILE_PATH, "r") as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return {}
+
+
+def _write_stats_history(history: Dict[str, List[str]]) -> None:
+    """Persist per-domain statistics history to disk."""
+    try:
+        with open(STATS_HISTORY_FILE_PATH, "w") as f:
+            json.dump(history, f)
     except Exception:
         pass
 
@@ -1000,7 +1021,17 @@ def record_stat(domain: str):
     stats.setdefault("domains", {})
     stats["domains"][domain] = stats["domains"].get(domain, 0) + 1
     _write_stats(stats)
+    history = _read_stats_history()
+    history.setdefault(domain, []).append(datetime.datetime.utcnow().isoformat())
+    _write_stats_history(history)
     return {"success": True}
+
+
+@app.get("/stats/history/{domain}")
+def get_domain_history(domain: str):
+    """Return timestamp history for a specific domain."""
+    history = _read_stats_history()
+    return {"domain": domain, "events": history.get(domain, [])}
 
 
 @app.get("/stats")

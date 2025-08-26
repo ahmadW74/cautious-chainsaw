@@ -11,10 +11,14 @@ import {
   CartesianGrid,
   XAxis,
   YAxis,
+  LineChart,
+  Line,
 } from "recharts";
 
 export default function Stats() {
   const [stats, setStats] = useState({ total: 0, domains: {} });
+  const [selectedDomain, setSelectedDomain] = useState(null);
+  const [domainHistory, setDomainHistory] = useState([]);
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/stats")
@@ -23,13 +27,31 @@ export default function Stats() {
       .catch(() => setStats({ total: 0, domains: {} }));
   }, []);
 
+  useEffect(() => {
+    if (!selectedDomain) return;
+    fetch(`http://127.0.0.1:8000/stats/history/${encodeURIComponent(selectedDomain)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const counts = (data.events || []).reduce((acc, ts) => {
+          const date = ts.slice(0, 10);
+          acc[date] = (acc[date] || 0) + 1;
+          return acc;
+        }, {});
+        const historyData = Object.entries(counts)
+          .map(([date, count]) => ({ date: new Date(date).getTime(), count }))
+          .sort((a, b) => a.date - b.date);
+        setDomainHistory(historyData);
+      })
+      .catch(() => setDomainHistory([]));
+  }, [selectedDomain]);
+
   const domainData = Object.entries(stats.domains || {})
     .map(([domain, count]) => ({ domain, count }))
     .sort((a, b) => b.count - a.count);
 
   const chartConfig = {
     count: {
-      label: "Graphs",
+      label: "Views",
       color: "hsl(var(--chart-1))",
     },
   };
@@ -77,7 +99,8 @@ export default function Stats() {
                 {domainData.map((item, index) => (
                   <li
                     key={item.domain}
-                    className="flex justify-between text-sm"
+                    className="flex justify-between text-sm cursor-pointer"
+                    onClick={() => setSelectedDomain(item.domain)}
                   >
                     <span>
                       {index + 1}. {item.domain}
@@ -86,6 +109,42 @@ export default function Stats() {
                   </li>
                 ))}
               </ul>
+
+              {selectedDomain && domainHistory.length > 0 && (
+                <div className="mt-6 space-y-2">
+                  <h3 className="text-base font-semibold">
+                    Views for {selectedDomain}
+                  </h3>
+                  <ChartContainer
+                    config={chartConfig}
+                    className="h-[300px] w-full"
+                  >
+                    <LineChart data={domainHistory}>
+                      <CartesianGrid vertical={false} />
+                      <XAxis
+                        dataKey="date"
+                        type="number"
+                        domain={["auto", "auto"]}
+                        tickFormatter={(value) =>
+                          new Date(value).toLocaleDateString()
+                        }
+                      />
+                      <YAxis
+                        allowDecimals={false}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Line
+                        type="monotone"
+                        dataKey="count"
+                        stroke="var(--color-count)"
+                        dot={false}
+                      />
+                    </LineChart>
+                  </ChartContainer>
+                </div>
+              )}
             </>
           ) : (
             <p>No domain data available.</p>
