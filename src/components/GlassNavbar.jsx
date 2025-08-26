@@ -83,7 +83,7 @@ export default function GlassNavbar({ isSignedIn, onSignIn }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        <Link to="/" className={`logo-text text-xl mr-2 ${textColor}`}>
+        <Link to="/" className={`logo-text text-xl mr-2 ${textColor} ${hoverColor}`}>
           DNSX
         </Link>
         <div className="flex-1 flex justify-center group-hover/nav:justify-start gap-0 group-hover/nav:gap-4">
@@ -104,12 +104,14 @@ export default function GlassNavbar({ isSignedIn, onSignIn }) {
             setHovered(true);
             if (isSignedIn) setOpen(true);
           }}
-          onMouseLeave={() => {
+          onMouseLeave={(e) => {
+            const related = e.relatedTarget;
+            if (related && e.currentTarget.contains(related)) return;
             setHovered(false);
             if (isSignedIn) setOpen(false);
           }}
         >
-          {!isSignedIn && (
+          {!isSignedIn && expanded && (
             <button
               onClick={onSignIn}
               className={`px-3 py-1 text-sm rounded-full border border-white/30 bg-white/20 backdrop-blur-md ${textColor} ${hoverColor} hover:bg-white/30`}
@@ -119,9 +121,9 @@ export default function GlassNavbar({ isSignedIn, onSignIn }) {
           )}
           <button
             onClick={() => isSignedIn && setOpen((o) => !o)}
-            className={`flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-white/20 backdrop-blur-md ${textColor}`}
+            className={`flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-white/20 backdrop-blur-md ${textColor} ${hoverColor} hover:bg-white/30`}
           >
-            <User className={`h-4 w-4 ${textColor}`} />
+            <User className="h-4 w-4" />
           </button>
           {isSignedIn && open && (
             <div
