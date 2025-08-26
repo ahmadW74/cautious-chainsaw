@@ -70,6 +70,8 @@ export default function GlassNavbar({ isSignedIn, onSignIn }) {
     { to: "/goals2", label: "Goals2" },
     { to: "/about", label: "About" },
     { to: "/blog", label: "Blog" },
+    { to: "/history", label: "History" },
+    { to: "/stats", label: "Stats" },
     { to: "/support", label: "Support" },
     { to: "/policy", label: "Policy" },
     { to: "/license", label: "License" },

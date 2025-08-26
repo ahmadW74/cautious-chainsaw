@@ -45,6 +45,7 @@ DATA_FILE_PATH = os.path.join(os.path.dirname(__file__), "data.txt")
 LOG_FILE_PATH = os.path.join("C:\\Users\\ahmad\\Desktop\\logs.txt")
 # Cache data is stored in a simple text file in the project directory
 CACHE_FILE_PATH = os.path.join(os.path.dirname(__file__), "chain_cache.txt")
+STATS_FILE_PATH = os.path.join(os.path.dirname(__file__), "stats.json")
 
 # Configure application logging
 logger = logging.getLogger("dnscap")
@@ -70,6 +71,26 @@ def _write_file_cache(cache: Dict[str, Any]) -> None:
     try:
         with open(CACHE_FILE_PATH, "w") as f:
             json.dump(cache, f)
+    except Exception:
+        pass
+
+
+def _read_stats() -> Dict[str, Any]:
+    """Load global graph generation statistics from disk."""
+    try:
+        if os.path.exists(STATS_FILE_PATH):
+            with open(STATS_FILE_PATH, "r") as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return {"total": 0, "domains": {}}
+
+
+def _write_stats(stats: Dict[str, Any]) -> None:
+    """Persist global graph generation statistics to disk."""
+    try:
+        with open(STATS_FILE_PATH, "w") as f:
+            json.dump(stats, f)
     except Exception:
         pass
 
@@ -969,6 +990,23 @@ def get_item(domain: str, user_id: Optional[str] = None, date: Optional[str] = N
     elapsed = int((time.time() - start) * 1000)
     print(f"Chain fetch for {domain} took {elapsed}ms (cached={from_cache})")
     return result
+
+
+@app.post("/stats/{domain}")
+def record_stat(domain: str):
+    """Record a graph generation event for global statistics."""
+    stats = _read_stats()
+    stats["total"] = stats.get("total", 0) + 1
+    stats.setdefault("domains", {})
+    stats["domains"][domain] = stats["domains"].get(domain, 0) + 1
+    _write_stats(stats)
+    return {"success": True}
+
+
+@app.get("/stats")
+def get_stats():
+    """Return aggregated graph generation statistics."""
+    return _read_stats()
 
 @app.get("/login/{user}/{passw}")
 def login(user:str,passw:str):
