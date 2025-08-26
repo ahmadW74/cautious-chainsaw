@@ -15,6 +15,7 @@ import { ReactFlowProvider } from "@xyflow/react";
 import FillerContent from "@/components/FillerContent.jsx";
 import { Routes, Route, Link, useLocation } from "react-router-dom";
 import Blog from "@/pages/Blog.jsx";
+import WriteBlog from "@/pages/WriteBlog.jsx";
 import About from "@/pages/About.jsx";
 import Support from "@/pages/Support.jsx";
 import Policy from "@/pages/Policy.jsx";
@@ -637,6 +638,7 @@ export default function App() {
           <Route path="/goals" element={<Goals />} />
           <Route path="/goals2" element={<Goals2 />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/writeblog" element={<WriteBlog />} />
           <Route path="/about" element={<About />} />
           <Route path="/support" element={<Support />} />
           <Route path="/policy" element={<Policy />} />

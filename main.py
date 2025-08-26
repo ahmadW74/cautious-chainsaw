@@ -1,6 +1,7 @@
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
@@ -47,6 +48,10 @@ LOG_FILE_PATH = os.path.join("C:\\Users\\ahmad\\Desktop\\logs.txt")
 CACHE_FILE_PATH = os.path.join(os.path.dirname(__file__), "chain_cache.txt")
 STATS_FILE_PATH = os.path.join(os.path.dirname(__file__), "stats.json")
 STATS_HISTORY_FILE_PATH = os.path.join(os.path.dirname(__file__), "stats_history.json")
+BLOG_POSTS_FILE = os.path.join(os.path.dirname(__file__), "blog_posts.json")
+BLOG_IMAGES_DIR = os.path.join(os.path.dirname(__file__), "public", "blog_images")
+os.makedirs(BLOG_IMAGES_DIR, exist_ok=True)
+app.mount("/blog_images", StaticFiles(directory=BLOG_IMAGES_DIR), name="blog-images")
 
 # Configure application logging
 logger = logging.getLogger("dnscap")
@@ -112,6 +117,26 @@ def _write_stats_history(history: Dict[str, List[str]]) -> None:
     try:
         with open(STATS_HISTORY_FILE_PATH, "w") as f:
             json.dump(history, f)
+    except Exception:
+        pass
+
+
+def _read_blog_posts() -> List[Dict[str, Any]]:
+    """Load blog posts from disk."""
+    try:
+        if os.path.exists(BLOG_POSTS_FILE):
+            with open(BLOG_POSTS_FILE, "r") as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return []
+
+
+def _write_blog_posts(posts: List[Dict[str, Any]]) -> None:
+    """Persist blog posts to disk."""
+    try:
+        with open(BLOG_POSTS_FILE, "w") as f:
+            json.dump(posts, f)
     except Exception:
         pass
 
@@ -1068,6 +1093,11 @@ def signup(user:str,passw:str,name:str):
 class TokenPayload(BaseModel):
     token: str
 
+
+class BlogPost(BaseModel):
+    title: str
+    content: str
+
 @app.post("/google-auth")
 def google_auth(payload: TokenPayload):
     if not GOOGLE_CLIENT_ID:
@@ -1104,6 +1134,39 @@ def google_auth(payload: TokenPayload):
         file.write(f"\n{file_entry}")
     append_log("login", uid)
     return {"success": name, "id": uid, "email": email, "picture": picture}
+
+
+@app.get("/posts")
+def get_posts():
+    """Return all blog posts."""
+    return _read_blog_posts()
+
+
+@app.post("/posts")
+def create_post(post: BlogPost):
+    posts = _read_blog_posts()
+    new_post = {
+        "id": uuid.uuid4().hex,
+        "title": post.title,
+        "content": post.content,
+        "date": datetime.datetime.utcnow().isoformat(),
+    }
+    posts.insert(0, new_post)
+    _write_blog_posts(posts)
+    return {"success": True, "id": new_post["id"]}
+
+
+@app.post("/upload_image")
+async def upload_image(image: UploadFile = File(...)):
+    """Save an uploaded image and return its public URL."""
+    filename = f"{uuid.uuid4().hex}_{image.filename}"
+    filepath = os.path.join(BLOG_IMAGES_DIR, filename)
+    try:
+        with open(filepath, "wb") as buffer:
+            buffer.write(await image.read())
+        return {"url": f"/blog_images/{filename}"}
+    except Exception:
+        raise HTTPException(status_code=500, detail="Image upload failed")
 
 
 @app.post("/support")
