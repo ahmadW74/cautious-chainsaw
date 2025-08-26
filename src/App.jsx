@@ -21,6 +21,8 @@ import Policy from "@/pages/Policy.jsx";
 import License from "@/pages/License.jsx";
 import Goals from "@/pages/Goals.jsx";
 import Goals2 from "@/pages/Goals2.jsx";
+import History from "@/pages/History.jsx";
+import Stats from "@/pages/Stats.jsx";
 import GlassNavbar from "@/components/GlassNavbar.jsx";
 
 const getCache = (key) => {
@@ -197,13 +199,14 @@ export default function App() {
           setUserId(data.userId || null);
           setLoginOpen(false);
           setRememberMe(true);
-        } else {
-          localStorage.removeItem("rememberMe");
+          return;
         }
       } catch {
-        localStorage.removeItem("rememberMe");
+        // fall through to open login
       }
+      localStorage.removeItem("rememberMe");
     }
+    setLoginOpen(true);
   }, []);
 
   const isSignedIn = userId !== null;
@@ -403,6 +406,26 @@ export default function App() {
     }
   };
 
+  const addHistory = (domain, date) => {
+    if (!userId) return;
+    try {
+      const key = `graph_history_${userId}`;
+      const stored = JSON.parse(localStorage.getItem(key) || "[]");
+      stored.push({ domain, date });
+      localStorage.setItem(key, JSON.stringify(stored));
+    } catch {
+      // ignore storage errors
+    }
+  };
+
+  const addStats = (domain) => {
+    fetch(`http://127.0.0.1:8000/stats/${encodeURIComponent(domain)}`, {
+      method: "POST",
+    }).catch(() => {
+      // ignore network errors
+    });
+  };
+
   //graph logic
   const handleAnalyze = () => {
     const cleaned = domain.trim().toLowerCase();
@@ -416,6 +439,8 @@ export default function App() {
     }
     setCurrentDomain(cleaned);
     setGraphGenerated(true);
+    addHistory(cleaned, selectedDate.toISOString().slice(0, 7));
+    addStats(cleaned);
   };
 
   const handleRefresh = () => {
@@ -616,6 +641,11 @@ export default function App() {
           <Route path="/support" element={<Support />} />
           <Route path="/policy" element={<Policy />} />
           <Route path="/license" element={<License />} />
+          <Route
+            path="/history"
+            element={<History userId={userId} viewMode={viewMode} />}
+          />
+          <Route path="/stats" element={<Stats />} />
         </Routes>
       </main>
       {location.pathname !== "/goals" && location.pathname !== "/goals2" && (
