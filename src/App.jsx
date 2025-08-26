@@ -55,6 +55,7 @@ function HomePage({
   handleRefresh,
   userId,
   selectedDate,
+  limitReached,
 }) {
   return (
     <>
@@ -74,7 +75,7 @@ function HomePage({
               size="icon"
               variant="secondary"
               onClick={handleAnalyze}
-              disabled={!domain.trim()}
+              disabled={!domain.trim() || limitReached}
               className="rounded-r-full rounded-l-none border-l-0 h-12 lg:h-14"
               type="button"
             >
@@ -136,6 +137,7 @@ function HomePage({
                     onRefresh={handleRefresh}
                     userId={userId}
                     selectedDate={selectedDate.toISOString().slice(0, 7)}
+                    limitReached={limitReached}
                   />
                 </ReactFlowProvider>
               </div>
@@ -206,6 +208,36 @@ export default function App() {
 
   const isSignedIn = userId !== null;
 
+  // Track anonymous graph usage
+  const MAX_GRAPH_USES = 2;
+  const [graphUses, setGraphUses] = useState(() => {
+    const stored = getCache("graph_uses");
+    return stored ? parseInt(stored, 10) || 0 : 0;
+  });
+
+  useEffect(() => {
+    setCache("graph_uses", graphUses);
+  }, [graphUses]);
+
+  const incrementGraphUses = () => setGraphUses((u) => u + 1);
+
+  const resetGraphUses = () => {
+    setGraphUses(0);
+    try {
+      localStorage.removeItem("graph_uses");
+    } catch {
+      // ignore
+    }
+  };
+
+  const limitReached = !isSignedIn && graphUses >= MAX_GRAPH_USES;
+
+  useEffect(() => {
+    if (limitReached) {
+      setLoginOpen(true);
+    }
+  }, [limitReached]);
+
   // Theme state
   const [theme] = useState("light");
 
@@ -271,6 +303,7 @@ export default function App() {
         setUsername(data.success);
         setProfilePic(data.picture || null);
         setUserId(data.id || null);
+        resetGraphUses();
         setLoginOpen(false);
         setSignupOpen(false);
         if (rememberMe) {
@@ -308,6 +341,7 @@ export default function App() {
         setUsername(successVal);
         setProfilePic(null);
         setUserId(data.id || null);
+        resetGraphUses();
         setLoginError("");
         setLoginOpen(false);
         if (rememberMe) {
@@ -360,16 +394,28 @@ export default function App() {
   //graph logic
   const handleAnalyze = () => {
     const cleaned = domain.trim().toLowerCase();
-    if (cleaned) {
-      setCurrentDomain(cleaned);
-      setGraphGenerated(true);
+    if (!cleaned) return;
+    if (!isSignedIn) {
+      if (limitReached) {
+        setLoginOpen(true);
+        return;
+      }
+      incrementGraphUses();
     }
+    setCurrentDomain(cleaned);
+    setGraphGenerated(true);
   };
 
   const handleRefresh = () => {
-    if (currentDomain) {
-      setRefreshTrigger((prev) => prev + 1);
+    if (!currentDomain) return;
+    if (!isSignedIn) {
+      if (limitReached) {
+        setLoginOpen(true);
+        return;
+      }
+      incrementGraphUses();
     }
+    setRefreshTrigger((prev) => prev + 1);
   };
   // Removed theme toggle and logout handlers with the new navbar
 
@@ -547,6 +593,7 @@ export default function App() {
                 handleRefresh={handleRefresh}
                 userId={userId}
                 selectedDate={selectedDate}
+                limitReached={limitReached}
               />
             }
           />

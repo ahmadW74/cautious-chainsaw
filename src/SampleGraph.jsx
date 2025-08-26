@@ -71,6 +71,7 @@ const setCache = (key, value) => {
  * @param {string} props.viewMode - Display mode (graphviz or reactflow)
  * @param {string} [props.maxWidth="100rem"] - Max width of the graph container
  * @param {number|string} [props.height=1113] - Height of the graph container
+ * @param {boolean} [props.limitReached=false] - Disable refresh when usage limit hit
  */
 const SampleGraph = ({
   domain,
@@ -81,6 +82,7 @@ const SampleGraph = ({
   viewMode,
   maxWidth = "100rem",
   height = 1113,
+  limitReached = false,
 }) => {
   const [dot, setDot] = useState("digraph DNSSEC {}");
   const [loading, setLoading] = useState(false);
@@ -881,7 +883,7 @@ const SampleGraph = ({
                 size="icon"
                 variant="secondary"
                 onClick={onRefresh}
-                disabled={!domain}
+                disabled={!domain || limitReached}
                 type="button"
               >
                 <RotateCcw className="h-4 w-4" />
