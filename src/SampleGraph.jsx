@@ -615,11 +615,8 @@ const SampleGraph = ({
           id: `zsk_${idx}_0-${dsId}`,
           source: firstZskId,
           target: dsId,
-          label: "signs",
           type: "bezier",
           animated: true,
-          style: edgeStyle("signs"),
-          labelStyle: edgeLabelStyle("signs"),
         });
         crossEdges.push({
           id: `${dsId}-ksk_${idx + 1}`,

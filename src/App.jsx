@@ -39,6 +39,114 @@ const setCache = (key, value) => {
   }
 };
 
+function HomePage({
+  domain,
+  setDomain,
+  handleAnalyze,
+  timelineIndex,
+  setTimelineIndex,
+  dateOptions,
+  tooltipLabel,
+  graphGenerated,
+  currentDomain,
+  refreshTrigger,
+  theme,
+  viewMode,
+  handleRefresh,
+  userId,
+  selectedDate,
+}) {
+  return (
+    <>
+      {/* Hero Section */}
+      <section className="relative text-center py-20 px-4 overflow-hidden min-h-[92vh] bg-[#0077b6]">
+        <div className="relative z-10 max-w-4xl mx-auto">
+          <h1 className="text-4xl font-bold mb-4">DNSSEC Explorer</h1>
+          <p className="mb-10">Visualize and understand domain security chains.</p>
+          <div className="flex justify-center mb-6">
+            <Input
+              placeholder="type domain here to analyze"
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+              className="w-80 h-12 lg:h-14 text-lg rounded-l-full rounded-r-none shadow-inner text-black"
+            />
+            <Button
+              size="icon"
+              variant="secondary"
+              onClick={handleAnalyze}
+              disabled={!domain.trim()}
+              className="rounded-r-full rounded-l-none border-l-0 h-12 lg:h-14"
+              type="button"
+            >
+              <Search className="h-6 w-6" />
+            </Button>
+          </div>
+          <div className="relative mb-6 h-6 lg:h-8 max-w-3xl mx-auto">
+            <div className="absolute -top-10 left-0 w-full pointer-events-none">
+              <div
+                style={{ left: `${(timelineIndex / (dateOptions.length - 1)) * 100}%` }}
+                className="absolute transform -translate-x-1/2 bg-white text-black text-sm lg:text-base px-3 py-2 rounded shadow"
+              >
+                {tooltipLabel}
+              </div>
+            </div>
+            <div className="relative h-full">
+              <Slider
+                min={0}
+                max={dateOptions.length - 1}
+                step={1}
+                value={[timelineIndex]}
+                onValueChange={(v) => setTimelineIndex(v[0])}
+                className="h-full"
+              />
+              {dateOptions.map((_, i) => (
+                <div
+                  key={i}
+                  style={{ left: `${(i / (dateOptions.length - 1)) * 100}%` }}
+                  className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-full bg-white/50 pointer-events-none"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+      {/* Filler content or graph */}
+      <div className="relative">
+        <div
+          className={`transition-all duration-500 ${
+            graphGenerated ? "opacity-0 max-h-0 overflow-hidden" : "opacity-100"
+          }`}
+        >
+          <FillerContent />
+        </div>
+        <div
+          className={`transition-opacity duration-500 ${
+            graphGenerated ? "opacity-100" : "opacity-0 max-h-0 overflow-hidden"
+          }`}
+        >
+          {graphGenerated && (
+            <div className="p-6 lg:p-10 flex justify-center">
+              <div className="w-full max-w-[100rem]">
+                <ReactFlowProvider>
+                  <SampleGraph
+                    domain={currentDomain}
+                    refreshTrigger={refreshTrigger}
+                    theme={theme}
+                    viewMode={viewMode}
+                    onRefresh={handleRefresh}
+                    userId={userId}
+                    selectedDate={selectedDate.toISOString().slice(0, 7)}
+                  />
+                </ReactFlowProvider>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { API_BASE } from "@/lib/api";
 export default function App() {
@@ -273,98 +381,6 @@ export default function App() {
           year: "numeric",
         });
 
-  function HomePage() {
-    return (
-      <>
-        {/* Hero Section */}
-        <section className="relative text-center py-20 px-4 overflow-hidden min-h-[92vh] bg-[#0077b6]">
-          <div className="relative z-10 max-w-4xl mx-auto">
-            <h1 className="text-4xl font-bold mb-4">DNSSEC Explorer</h1>
-            <p className="mb-10">Visualize and understand domain security chains.</p>
-            <div className="flex justify-center mb-6">
-              <Input
-                placeholder="example.com"
-                value={domain}
-                onChange={(e) => setDomain(e.target.value)}
-                className="w-80 h-12 lg:h-14 text-lg rounded-l-full rounded-r-none shadow-inner text-black"
-              />
-              <Button
-                size="icon"
-                variant="secondary"
-                onClick={handleAnalyze}
-                disabled={!domain.trim()}
-                className="rounded-r-full rounded-l-none border-l-0 h-12 lg:h-14"
-                type="button"
-              >
-                <Search className="h-6 w-6" />
-              </Button>
-            </div>
-            <div className="relative mb-6 h-6 lg:h-8 max-w-3xl mx-auto">
-              <div className="absolute -top-10 left-0 w-full pointer-events-none">
-                <div
-                  style={{ left: `${(timelineIndex / (dateOptions.length - 1)) * 100}%` }}
-                  className="absolute transform -translate-x-1/2 bg-white text-black text-sm lg:text-base px-3 py-2 rounded shadow"
-                >
-                  {tooltipLabel}
-                </div>
-              </div>
-              <div className="relative h-full">
-                <Slider
-                  min={0}
-                  max={dateOptions.length - 1}
-                  step={1}
-                  value={[timelineIndex]}
-                  onValueChange={(v) => setTimelineIndex(v[0])}
-                  className="h-full"
-                />
-                {dateOptions.map((_, i) => (
-                  <div
-                    key={i}
-                    style={{ left: `${(i / (dateOptions.length - 1)) * 100}%` }}
-                    className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-full bg-white/50 pointer-events-none"
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-        {/* Filler content or graph */}
-        <div className="relative">
-          <div
-            className={`transition-all duration-500 ${
-              graphGenerated ? "opacity-0 max-h-0 overflow-hidden" : "opacity-100"
-            }`}
-          >
-            <FillerContent />
-          </div>
-          <div
-            className={`transition-opacity duration-500 ${
-              graphGenerated ? "opacity-100" : "opacity-0 max-h-0 overflow-hidden"
-            }`}
-          >
-            {graphGenerated && (
-              <div className="p-6 lg:p-10 flex justify-center">
-                <div className="w-full max-w-[100rem]">
-                  <ReactFlowProvider>
-                    <SampleGraph
-                      domain={currentDomain}
-                      refreshTrigger={refreshTrigger}
-                      theme={theme}
-                      viewMode={viewMode}
-                      onRefresh={handleRefresh}
-                      userId={userId}
-                      selectedDate={selectedDate.toISOString().slice(0, 7)}
-                    />
-                  </ReactFlowProvider>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </>
-    );
-  }
-
   return (
     <div
       className={`${
@@ -507,7 +523,28 @@ export default function App() {
       {/* Main content */}
       <main className="flex-grow">
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route
+            path="/"
+            element={
+              <HomePage
+                domain={domain}
+                setDomain={setDomain}
+                handleAnalyze={handleAnalyze}
+                timelineIndex={timelineIndex}
+                setTimelineIndex={setTimelineIndex}
+                dateOptions={dateOptions}
+                tooltipLabel={tooltipLabel}
+                graphGenerated={graphGenerated}
+                currentDomain={currentDomain}
+                refreshTrigger={refreshTrigger}
+                theme={theme}
+                viewMode={viewMode}
+                handleRefresh={handleRefresh}
+                userId={userId}
+                selectedDate={selectedDate}
+              />
+            }
+          />
           <Route path="/goals" element={<Goals />} />
           <Route path="/goals2" element={<Goals2 />} />
           <Route path="/blog" element={<Blog />} />
