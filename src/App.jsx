@@ -264,16 +264,14 @@ export default function App() {
   const renderGoogleButtons = () => {
     if (!window.google) return;
     const loginDiv = document.getElementById("googleSignIn");
-    if (loginDiv) {
-      loginDiv.innerHTML = "";
+    if (loginDiv && loginDiv.childElementCount === 0) {
       window.google.accounts.id.renderButton(loginDiv, {
         theme: "outline",
         size: "large",
       });
     }
     const signupDiv = document.getElementById("googleSignup");
-    if (signupDiv) {
-      signupDiv.innerHTML = "";
+    if (signupDiv && signupDiv.childElementCount === 0) {
       window.google.accounts.id.renderButton(signupDiv, {
         theme: "outline",
         size: "large",
@@ -303,7 +301,7 @@ export default function App() {
     if (googleReady && (loginOpen || signupOpen)) {
       renderGoogleButtons();
     }
-  }, [googleReady, loginOpen, signupOpen]);
+  });
 
   const handleGoogleCredential = async (credential) => {
     try {
