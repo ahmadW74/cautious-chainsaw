@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { User } from "lucide-react";
 
 function NavLink({ to, label, hidden, textColor, hoverColor }) {
@@ -27,6 +27,7 @@ function NavLink({ to, label, hidden, textColor, hoverColor }) {
 }
 
 export default function GlassNavbar({ isSignedIn, onSignIn }) {
+  const navRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
   const { pathname } = useLocation();
@@ -79,9 +80,15 @@ export default function GlassNavbar({ isSignedIn, onSignIn }) {
   return (
     <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50">
       <div
+        ref={navRef}
         className={`group/nav relative flex items-center rounded-full bg-white/20 border border-white/30 px-4 py-2 backdrop-blur-lg transition-all duration-300 delay-200 group-hover/nav:delay-0 overflow-visible ${textColor} ${expanded ? "w-[800px]" : "w-[240px] hover:w-[800px]"}`}
         onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onMouseLeave={(e) => {
+          const related = e.relatedTarget;
+          if (related && navRef.current && navRef.current.contains(related)) return;
+          setHovered(false);
+          setOpen(false);
+        }}
       >
         <Link to="/" className={`logo-text text-xl mr-2 ${textColor} ${hoverColor}`}>
           DNSX
@@ -107,6 +114,10 @@ export default function GlassNavbar({ isSignedIn, onSignIn }) {
           onMouseLeave={(e) => {
             const related = e.relatedTarget;
             if (related && e.currentTarget.contains(related)) return;
+            if (related && navRef.current && navRef.current.contains(related)) {
+              if (isSignedIn) setOpen(false);
+              return;
+            }
             setHovered(false);
             if (isSignedIn) setOpen(false);
           }}
@@ -132,7 +143,12 @@ export default function GlassNavbar({ isSignedIn, onSignIn }) {
                 setHovered(true);
                 setOpen(true);
               }}
-              onMouseLeave={() => {
+              onMouseLeave={(e) => {
+                const related = e.relatedTarget;
+                if (related && navRef.current && navRef.current.contains(related)) {
+                  setOpen(false);
+                  return;
+                }
                 setHovered(false);
                 setOpen(false);
               }}
