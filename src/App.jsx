@@ -259,7 +259,27 @@ export default function App() {
   const [signupPassword, setSignupPassword] = useState("");
   const [signupMessage, setSignupMessage] = useState("");
   const [signupMessageType, setSignupMessageType] = useState("");
+  const [googleReady, setGoogleReady] = useState(false);
 
+  const renderGoogleButtons = () => {
+    if (!window.google) return;
+    const loginDiv = document.getElementById("googleSignIn");
+    if (loginDiv) {
+      loginDiv.innerHTML = "";
+      window.google.accounts.id.renderButton(loginDiv, {
+        theme: "outline",
+        size: "large",
+      });
+    }
+    const signupDiv = document.getElementById("googleSignup");
+    if (signupDiv) {
+      signupDiv.innerHTML = "";
+      window.google.accounts.id.renderButton(signupDiv, {
+        theme: "outline",
+        size: "large",
+      });
+    }
+  };
   // Google OAuth initialization
   useEffect(() => {
     const script = document.createElement("script");
@@ -272,24 +292,18 @@ export default function App() {
             "376144524625-v49q48ldo2lm4q6nvtoumehm1s4m7gdr.apps.googleusercontent.com",
           callback: (response) => handleGoogleCredential(response.credential),
         });
-        const loginDiv = document.getElementById("googleSignIn");
-        if (loginDiv) {
-          window.google.accounts.id.renderButton(loginDiv, {
-            theme: "outline",
-            size: "large",
-          });
-        }
-        const signupDiv = document.getElementById("googleSignup");
-        if (signupDiv) {
-          window.google.accounts.id.renderButton(signupDiv, {
-            theme: "outline",
-            size: "large",
-          });
-        }
+        setGoogleReady(true);
+        renderGoogleButtons();
       }
     };
     document.body.appendChild(script);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (googleReady && (loginOpen || signupOpen)) {
+      renderGoogleButtons();
+    }
+  }, [googleReady, loginOpen, signupOpen]);
 
   const handleGoogleCredential = async (credential) => {
     try {
