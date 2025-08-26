@@ -11,7 +11,7 @@ export default function Blog() {
   const [posts, setPosts] = useState([]);
 
   useEffect(() => {
-    fetch("/posts")
+    fetch("http://127.0.0.1:8000/posts")
       .then((res) => res.json())
       .then((data) => setPosts(data));
   }, []);

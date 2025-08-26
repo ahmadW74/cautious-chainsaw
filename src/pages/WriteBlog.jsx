@@ -43,7 +43,7 @@ export default function WriteBlog() {
         const formData = new FormData();
         formData.append("image", file);
         try {
-          const res = await fetch("/upload_image", {
+          const res = await fetch("http://127.0.0.1:8000/upload_image", {
             method: "POST",
             body: formData,
           });
@@ -59,7 +59,7 @@ export default function WriteBlog() {
 
   const handlePost = async () => {
     const content = quillRef.current.root.innerHTML;
-    await fetch("/posts", {
+    await fetch("http://127.0.0.1:8000/posts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title, content }),
