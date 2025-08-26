@@ -49,10 +49,17 @@ export default function Stats() {
     .map(([domain, count]) => ({ domain, count }))
     .sort((a, b) => b.count - a.count);
 
-  const chartConfig = {
+  const domainChartConfig = {
     count: {
       label: "Views",
       color: "hsl(var(--chart-1))",
+    },
+  };
+
+  const historyChartConfig = {
+    count: {
+      label: "Views",
+      color: "black",
     },
   };
 
@@ -68,7 +75,7 @@ export default function Stats() {
           {domainData.length > 0 ? (
             <>
               <ChartContainer
-                config={chartConfig}
+                config={domainChartConfig}
                 className="h-[300px] w-full"
               >
                 <BarChart data={domainData}>
@@ -116,7 +123,7 @@ export default function Stats() {
                     Views for {selectedDomain}
                   </h3>
                   <ChartContainer
-                    config={chartConfig}
+                    config={historyChartConfig}
                     className="h-[300px] w-full"
                   >
                     <LineChart data={domainHistory}>
