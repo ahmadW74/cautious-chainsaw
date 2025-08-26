@@ -1142,6 +1142,16 @@ def get_posts():
     return _read_blog_posts()
 
 
+@app.get("/posts/{post_id}")
+def get_post(post_id: str):
+    """Return a single blog post by its ID."""
+    posts = _read_blog_posts()
+    for post in posts:
+        if post["id"] == post_id:
+            return post
+    raise HTTPException(status_code=404, detail="Post not found")
+
+
 @app.post("/posts")
 def create_post(post: BlogPost):
     posts = _read_blog_posts()
