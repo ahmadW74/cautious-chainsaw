@@ -185,8 +185,9 @@ export default function App() {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
-  const [, setUsername] = useState("");
-  const [, setProfilePic] = useState(null);
+  const [username, setUsername] = useState("");
+  const [profilePic, setProfilePic] = useState(null);
+  const [userEmail, setUserEmail] = useState("");
   const [userId, setUserId] = useState(null);
   const [rememberMe, setRememberMe] = useState(false);
 
@@ -200,6 +201,7 @@ export default function App() {
           setUsername(data.username || "");
           setProfilePic(data.profilePic || null);
           setUserId(data.userId || null);
+          setUserEmail(data.email || "");
           setLoginOpen(false);
           setRememberMe(true);
           return;
@@ -321,6 +323,7 @@ export default function App() {
         setUsername(data.success);
         setProfilePic(data.picture || null);
         setUserId(data.id || null);
+        setUserEmail(data.email || "");
         resetGraphUses();
         setLoginOpen(false);
         setSignupOpen(false);
@@ -331,6 +334,7 @@ export default function App() {
               username: data.success,
               profilePic: data.picture || null,
               userId: data.id || null,
+              email: data.email || "",
               expiry: Date.now() + 24 * 60 * 60 * 1000,
             })
           );
@@ -359,6 +363,7 @@ export default function App() {
         setUsername(successVal);
         setProfilePic(null);
         setUserId(data.id || null);
+        setUserEmail(loginEmail);
         resetGraphUses();
         setLoginError("");
         setLoginOpen(false);
@@ -369,6 +374,7 @@ export default function App() {
               username: successVal,
               profilePic: null,
               userId: data.id || null,
+              email: loginEmail,
               expiry: Date.now() + 24 * 60 * 60 * 1000,
             })
           );
@@ -457,7 +463,24 @@ export default function App() {
     }
     setRefreshTrigger((prev) => prev + 1);
   };
-  // Removed theme toggle and logout handlers with the new navbar
+  const handleLogout = async () => {
+    if (userId) {
+      try {
+        await fetch(`http://127.0.0.1:8000/logout/${userId}`);
+      } catch {
+        // ignore network errors
+      }
+    }
+    setUsername("");
+    setProfilePic(null);
+    setUserEmail("");
+    setUserId(null);
+    localStorage.removeItem("rememberMe");
+    resetGraphUses();
+    setLoginOpen(true);
+  };
+
+  // Removed theme toggle handler with the new navbar
 
   //tooltip
   const selectedDate = dateOptions[timelineIndex] || new Date();
@@ -646,7 +669,17 @@ export default function App() {
           <Route path="/support" element={<Support />} />
           <Route path="/policy" element={<Policy />} />
           <Route path="/license" element={<License />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route
+            path="/profile"
+            element={
+              <Profile
+                username={username}
+                email={userEmail}
+                profilePic={profilePic}
+                onLogout={handleLogout}
+              />
+            }
+          />
           <Route
             path="/history"
             element={<History userId={userId} viewMode={viewMode} />}
