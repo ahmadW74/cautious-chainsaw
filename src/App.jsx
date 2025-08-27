@@ -69,7 +69,9 @@ function HomePage({
         <div className="relative z-10 max-w-4xl mr-auto">
           <h1 className="text-6xl font-extrabold mb-4 text-white">The Better DnsViz.</h1>
           <p className="mb-10 text-white">Visualize and understand domain security chains.</p>
-          <div className="flex justify-start mb-6">
+        </div>
+        <div className="relative z-10 w-full flex flex-col items-center">
+          <div className="flex justify-center mb-6 w-full">
             <Input
               placeholder="type domain here to analyze"
               value={domain}
@@ -87,7 +89,7 @@ function HomePage({
               <Search className="h-6 w-6" />
             </Button>
           </div>
-          <div className="relative mb-6 h-6 lg:h-8 max-w-3xl mr-auto">
+          <div className="relative mb-6 h-6 lg:h-8 max-w-3xl w-full mx-auto">
             <div className="absolute -top-10 left-0 w-full pointer-events-none">
               <div
                 style={{ left: `${(timelineIndex / (dateOptions.length - 1)) * 100}%` }}
