@@ -26,6 +26,7 @@ import Goals2 from "@/pages/Goals2.jsx";
 import History from "@/pages/History.jsx";
 import Stats from "@/pages/Stats.jsx";
 import GlassNavbar from "@/components/GlassNavbar.jsx";
+import Profile from "@/pages/Profile.jsx";
 
 const getCache = (key) => {
   try {
@@ -645,6 +646,7 @@ export default function App() {
           <Route path="/support" element={<Support />} />
           <Route path="/policy" element={<Policy />} />
           <Route path="/license" element={<License />} />
+          <Route path="/profile" element={<Profile />} />
           <Route
             path="/history"
             element={<History userId={userId} viewMode={viewMode} />}
