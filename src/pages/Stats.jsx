@@ -52,7 +52,7 @@ export default function Stats() {
   const domainChartConfig = {
     count: {
       label: "Views",
-      color: "hsl(var(--chart-1))",
+      color: "var(--chart-2)",
     },
   };
 
@@ -104,54 +104,60 @@ export default function Stats() {
 
               <ul className="space-y-1">
                 {domainData.map((item, index) => (
-                  <li
-                    key={item.domain}
-                    className="flex justify-between text-sm cursor-pointer"
-                    onClick={() => setSelectedDomain(item.domain)}
-                  >
-                    <span>
-                      {index + 1}. {item.domain}
-                    </span>
-                    <span>{item.count}</span>
+                  <li key={item.domain} className="text-sm">
+                    <div
+                      className="flex justify-between cursor-pointer"
+                      onClick={() => {
+                        setSelectedDomain(item.domain);
+                        setDomainHistory([]);
+                      }}
+                    >
+                      <span>
+                        {index + 1}. {item.domain}
+                      </span>
+                      <span>{item.count}</span>
+                    </div>
+                    {selectedDomain === item.domain &&
+                      domainHistory.length > 0 && (
+                        <div className="mt-2 space-y-2">
+                          <h3 className="text-base font-semibold">
+                            Views for {selectedDomain}
+                          </h3>
+                          <ChartContainer
+                            config={historyChartConfig}
+                            className="h-[300px] w-full"
+                          >
+                            <LineChart data={domainHistory}>
+                              <CartesianGrid vertical={false} />
+                              <XAxis
+                                dataKey="date"
+                                type="number"
+                                domain={["auto", "auto"]}
+                                tickFormatter={(value) =>
+                                  new Date(value).toLocaleDateString()
+                                }
+                              />
+                              <YAxis
+                                allowDecimals={false}
+                                tickLine={false}
+                                axisLine={false}
+                              />
+                              <ChartTooltip
+                                content={<ChartTooltipContent />}
+                              />
+                              <Line
+                                type="monotone"
+                                dataKey="count"
+                                stroke="var(--color-count)"
+                                dot={false}
+                              />
+                            </LineChart>
+                          </ChartContainer>
+                        </div>
+                      )}
                   </li>
                 ))}
               </ul>
-
-              {selectedDomain && domainHistory.length > 0 && (
-                <div className="mt-6 space-y-2">
-                  <h3 className="text-base font-semibold">
-                    Views for {selectedDomain}
-                  </h3>
-                  <ChartContainer
-                    config={historyChartConfig}
-                    className="h-[300px] w-full"
-                  >
-                    <LineChart data={domainHistory}>
-                      <CartesianGrid vertical={false} />
-                      <XAxis
-                        dataKey="date"
-                        type="number"
-                        domain={["auto", "auto"]}
-                        tickFormatter={(value) =>
-                          new Date(value).toLocaleDateString()
-                        }
-                      />
-                      <YAxis
-                        allowDecimals={false}
-                        tickLine={false}
-                        axisLine={false}
-                      />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Line
-                        type="monotone"
-                        dataKey="count"
-                        stroke="var(--color-count)"
-                        dot={false}
-                      />
-                    </LineChart>
-                  </ChartContainer>
-                </div>
-              )}
             </>
           ) : (
             <p>No domain data available.</p>
