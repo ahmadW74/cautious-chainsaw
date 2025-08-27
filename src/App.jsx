@@ -65,11 +65,11 @@ function HomePage({
   return (
     <>
       {/* Hero Section */}
-      <section className="relative text-center py-20 px-4 overflow-hidden min-h-[92vh] bg-[#0077b6]">
-        <div className="relative z-10 max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-4">DNSSEC Explorer</h1>
-          <p className="mb-10">Visualize and understand domain security chains.</p>
-          <div className="flex justify-center mb-6">
+      <section className="relative py-20 px-4 overflow-hidden min-h-[92vh] hero-gradient flex flex-col items-end justify-center text-right">
+        <div className="relative z-10 max-w-4xl ml-auto">
+          <h1 className="text-5xl font-extrabold mb-4 text-white">The Better DnsViz.</h1>
+          <p className="mb-10 text-white">Visualize and understand domain security chains.</p>
+          <div className="flex justify-end mb-6">
             <Input
               placeholder="type domain here to analyze"
               value={domain}
@@ -87,7 +87,7 @@ function HomePage({
               <Search className="h-6 w-6" />
             </Button>
           </div>
-          <div className="relative mb-6 h-6 lg:h-8 max-w-3xl mx-auto">
+          <div className="relative mb-6 h-6 lg:h-8 max-w-3xl ml-auto">
             <div className="absolute -top-10 left-0 w-full pointer-events-none">
               <div
                 style={{ left: `${(timelineIndex / (dateOptions.length - 1)) * 100}%` }}
