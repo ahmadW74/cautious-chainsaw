@@ -9,6 +9,7 @@ export default function WriteBlog() {
   const editorRef = useRef(null);
   const quillRef = useRef(null);
   const [title, setTitle] = useState("");
+  const [coverImage, setCoverImage] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,12 +58,30 @@ export default function WriteBlog() {
     };
   };
 
+  const handleCoverChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append("image", file);
+      try {
+        const res = await fetch("http://127.0.0.1:8000/upload_image", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await res.json();
+        setCoverImage(data.url);
+      } catch {
+        // ignore errors
+      }
+    }
+  };
+
   const handlePost = async () => {
     const content = quillRef.current.root.innerHTML;
     await fetch("http://127.0.0.1:8000/posts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, content }),
+      body: JSON.stringify({ title, content, coverImage }),
     });
     navigate("/blog");
   };
@@ -74,8 +93,18 @@ export default function WriteBlog() {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
       />
+      <Input type="file" accept="image/*" onChange={handleCoverChange} />
+      {coverImage && (
+        <img
+          src={`http://127.0.0.1:8000${coverImage}`}
+          alt="Cover"
+          className="w-full h-48 object-cover rounded"
+        />
+      )}
       <div ref={editorRef} className="bg-white" />
-      <Button onClick={handlePost}>Post</Button>
+      <Button onClick={handlePost} disabled={!coverImage}>
+        Post
+      </Button>
     </div>
   );
 }

@@ -23,26 +23,36 @@ export default function Blog() {
         const text = post.content.replace(/<[^>]+>/g, "");
         const snippet = text.length > 200 ? text.slice(0, 200) + "..." : text;
         return (
-          <Card key={post.id}>
-            <CardHeader>
-              <CardTitle>
-                <Link to={`/blog/${post.id}`} className="hover:underline">
-                  {post.title}
+          <Card
+            key={post.id}
+            className="text-white overflow-hidden"
+            style={{
+              backgroundImage: `url(http://127.0.0.1:8000${post.coverImage})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
+            <div className="bg-black/60">
+              <CardHeader>
+                <CardTitle>
+                  <Link to={`/blog/${post.id}`} className="hover:underline">
+                    {post.title}
+                  </Link>
+                </CardTitle>
+                <CardDescription className="text-gray-200">
+                  {new Date(post.date).toLocaleDateString()}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="mb-2">{snippet}</p>
+                <Link
+                  to={`/blog/${post.id}`}
+                  className="text-blue-300 hover:underline"
+                >
+                  Read more
                 </Link>
-              </CardTitle>
-              <CardDescription>
-                {new Date(post.date).toLocaleDateString()}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="mb-2">{snippet}</p>
-              <Link
-                to={`/blog/${post.id}`}
-                className="text-blue-500 hover:underline"
-              >
-                Read more
-              </Link>
-            </CardContent>
+              </CardContent>
+            </div>
           </Card>
         );
       })}

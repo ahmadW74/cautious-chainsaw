@@ -2,7 +2,7 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 import os
@@ -1097,6 +1097,10 @@ class TokenPayload(BaseModel):
 class BlogPost(BaseModel):
     title: str
     content: str
+    cover_image: str = Field(..., alias="coverImage")
+
+    class Config:
+        allow_population_by_field_name = True
 
 @app.post("/google-auth")
 def google_auth(payload: TokenPayload):
@@ -1159,6 +1163,7 @@ def create_post(post: BlogPost):
         "id": uuid.uuid4().hex,
         "title": post.title,
         "content": post.content,
+        "coverImage": post.cover_image,
         "date": datetime.datetime.utcnow().isoformat(),
     }
     posts.insert(0, new_post)

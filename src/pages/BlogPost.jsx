@@ -40,6 +40,11 @@ export default function BlogPost() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 pt-24 space-y-6">
+      <img
+        src={`http://127.0.0.1:8000${post.coverImage}`}
+        alt={post.title}
+        className="w-full h-64 object-cover rounded-xl"
+      />
       <Card>
         <CardHeader>
           <CardTitle>{post.title}</CardTitle>
