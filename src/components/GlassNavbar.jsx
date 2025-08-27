@@ -28,7 +28,6 @@ function NavLink({ to, label, hidden, textColor, hoverColor }) {
 
 export default function GlassNavbar({ isSignedIn, onSignIn }) {
   const navRef = useRef(null);
-  const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
   const { pathname } = useLocation();
   const [lightBg, setLightBg] = useState(false);
@@ -66,8 +65,6 @@ export default function GlassNavbar({ isSignedIn, onSignIn }) {
 
   const navItems = [
     { to: "/", label: "Home" },
-    { to: "/goals", label: "Goals" },
-    { to: "/goals2", label: "Goals2" },
     { to: "/about", label: "About" },
     { to: "/blog", label: "Blog" },
     { to: "/history", label: "History" },
@@ -77,7 +74,7 @@ export default function GlassNavbar({ isSignedIn, onSignIn }) {
     { to: "/license", label: "License" },
   ];
 
-  const expanded = hovered || open;
+  const expanded = hovered;
 
   return (
     <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50">
@@ -89,7 +86,6 @@ export default function GlassNavbar({ isSignedIn, onSignIn }) {
           const related = e.relatedTarget;
           if (related && navRef.current && navRef.current.contains(related)) return;
           setHovered(false);
-          setOpen(false);
         }}
       >
         <Link to="/" className={`logo-text text-xl mr-2 ${textColor} ${hoverColor}`}>
@@ -109,19 +105,11 @@ export default function GlassNavbar({ isSignedIn, onSignIn }) {
         </div>
         <div
           className="relative flex items-center gap-2 flex-shrink-0"
-          onMouseEnter={() => {
-            setHovered(true);
-            if (isSignedIn) setOpen(true);
-          }}
+          onMouseEnter={() => setHovered(true)}
           onMouseLeave={(e) => {
             const related = e.relatedTarget;
-            if (related && e.currentTarget.contains(related)) return;
-            if (related && navRef.current && navRef.current.contains(related)) {
-              if (isSignedIn) setOpen(false);
-              return;
-            }
+            if (related && navRef.current && navRef.current.contains(related)) return;
             setHovered(false);
-            if (isSignedIn) setOpen(false);
           }}
         >
           {!isSignedIn && expanded && (
@@ -132,42 +120,13 @@ export default function GlassNavbar({ isSignedIn, onSignIn }) {
               Sign In
             </button>
           )}
-          <button
-            onClick={() => isSignedIn && setOpen((o) => !o)}
-            className={`flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-white/20 backdrop-blur-md ${textColor} ${hoverColor} hover:bg-white/30`}
-          >
-            <User className="h-4 w-4" />
-          </button>
-          {isSignedIn && open && (
-            <div
-              className={`absolute right-0 top-full mt-2 w-40 rounded-md border border-white/30 bg-white/20 backdrop-blur-lg py-2 ${textColor}`}
-              onMouseEnter={() => {
-                setHovered(true);
-                setOpen(true);
-              }}
-              onMouseLeave={(e) => {
-                const related = e.relatedTarget;
-                if (related && navRef.current && navRef.current.contains(related)) {
-                  setOpen(false);
-                  return;
-                }
-                setHovered(false);
-                setOpen(false);
-              }}
+          {isSignedIn && (
+            <Link
+              to="/profile"
+              className={`flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-white/20 backdrop-blur-md ${textColor} ${hoverColor} hover:bg-white/30`}
             >
-              <Link
-                to="/profile"
-                className={`block px-4 py-1 rounded-md ${hoverColor} hover:bg-white/30`}
-              >
-                Profile
-              </Link>
-              <Link
-                to="/settings"
-                className={`block px-4 py-1 rounded-md ${hoverColor} hover:bg-white/30`}
-              >
-                Settings
-              </Link>
-            </div>
+              <User className="h-4 w-4" />
+            </Link>
           )}
         </div>
       </div>
