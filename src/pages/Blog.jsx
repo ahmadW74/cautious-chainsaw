@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 
 export default function Blog() {
   const [posts, setPosts] = useState([]);
@@ -19,43 +13,25 @@ export default function Blog() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 pt-24 space-y-6">
-      {posts.map((post) => {
-        const text = post.content.replace(/<[^>]+>/g, "");
-        const snippet = text.length > 200 ? text.slice(0, 200) + "..." : text;
-        return (
+      {posts.map((post) => (
+        <Link to={`/blog/${post.id}`} key={post.id} className="block">
           <Card
-            key={post.id}
-            className="text-white overflow-hidden"
+            className="relative h-60 cursor-pointer text-white overflow-hidden"
             style={{
               backgroundImage: `url(http://127.0.0.1:8000${post.coverImage})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
           >
-            <div className="bg-black/60">
-              <CardHeader>
-                <CardTitle>
-                  <Link to={`/blog/${post.id}`} className="hover:underline">
-                    {post.title}
-                  </Link>
-                </CardTitle>
-                <CardDescription className="text-gray-200">
-                  {new Date(post.date).toLocaleDateString()}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="mb-2">{snippet}</p>
-                <Link
-                  to={`/blog/${post.id}`}
-                  className="text-blue-300 hover:underline"
-                >
-                  Read more
-                </Link>
-              </CardContent>
+            <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-sm rounded-md p-3">
+              <CardTitle>{post.title}</CardTitle>
+              <CardDescription className="text-gray-200">
+                {new Date(post.date).toLocaleDateString()}
+              </CardDescription>
             </div>
           </Card>
-        );
-      })}
+        </Link>
+      ))}
     </div>
   );
 }
