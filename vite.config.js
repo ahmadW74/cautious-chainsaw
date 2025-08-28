@@ -16,7 +16,12 @@ export default defineConfig({
   },
   server: {
     watch: {
-      ignored: ["**/stats.json", "**/stats_history.json", "***/chain_cache.txt"],
+      ignored: [
+        "**/stats.json",
+        "**/stats_history.json",
+        "***/blog_posts.json",
+        "***/chain_cache.txt",
+      ],
     },
   },
 });
