@@ -119,7 +119,7 @@ export default function Goals2() {
           >
             {graphGenerated && (
               <div className="p-6 lg:p-10 flex justify-center">
-                <div className="w-full max-w-4xl">
+                <div className="w-full max-w-6xl">
                   <div className="flex items-center justify-end gap-2 mb-4">
                     <Calendar className="w-5 h-5 text-gray-700" />
                     <Slider
