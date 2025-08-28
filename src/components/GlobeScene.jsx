@@ -79,10 +79,13 @@ export default function GlobeScene({
     mtlLoader.load(mtlUrl, (materials) => {
       materials.preload();
       objLoader.setMaterials(materials);
-      objLoader.load(modelUrl, (obj) => {
-        const diffuseMap = textureLoader.load(diffuseTexture);
-        const bumpMap = textureLoader.load(bumpTexture);
-        const cloudsMap = textureLoader.load(cloudsTexture);
+      objLoader.load(modelUrl, async (obj) => {
+        const [diffuseMap, bumpMap, cloudsMap] = await Promise.all([
+          textureLoader.loadAsync(diffuseTexture),
+          textureLoader.loadAsync(bumpTexture),
+          textureLoader.loadAsync(cloudsTexture),
+        ]);
+
         obj.traverse((child) => {
           if (child.isMesh && child.material) {
             const name = child.material.name;
@@ -99,6 +102,7 @@ export default function GlobeScene({
             child.material.needsUpdate = true;
           }
         });
+
         // Increase the overall scale of the globe
         const scale = 1.5;
         obj.scale.setScalar(scale);
