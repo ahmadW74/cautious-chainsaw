@@ -17,7 +17,6 @@ export default function Goals2() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [collapsed, setCollapsed] = useState(false);
   const searchBarRef = useRef(null);
-  const savedTopRef = useRef(null);
   const dateOptions = useMemo(() => {
     const dates = [];
     const now = new Date();
@@ -54,20 +53,12 @@ export default function Goals2() {
   useEffect(() => {
     if (graphGenerated) {
       setCollapsed(false);
-      savedTopRef.current = null;
       return;
     }
     const handleScroll = () => {
-      if (!searchBarRef.current) return;
-      const rect = searchBarRef.current.getBoundingClientRect();
-      if (rect.top <= 20) {
-        savedTopRef.current = 20;
-        setCollapsed(true);
-      } else {
-        setCollapsed(false);
-        savedTopRef.current = null;
-      }
+      setCollapsed(window.scrollY > 20);
     };
+    handleScroll();
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [graphGenerated]);
@@ -124,9 +115,7 @@ export default function Goals2() {
               : ""
           }`}
           style={
-            collapsed && !graphGenerated
-              ? { top: `${savedTopRef.current || 20}px` }
-              : undefined
+            collapsed && !graphGenerated ? { top: "20px" } : undefined
           }
         >
           <Input
