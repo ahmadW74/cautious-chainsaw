@@ -3,7 +3,7 @@ import GlobeScene from "@/components/GlobeScene";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Search } from "lucide-react";
+import { Search, Calendar } from "lucide-react";
 import FillerContent from "@/components/FillerContent";
 import SampleGraph from "@/SampleGraph.jsx";
 import { ReactFlowProvider } from "@xyflow/react";
@@ -51,7 +51,7 @@ export default function Goals2() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <section
-        className="relative flex flex-col items-center justify-center w-full h-[calc(100vh-1.5rem)] mb-6 rounded-b-3xl overflow-hidden"
+        className="relative flex flex-col items-center justify-center w-full h-[calc(100vh-1.5rem)] mb-6 rounded-b-3xl overflow-hidden pt-6 pl-6 pr-8"
         style={{ backgroundColor: "#8F00FF" }}
       >
         <div className="flex items-center justify-center gap-8">
@@ -86,35 +86,6 @@ export default function Goals2() {
               <Search className="h-6 w-6" />
             </Button>
           </div>
-          <div className="relative mb-6 h-6 lg:h-8 w-full max-w-3xl">
-            <div className="absolute -top-10 left-0 w-full pointer-events-none">
-              <div
-                style={{
-                  left: `${(timelineIndex / (dateOptions.length - 1)) * 100}%`,
-                }}
-                className="absolute transform -translate-x-1/2 bg-white text-black text-sm lg:text-base px-3 py-2 rounded shadow"
-              >
-                {tooltipLabel}
-              </div>
-            </div>
-            <div className="relative h-full">
-              <Slider
-                min={0}
-                max={dateOptions.length - 1}
-                step={1}
-                value={[timelineIndex]}
-                onValueChange={(v) => setTimelineIndex(v[0])}
-                className="h-full"
-              />
-              {dateOptions.map((_, i) => (
-                <div
-                  key={i}
-                  style={{ left: `${(i / (dateOptions.length - 1)) * 100}%` }}
-                  className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-full bg-white/50 pointer-events-none"
-                />
-              ))}
-            </div>
-          </div>
         </div>
       </section>
       <div className="relative">
@@ -135,6 +106,18 @@ export default function Goals2() {
           {graphGenerated && (
             <div className="p-6 lg:p-10 flex justify-center">
               <div className="w-full max-w-[100rem]">
+                <div className="flex items-center justify-end gap-2 mb-4">
+                  <Calendar className="w-5 h-5 text-gray-700" />
+                  <Slider
+                    min={0}
+                    max={dateOptions.length - 1}
+                    step={1}
+                    value={[timelineIndex]}
+                    onValueChange={(v) => setTimelineIndex(v[0])}
+                    className="w-48"
+                  />
+                  <span className="text-sm text-gray-700">{tooltipLabel}</span>
+                </div>
                 <ReactFlowProvider>
                   <SampleGraph
                     domain={currentDomain}
