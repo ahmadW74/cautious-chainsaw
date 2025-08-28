@@ -51,7 +51,7 @@ export default function Goals2() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <section
-        className="relative flex flex-col items-center justify-center flex-1 m-6 rounded-3xl overflow-hidden"
+        className="relative flex flex-col items-center justify-center w-full h-[calc(100vh-1.5rem)] mb-6 rounded-b-3xl overflow-hidden"
         style={{ backgroundColor: "#8F00FF" }}
       >
         <div className="flex items-center justify-center gap-8">
