@@ -50,12 +50,15 @@ export default function Goals2() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-        <section
-          className="relative flex flex-col items-center justify-center h-[calc(100vh-1.5rem-20px)] rounded-3xl overflow-hidden pt-6 pl-6 pr-8 mt-[10px] mx-[10px] mb-[calc(1.5rem+10px)]"
-          style={{ backgroundColor: "#8F00FF" }}
-        >
+      <section
+        className="relative flex flex-col items-center justify-center h-[calc(100vh-1.5rem-20px)] rounded-3xl overflow-hidden pt-6 pl-6 pr-8 mt-[10px] mx-[10px] mb-[calc(1.5rem+10px)]"
+        style={{ backgroundColor: "#8F00FF" }}
+      >
         <div className="flex items-center justify-center gap-8">
-          <span className="text-white font-bold text-7xl sm:text-7xl md:text-8xl">
+          <span
+            className="text-white font-bold text-7xl sm:text-7xl md:text-8xl"
+            style={{ color: "white" }}
+          >
             The Better
           </span>
           <div className="w-72 h-72 md:w-96 md:h-96">
@@ -63,7 +66,10 @@ export default function Goals2() {
               onSetRotation={(setRotation) => setRotation({ x: tilt, y: 0 })}
             />
           </div>
-          <span className="text-white font-bold text-7xl sm:text-7xl md:text-8xl">
+          <span
+            className="text-white font-bold text-7xl sm:text-7xl md:text-8xl"
+            style={{ color: "white" }}
+          >
             Dnsviz.
           </span>
         </div>
@@ -136,4 +142,3 @@ export default function Goals2() {
     </div>
   );
 }
-
