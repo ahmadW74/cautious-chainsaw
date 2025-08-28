@@ -73,25 +73,34 @@ export default function Goals2() {
             Dnsviz.
           </span>
         </div>
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-full flex flex-col items-center px-4">
-          <div className="flex justify-center mb-6 w-full max-w-md">
-            <Input
-              placeholder="type domain here to analyze"
-              value={domain}
-              onChange={(e) => setDomain(e.target.value)}
-              className="w-80 h-12 lg:h-14 text-lg rounded-l-full rounded-r-none shadow-inner text-black"
-            />
-            <Button
-              size="icon"
-              variant="secondary"
-              onClick={handleAnalyze}
-              disabled={!domain.trim()}
-              className="rounded-r-full rounded-l-none border-l-0 h-12 lg:h-14"
-              type="button"
-            >
-              <Search className="h-6 w-6" />
-            </Button>
-          </div>
+      </section>
+      <section className="flex flex-col items-center justify-center bg-[#8F00FF] rounded-3xl mx-[10px] mb-[calc(1.5rem+10px)] p-10">
+        <h2 className="text-white font-bold text-4xl sm:text-5xl md:text-6xl text-center">
+          Limitless DNSSEC with
+          <span
+            className="bg-gradient-to-r from-pink-500 via-yellow-400 to-purple-500 bg-clip-text text-transparent animate-gradient mx-2"
+          >
+            1
+          </span>
+          click
+        </h2>
+        <div className="flex justify-center mt-8 w-full max-w-md">
+          <Input
+            placeholder="type domain here to analyze"
+            value={domain}
+            onChange={(e) => setDomain(e.target.value)}
+            className="w-80 h-12 lg:h-14 text-lg rounded-l-full rounded-r-none shadow-inner text-black"
+          />
+          <Button
+            size="icon"
+            variant="secondary"
+            onClick={handleAnalyze}
+            disabled={!domain.trim()}
+            className="rounded-r-full rounded-l-none border-l-0 h-12 lg:h-14"
+            type="button"
+          >
+            <Search className="h-6 w-6" />
+          </Button>
         </div>
       </section>
       <div className="relative">
