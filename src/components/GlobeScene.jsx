@@ -37,7 +37,7 @@ export default function GlobeScene({
     );
     // Offset camera so about 60% of the globe is visible
     // and ensure it starts outside the globe's radius
-    camera.position.set(2.4, 0, 6);
+    camera.position.set(10, 0, 6);
     camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -134,7 +134,10 @@ export default function GlobeScene({
     };
     window.addEventListener("resize", handleResize);
 
-    const setRotation = ({ x = rotationRef.current.x, y = rotationRef.current.y }) => {
+    const setRotation = ({
+      x = rotationRef.current.x,
+      y = rotationRef.current.y,
+    }) => {
       rotationRef.current.x = x;
       rotationRef.current.y = y;
     };
@@ -211,4 +214,3 @@ export default function GlobeScene({
 
   return <div ref={mountRef} className="w-full h-full" />;
 }
-
