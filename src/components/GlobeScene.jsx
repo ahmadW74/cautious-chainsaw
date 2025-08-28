@@ -6,7 +6,6 @@ import earthModel from "@/assets/models/Earth 2K.obj?url";
 import earthMaterial from "@/assets/models/Earth 2K.mtl?url";
 import diffuseTexture from "@/assets/models/Textures/Diffuse_2K.png?url";
 import bumpTexture from "@/assets/models/Textures/Bump_2K.png?url";
-import cloudsTexture from "@/assets/models/Textures/Clouds_2K.png?url";
 
 export default function GlobeScene({
   modelUrl = earthModel,
@@ -80,35 +79,28 @@ export default function GlobeScene({
       materials.preload();
       objLoader.setMaterials(materials);
       objLoader.load(modelUrl, async (obj) => {
-        const [diffuseMap, bumpMap, cloudsMap] = await Promise.all([
+        const [diffuseMap, bumpMap] = await Promise.all([
           textureLoader.loadAsync(diffuseTexture),
           textureLoader.loadAsync(bumpTexture),
-          textureLoader.loadAsync(cloudsTexture),
         ]);
 
-        // Create fresh materials to avoid reinitializing textures
+        // Create fresh material to avoid reinitializing textures
         const earthMat = new THREE.MeshPhongMaterial({
           map: diffuseMap,
           bumpMap: bumpMap,
           bumpScale: 0.005,
         });
-        const cloudsMat = new THREE.MeshPhongMaterial({
-          map: cloudsMap,
-          transparent: true,
-          opacity: 0.8,
-          depthWrite: false,
-        });
 
         obj.traverse((child) => {
           if (!child.isMesh || !child.material) return;
 
-          // Dispose of placeholder materials and assign new ones with loaded textures
+          // Dispose of placeholder material and assign new one with loaded textures
           if (child.material.name === "Earth") {
             child.material.dispose();
             child.material = earthMat;
           } else if (child.material.name === "Clouds") {
-            child.material.dispose();
-            child.material = cloudsMat;
+            // Remove clouds mesh to avoid using additional textures
+            child.parent.remove(child);
           }
         });
 
