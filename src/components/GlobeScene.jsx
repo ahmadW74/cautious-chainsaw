@@ -51,12 +51,16 @@ export default function GlobeScene({ modelUrl = globeModel, onSetRotation }) {
         const dot = new THREE.Mesh(geometry, material);
         dot.position.copy(randomPointOnSphere(radius));
         dot.userData.value = Math.floor(Math.random() * 1000);
-        scene.add(dot);
+        // Attach dots to the globe so they rotate together
+        globeRef.current.add(dot);
         dots.push(dot);
       }
     };
 
     loader.load(modelUrl, (obj) => {
+      // Increase the overall scale of the globe
+      const scale = 1.5;
+      obj.scale.setScalar(scale);
       globeRef.current = obj;
       scene.add(globeRef.current);
       const box = new THREE.Box3().setFromObject(obj);
