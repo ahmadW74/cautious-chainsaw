@@ -1,9 +1,18 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
-import globeModel from "@/assets/models/globe.obj?url";
+import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader.js";
+import earthModel from "@/assets/models/Earth 2K.obj?url";
+import earthMaterial from "@/assets/models/Earth 2K.mtl?url";
+import diffuseTexture from "@/assets/models/Textures/Diffuse_2K.png?url";
+import bumpTexture from "@/assets/models/Textures/Bump_2K.png?url";
+import cloudsTexture from "@/assets/models/Textures/Clouds_2K.png?url";
 
-export default function GlobeScene({ modelUrl = globeModel, onSetRotation }) {
+export default function GlobeScene({
+  modelUrl = earthModel,
+  mtlUrl = earthMaterial,
+  onSetRotation,
+}) {
   const mountRef = useRef(null);
   const globeRef = useRef();
   const rotationRef = useRef({ x: 0, y: 0 });
@@ -29,7 +38,9 @@ export default function GlobeScene({ modelUrl = globeModel, onSetRotation }) {
     renderer.setClearColor("#000000", 0);
     mount.appendChild(renderer.domElement);
 
-    const loader = new OBJLoader();
+    const textureLoader = new THREE.TextureLoader();
+    const objLoader = new OBJLoader();
+    const mtlLoader = new MTLLoader();
     const dots = [];
 
     const randomPointOnSphere = (radius) => {
@@ -57,16 +68,39 @@ export default function GlobeScene({ modelUrl = globeModel, onSetRotation }) {
       }
     };
 
-    loader.load(modelUrl, (obj) => {
-      // Increase the overall scale of the globe
-      const scale = 1.5;
-      obj.scale.setScalar(scale);
-      globeRef.current = obj;
-      scene.add(globeRef.current);
-      const box = new THREE.Box3().setFromObject(obj);
-      const size = box.getSize(new THREE.Vector3());
-      const radius = Math.max(size.x, size.y, size.z) / 2;
-      addDots(radius);
+    mtlLoader.load(mtlUrl, (materials) => {
+      materials.preload();
+      objLoader.setMaterials(materials);
+      objLoader.load(modelUrl, (obj) => {
+        const diffuseMap = textureLoader.load(diffuseTexture);
+        const bumpMap = textureLoader.load(bumpTexture);
+        const cloudsMap = textureLoader.load(cloudsTexture);
+        obj.traverse((child) => {
+          if (child.isMesh && child.material) {
+            const name = child.material.name;
+            if (name === "Earth") {
+              child.material.map = diffuseMap;
+              child.material.bumpMap = bumpMap;
+              child.material.bumpScale = 0.005;
+            } else if (name === "Clouds") {
+              child.material.map = cloudsMap;
+              child.material.transparent = true;
+              child.material.opacity = 0.8;
+              child.material.depthWrite = false;
+            }
+            child.material.needsUpdate = true;
+          }
+        });
+        // Increase the overall scale of the globe
+        const scale = 1.5;
+        obj.scale.setScalar(scale);
+        globeRef.current = obj;
+        scene.add(globeRef.current);
+        const box = new THREE.Box3().setFromObject(obj);
+        const size = box.getSize(new THREE.Vector3());
+        const radius = Math.max(size.x, size.y, size.z) / 2;
+        addDots(radius);
+      });
     });
 
     mount.style.position = "relative";
@@ -165,7 +199,7 @@ export default function GlobeScene({ modelUrl = globeModel, onSetRotation }) {
       mount.removeChild(tooltip);
       renderer.dispose();
     };
-  }, [modelUrl, onSetRotation]);
+  }, [modelUrl, mtlUrl, onSetRotation]);
 
   return <div ref={mountRef} className="w-full h-full" />;
 }
