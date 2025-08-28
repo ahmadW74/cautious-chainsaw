@@ -77,9 +77,7 @@ export default function Goals2() {
       <section className="flex flex-col items-center bg-[#FFF5EE] rounded-3xl mx-[10px] mb-[calc(1.5rem+10px)] p-10">
         <h2 className="text-black font-bold text-4xl sm:text-5xl md:text-6xl text-center">
           Limitless DNSSEC with
-          <span
-            className="bg-gradient-to-r from-pink-500 via-yellow-400 to-purple-500 bg-clip-text !text-transparent animate-gradient mx-2 inline-block"
-          >
+          <span className="bg-gradient-to-r from-pink-500 via-yellow-400 to-purple-500 bg-clip-text !text-transparent animate-gradient mx-2 inline-block">
             1
           </span>
           click
@@ -105,7 +103,9 @@ export default function Goals2() {
         <div className="relative w-full mt-10">
           <div
             className={`transition-all duration-500 ${
-              graphGenerated ? "opacity-0 max-h-0 overflow-hidden" : "opacity-100"
+              graphGenerated
+                ? "opacity-0 max-h-0 overflow-hidden"
+                : "opacity-100"
             }`}
           >
             <FillerContent />
@@ -119,7 +119,7 @@ export default function Goals2() {
           >
             {graphGenerated && (
               <div className="p-6 lg:p-10 flex justify-center">
-                <div className="w-full max-w-6xl">
+                <div className="w-full max-w-8xl">
                   <div className="flex items-center justify-end gap-2 mb-4">
                     <Calendar className="w-5 h-5 text-gray-700" />
                     <Slider
@@ -130,7 +130,9 @@ export default function Goals2() {
                       onValueChange={(v) => setTimelineIndex(v[0])}
                       className="w-48"
                     />
-                    <span className="text-sm text-gray-700">{tooltipLabel}</span>
+                    <span className="text-sm text-gray-700">
+                      {tooltipLabel}
+                    </span>
                   </div>
                   <ReactFlowProvider>
                     <SampleGraph
