@@ -29,7 +29,8 @@ export default function GlobeScene({
       1000
     );
     // Offset camera so about 60% of the globe is visible
-    camera.position.set(1.2, 0, 3);
+    // and ensure it starts outside the globe's radius
+    camera.position.set(2.4, 0, 6);
     camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
