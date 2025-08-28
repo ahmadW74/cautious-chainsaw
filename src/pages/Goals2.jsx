@@ -58,10 +58,10 @@ export default function Goals2() {
       return;
     }
     const handleScroll = () => {
-      if (window.scrollY > 0) {
-        if (!collapsed && searchBarRef.current && savedTopRef.current == null) {
-          savedTopRef.current = searchBarRef.current.getBoundingClientRect().top;
-        }
+      if (!searchBarRef.current) return;
+      const rect = searchBarRef.current.getBoundingClientRect();
+      if (rect.top <= 20) {
+        savedTopRef.current = 20;
         setCollapsed(true);
       } else {
         setCollapsed(false);
@@ -70,7 +70,7 @@ export default function Goals2() {
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [graphGenerated, collapsed]);
+  }, [graphGenerated]);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -119,11 +119,13 @@ export default function Goals2() {
         <div
           ref={searchBarRef}
           className={`flex justify-center mt-8 w-full max-w-md transition-all duration-500 ${
-            collapsed && !graphGenerated ? "fixed left-1/2 -translate-x-1/2" : ""
+            collapsed && !graphGenerated
+              ? "fixed left-1/2 -translate-x-1/2 z-50 bg-[#FFF5EE] p-2 rounded-full shadow"
+              : ""
           }`}
           style={
-            collapsed && !graphGenerated && savedTopRef.current !== null
-              ? { top: `${savedTopRef.current}px` }
+            collapsed && !graphGenerated
+              ? { top: `${savedTopRef.current || 20}px` }
               : undefined
           }
         >
