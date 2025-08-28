@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import GlobeScene from "@/components/GlobeScene";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,9 @@ export default function Goals2() {
   const [currentDomain, setCurrentDomain] = useState("");
   const [graphGenerated, setGraphGenerated] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [collapsed, setCollapsed] = useState(false);
+  const searchBarRef = useRef(null);
+  const savedTopRef = useRef(null);
   const dateOptions = useMemo(() => {
     const dates = [];
     const now = new Date();
@@ -48,6 +51,27 @@ export default function Goals2() {
     setRefreshTrigger((prev) => prev + 1);
   };
 
+  useEffect(() => {
+    if (graphGenerated) {
+      setCollapsed(false);
+      savedTopRef.current = null;
+      return;
+    }
+    const handleScroll = () => {
+      if (window.scrollY > 0) {
+        if (!collapsed && searchBarRef.current && savedTopRef.current == null) {
+          savedTopRef.current = searchBarRef.current.getBoundingClientRect().top;
+        }
+        setCollapsed(true);
+      } else {
+        setCollapsed(false);
+        savedTopRef.current = null;
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [graphGenerated, collapsed]);
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <section
@@ -74,15 +98,35 @@ export default function Goals2() {
           </span>
         </div>
       </section>
-      <section className="flex flex-col items-center bg-[#FFF5EE] rounded-3xl mx-[10px] mb-[calc(1.5rem+10px)] p-10">
-        <h2 className="text-black font-bold text-4xl sm:text-5xl md:text-6xl text-center">
+      <section
+        className={`flex flex-col items-center bg-[#FFF5EE] rounded-3xl mx-[10px] mb-[calc(1.5rem+10px)] transition-all duration-500 ${
+          collapsed && !graphGenerated ? "p-0 h-0 overflow-hidden" : "p-10"
+        }`}
+      >
+        <h2
+          className={`text-black font-bold text-4xl sm:text-5xl md:text-6xl text-center transition-all duration-500 ${
+            collapsed && !graphGenerated
+              ? "opacity-0 max-h-0 overflow-hidden"
+              : ""
+          }`}
+        >
           Limitless DNSSEC with
           <span className="bg-gradient-to-r from-pink-500 via-yellow-400 to-purple-500 bg-clip-text !text-transparent animate-gradient mx-2 inline-block">
             1
           </span>
           click
         </h2>
-        <div className="flex justify-center mt-8 w-full max-w-md">
+        <div
+          ref={searchBarRef}
+          className={`flex justify-center mt-8 w-full max-w-md transition-all duration-500 ${
+            collapsed && !graphGenerated ? "fixed left-1/2 -translate-x-1/2" : ""
+          }`}
+          style={
+            collapsed && !graphGenerated && savedTopRef.current !== null
+              ? { top: `${savedTopRef.current}px` }
+              : undefined
+          }
+        >
           <Input
             placeholder="type domain here to analyze"
             value={domain}
@@ -100,7 +144,11 @@ export default function Goals2() {
             <Search className="h-6 w-6" />
           </Button>
         </div>
-        <div className="relative w-full mt-10">
+        <div
+          className={`relative w-full mt-10 transition-all duration-500 ${
+            collapsed && !graphGenerated ? "opacity-0 max-h-0 overflow-hidden" : ""
+          }`}
+        >
           <div
             className={`transition-all duration-500 ${
               graphGenerated
