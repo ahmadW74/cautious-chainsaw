@@ -86,20 +86,29 @@ export default function GlobeScene({
           textureLoader.loadAsync(cloudsTexture),
         ]);
 
+        // Create fresh materials to avoid reinitializing textures
+        const earthMat = new THREE.MeshPhongMaterial({
+          map: diffuseMap,
+          bumpMap: bumpMap,
+          bumpScale: 0.005,
+        });
+        const cloudsMat = new THREE.MeshPhongMaterial({
+          map: cloudsMap,
+          transparent: true,
+          opacity: 0.8,
+          depthWrite: false,
+        });
+
         obj.traverse((child) => {
-          if (child.isMesh && child.material) {
-            const name = child.material.name;
-            if (name === "Earth") {
-              child.material.map = diffuseMap;
-              child.material.bumpMap = bumpMap;
-              child.material.bumpScale = 0.005;
-            } else if (name === "Clouds") {
-              child.material.map = cloudsMap;
-              child.material.transparent = true;
-              child.material.opacity = 0.8;
-              child.material.depthWrite = false;
-            }
-            child.material.needsUpdate = true;
+          if (!child.isMesh || !child.material) return;
+
+          // Dispose of placeholder materials and assign new ones with loaded textures
+          if (child.material.name === "Earth") {
+            child.material.dispose();
+            child.material = earthMat;
+          } else if (child.material.name === "Clouds") {
+            child.material.dispose();
+            child.material = cloudsMat;
           }
         });
 
