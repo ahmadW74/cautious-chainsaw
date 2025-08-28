@@ -27,6 +27,7 @@ import History from "@/pages/History.jsx";
 import Stats from "@/pages/Stats.jsx";
 import GlassNavbar from "@/components/GlassNavbar.jsx";
 import Profile from "@/pages/Profile.jsx";
+import GlobeScene from "@/components/GlobeScene.jsx";
 
 const getCache = (key) => {
   try {
@@ -65,11 +66,15 @@ function HomePage({
   return (
     <>
       {/* Hero Section */}
-      <section className="relative py-20 px-4 overflow-hidden min-h-[92vh] hero-gradient flex flex-col items-start justify-center text-left">
-        <div className="relative z-10 max-w-4xl mr-auto">
-          <h1 className="text-6xl font-extrabold mb-4 text-white">The Better DnsViz.</h1>
-          <p className="mb-10 text-white">Visualize and understand domain security chains.</p>
+      <section className="relative py-20 px-4 overflow-hidden min-h-[92vh] hero-gradient flex flex-col items-center justify-center text-center">
+        <div className="relative z-10 flex w-full max-w-4xl items-center justify-between">
+          <h1 className="text-6xl font-extrabold text-white">The Better</h1>
+          <div className="w-64 h-64">
+            <GlobeScene />
+          </div>
+          <h1 className="text-6xl font-extrabold text-white">Dnsviz.</h1>
         </div>
+        <p className="relative z-10 mt-6 mb-10 text-white">Visualize and understand domain security chains.</p>
         <div className="relative z-10 w-full flex flex-col items-center">
           <div className="flex justify-center mb-6 w-full">
             <Input
