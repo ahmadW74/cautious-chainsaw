@@ -50,10 +50,10 @@ export default function Goals2() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <section
-        className="relative flex flex-col items-center justify-center w-full h-[calc(100vh-1.5rem)] mb-6 rounded-b-3xl overflow-hidden pt-6 pl-6 pr-8"
-        style={{ backgroundColor: "#8F00FF" }}
-      >
+        <section
+          className="relative flex flex-col items-center justify-center h-[calc(100vh-1.5rem-20px)] rounded-b-3xl overflow-hidden pt-6 pl-6 pr-8 mt-[10px] mx-[10px] mb-[calc(1.5rem+10px)]"
+          style={{ backgroundColor: "#8F00FF" }}
+        >
         <div className="flex items-center justify-center gap-8">
           <span className="text-white font-bold text-7xl sm:text-7xl md:text-8xl">
             The Better
