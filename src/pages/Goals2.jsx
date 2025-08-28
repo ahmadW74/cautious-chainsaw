@@ -74,11 +74,11 @@ export default function Goals2() {
           </span>
         </div>
       </section>
-      <section className="flex flex-col items-center justify-center bg-[#8F00FF] rounded-3xl mx-[10px] mb-[calc(1.5rem+10px)] p-10">
-        <h2 className="text-white font-bold text-4xl sm:text-5xl md:text-6xl text-center">
+      <section className="flex flex-col items-center bg-[#FFF5EE] rounded-3xl mx-[10px] mb-[calc(1.5rem+10px)] p-10">
+        <h2 className="text-black font-bold text-4xl sm:text-5xl md:text-6xl text-center">
           Limitless DNSSEC with
           <span
-            className="bg-gradient-to-r from-pink-500 via-yellow-400 to-purple-500 bg-clip-text text-transparent animate-gradient mx-2"
+            className="bg-gradient-to-r from-pink-500 via-yellow-400 to-purple-500 bg-clip-text !text-transparent animate-gradient mx-2 inline-block"
           >
             1
           </span>
@@ -102,52 +102,52 @@ export default function Goals2() {
             <Search className="h-6 w-6" />
           </Button>
         </div>
-      </section>
-      <div className="relative">
-        <div
-          className={`transition-all duration-500 ${
-            graphGenerated ? "opacity-0 max-h-0 overflow-hidden" : "opacity-100"
-          }`}
-        >
-          <FillerContent />
-        </div>
-        <div
-          className={`transition-all duration-500 transform ${
-            graphGenerated
-              ? "opacity-100 scale-100"
-              : "opacity-0 scale-95 max-h-0 overflow-hidden"
-          }`}
-        >
-          {graphGenerated && (
-            <div className="p-6 lg:p-10 flex justify-center">
-              <div className="w-full max-w-[100rem]">
-                <div className="flex items-center justify-end gap-2 mb-4">
-                  <Calendar className="w-5 h-5 text-gray-700" />
-                  <Slider
-                    min={0}
-                    max={dateOptions.length - 1}
-                    step={1}
-                    value={[timelineIndex]}
-                    onValueChange={(v) => setTimelineIndex(v[0])}
-                    className="w-48"
-                  />
-                  <span className="text-sm text-gray-700">{tooltipLabel}</span>
+        <div className="relative w-full mt-10">
+          <div
+            className={`transition-all duration-500 ${
+              graphGenerated ? "opacity-0 max-h-0 overflow-hidden" : "opacity-100"
+            }`}
+          >
+            <FillerContent />
+          </div>
+          <div
+            className={`transition-all duration-500 transform ${
+              graphGenerated
+                ? "opacity-100 scale-100"
+                : "opacity-0 scale-95 max-h-0 overflow-hidden"
+            }`}
+          >
+            {graphGenerated && (
+              <div className="p-6 lg:p-10 flex justify-center">
+                <div className="w-full max-w-4xl">
+                  <div className="flex items-center justify-end gap-2 mb-4">
+                    <Calendar className="w-5 h-5 text-gray-700" />
+                    <Slider
+                      min={0}
+                      max={dateOptions.length - 1}
+                      step={1}
+                      value={[timelineIndex]}
+                      onValueChange={(v) => setTimelineIndex(v[0])}
+                      className="w-48"
+                    />
+                    <span className="text-sm text-gray-700">{tooltipLabel}</span>
+                  </div>
+                  <ReactFlowProvider>
+                    <SampleGraph
+                      domain={currentDomain}
+                      refreshTrigger={refreshTrigger}
+                      onRefresh={handleRefresh}
+                      userId={null}
+                      selectedDate={selectedDate.toISOString().slice(0, 7)}
+                      viewMode="reactflow"
+                    />
+                  </ReactFlowProvider>
                 </div>
-                <ReactFlowProvider>
-                  <SampleGraph
-                    domain={currentDomain}
-                    refreshTrigger={refreshTrigger}
-                    onRefresh={handleRefresh}
-                    userId={null}
-                    selectedDate={selectedDate.toISOString().slice(0, 7)}
-                    viewMode="graphviz"
-                  />
-                </ReactFlowProvider>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
