@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import globeModel from "@/assets/models/globe.obj?url";
+
 export default function GlobeScene({ modelUrl = globeModel, onSetRotation }) {
   const mountRef = useRef(null);
   const globeRef = useRef();
@@ -29,10 +30,55 @@ export default function GlobeScene({ modelUrl = globeModel, onSetRotation }) {
     mount.appendChild(renderer.domElement);
 
     const loader = new OBJLoader();
+    const dots = [];
+
+    const randomPointOnSphere = (radius) => {
+      const u = Math.random();
+      const v = Math.random();
+      const theta = 2 * Math.PI * u;
+      const phi = Math.acos(2 * v - 1);
+      return new THREE.Vector3(
+        radius * Math.sin(phi) * Math.cos(theta),
+        radius * Math.sin(phi) * Math.sin(theta),
+        radius * Math.cos(phi)
+      );
+    };
+
+    const addDots = (radius, count = 20) => {
+      const geometry = new THREE.SphereGeometry(radius * 0.02, 8, 8);
+      const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      for (let i = 0; i < count; i++) {
+        const dot = new THREE.Mesh(geometry, material);
+        dot.position.copy(randomPointOnSphere(radius));
+        dot.userData.value = Math.floor(Math.random() * 1000);
+        scene.add(dot);
+        dots.push(dot);
+      }
+    };
+
     loader.load(modelUrl, (obj) => {
       globeRef.current = obj;
       scene.add(globeRef.current);
+      const box = new THREE.Box3().setFromObject(obj);
+      const size = box.getSize(new THREE.Vector3());
+      const radius = Math.max(size.x, size.y, size.z) / 2;
+      addDots(radius);
     });
+
+    mount.style.position = "relative";
+
+    const tooltip = document.createElement("div");
+    tooltip.style.position = "absolute";
+    tooltip.style.pointerEvents = "none";
+    tooltip.style.background = "rgba(0, 0, 0, 0.7)";
+    tooltip.style.color = "#fff";
+    tooltip.style.padding = "4px 8px";
+    tooltip.style.borderRadius = "4px";
+    tooltip.style.display = "none";
+    mount.appendChild(tooltip);
+
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
 
     const handleResize = () => {
       const { clientWidth, clientHeight } = mount;
@@ -55,7 +101,7 @@ export default function GlobeScene({ modelUrl = globeModel, onSetRotation }) {
       dragging.x = e.clientX;
       dragging.y = e.clientY;
     };
-    const onPointerMove = (e) => {
+    const onPointerMoveDrag = (e) => {
       if (!dragging.active) return;
       const dx = e.clientX - dragging.x;
       const dy = e.clientY - dragging.y;
@@ -66,8 +112,25 @@ export default function GlobeScene({ modelUrl = globeModel, onSetRotation }) {
     };
     const onPointerUp = () => (dragging.active = false);
     mount.addEventListener("pointerdown", onPointerDown);
-    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointermove", onPointerMoveDrag);
     window.addEventListener("pointerup", onPointerUp);
+
+    const onHover = (e) => {
+      const rect = mount.getBoundingClientRect();
+      pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const intersects = raycaster.intersectObjects(dots);
+      if (intersects.length > 0) {
+        tooltip.textContent = intersects[0].object.userData.value;
+        tooltip.style.display = "block";
+        tooltip.style.left = `${e.clientX - rect.left + 8}px`;
+        tooltip.style.top = `${e.clientY - rect.top + 8}px`;
+      } else {
+        tooltip.style.display = "none";
+      }
+    };
+    mount.addEventListener("pointermove", onHover);
 
     let paused = false;
     const visibility = () => {
@@ -92,8 +155,10 @@ export default function GlobeScene({ modelUrl = globeModel, onSetRotation }) {
       window.removeEventListener("resize", handleResize);
       mount.removeChild(renderer.domElement);
       mount.removeEventListener("pointerdown", onPointerDown);
-      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointermove", onPointerMoveDrag);
       window.removeEventListener("pointerup", onPointerUp);
+      mount.removeEventListener("pointermove", onHover);
+      mount.removeChild(tooltip);
       renderer.dispose();
     };
   }, [modelUrl, onSetRotation]);
