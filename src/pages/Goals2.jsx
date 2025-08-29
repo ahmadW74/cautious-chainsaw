@@ -13,7 +13,7 @@ import FillerContent from "@/components/FillerContent";
 import SampleGraph from "@/SampleGraph.jsx";
 import { ReactFlowProvider } from "@xyflow/react";
 import SpaceScene from "@/components/SpaceScene";
-import NumberTicker from "@/components/NumberTicker";
+import ReviewCarousel from "@/components/ReviewCarousel";
 
 export default function Goals2() {
   const tilt = (23.5 * Math.PI) / 180;
@@ -27,14 +27,58 @@ export default function Goals2() {
   const secondSectionWrapperRef = useRef(null);
   const thirdSectionRef = useRef(null);
   const [showStickySearch, setShowStickySearch] = useState(false);
-  const dailyUsersStart = useMemo(
-    () => Math.floor(Math.random() * 9000000) + 1000000,
+  const globeMethodsRef = useRef(null);
+  const reviews = useMemo(
+    () => [
+      {
+        name: "Alice",
+        text: "Amazing service and easy to use.",
+        stars: 5,
+        pfp: "https://i.pravatar.cc/100?img=1",
+        lat: 37.7749,
+        lon: -122.4194,
+      },
+      {
+        name: "Bob",
+        text: "Helped my workflow a lot.",
+        stars: 4,
+        pfp: "https://i.pravatar.cc/100?img=2",
+        lat: 51.5074,
+        lon: -0.1278,
+      },
+      {
+        name: "Carol",
+        text: "A must-have tool for teams.",
+        stars: 5,
+        pfp: "https://i.pravatar.cc/100?img=3",
+        lat: 35.6895,
+        lon: 139.6917,
+      },
+      {
+        name: "Dave",
+        text: "Good features and support.",
+        stars: 4,
+        pfp: "https://i.pravatar.cc/100?img=4",
+        lat: -33.8688,
+        lon: 151.2093,
+      },
+      {
+        name: "Eve",
+        text: "Intuitive and powerful.",
+        stars: 5,
+        pfp: "https://i.pravatar.cc/100?img=5",
+        lat: 48.8566,
+        lon: 2.3522,
+      },
+    ],
     []
   );
-  const graphsGeneratedStart = useMemo(
-    () => Math.floor(Math.random() * 90000000) + 10000000,
-    []
-  );
+
+  const handleNextReview = (review) => {
+    if (globeMethodsRef.current) {
+      globeMethodsRef.current.highlightLocation(review.lat, review.lon);
+    }
+  };
   const dateOptions = useMemo(() => {
     const dates = [];
     const now = new Date();
@@ -293,38 +337,27 @@ export default function Goals2() {
       </div>
       <section
         ref={thirdSectionRef}
-        className="relative flex flex-col items-center h-screen rounded-3xl mx-[10px] mb-[10px] overflow-hidden bg-black"
+        className="relative flex items-center h-screen rounded-3xl mx-[10px] mb-[10px] overflow-hidden bg-black"
       >
         <SpaceScene />
-        <h2 className="relative z-10 text-white font-bold text-4xl sm:text-5xl md:text-6xl text-center mt-10">
+        <h2 className="absolute top-10 left-1/2 -translate-x-1/2 z-10 text-white font-bold text-4xl sm:text-5xl md:text-6xl">
           See what our users have to say
         </h2>
-        <div className="relative z-10 w-72 h-72 md:w-96 md:h-96 mt-10">
-          <GlobeScene
-            modelUrl={lowPolyEarth}
-            onSetRotation={(setRotation) => setRotation({ x: tilt, y: 0 })}
-            distance={0.9}
-            sunLight
-          />
-        </div>
-        <div className="relative z-10 mt-auto mb-10 flex gap-16">
-          <div className="text-center">
-            <p className="text-white font-bold text-2xl md:text-3xl">
-              Users Daily
-            </p>
-            <NumberTicker
-              start={dailyUsersStart}
-              className="block text-white font-bold text-4xl md:text-5xl mt-2"
+        <div className="relative z-10 flex items-center w-full h-full">
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[60vw] h-[60vw] -translate-x-1/2 pointer-events-none">
+            <GlobeScene
+              modelUrl={lowPolyEarth}
+              distance={0.9}
+              sunLight
+              showDots={false}
+              onGlobeReady={(methods) => {
+                globeMethodsRef.current = methods;
+                methods.setRotation({ x: tilt, y: 0 });
+              }}
             />
           </div>
-          <div className="text-center">
-            <p className="text-white font-bold text-2xl md:text-3xl">
-              Graphs generated so far
-            </p>
-            <NumberTicker
-              start={graphsGeneratedStart}
-              className="block text-white font-bold text-4xl md:text-5xl mt-2"
-            />
+          <div className="ml-auto mr-10">
+            <ReviewCarousel reviews={reviews} onNext={handleNextReview} />
           </div>
         </div>
       </section>

@@ -16,11 +16,14 @@ export default function GlobeScene({
   onSetRotation,
   distance = 1,
   sunLight = false,
+  showDots = true,
+  onGlobeReady,
 }) {
   const mountRef = useRef(null);
   const globeRef = useRef();
   const rotationRef = useRef({ x: 0, y: 0 });
   const dotIntervalRef = useRef();
+  const radiusRef = useRef(1);
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -79,6 +82,41 @@ export default function GlobeScene({
       "domain4.com",
       "domain5.com",
     ];
+
+    const pinMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+
+    const addPin = (lat, lon) => {
+      if (!globeRef.current) return;
+      const radius = radiusRef.current * 1.02;
+      const latRad = THREE.MathUtils.degToRad(lat);
+      const lonRad = THREE.MathUtils.degToRad(lon);
+      const x = radius * Math.cos(latRad) * Math.cos(lonRad);
+      const y = radius * Math.sin(latRad);
+      const z = radius * Math.cos(latRad) * Math.sin(lonRad);
+      const geometry = new THREE.SphereGeometry(radiusRef.current * 0.03, 8, 8);
+      const pin = new THREE.Mesh(geometry, pinMaterial.clone());
+      pin.position.set(x, y, z);
+      globeRef.current.add(pin);
+    };
+
+    const spinTo = (lat, lon) => {
+      gsap.to(rotationRef.current, {
+        x: THREE.MathUtils.degToRad(lat),
+        y: THREE.MathUtils.degToRad(lon),
+        duration: 1,
+        onUpdate: () => {
+          if (globeRef.current) {
+            globeRef.current.rotation.x = rotationRef.current.x;
+            globeRef.current.rotation.y = rotationRef.current.y;
+          }
+        },
+      });
+    };
+
+    const highlightLocation = (lat, lon) => {
+      addPin(lat, lon);
+      spinTo(lat, lon);
+    };
 
     const randomPointOnSphere = (radius) => {
       const u = Math.random();
@@ -162,13 +200,16 @@ export default function GlobeScene({
       const box = new THREE.Box3().setFromObject(obj);
       const size = box.getSize(new THREE.Vector3());
       const radius = Math.max(size.x, size.y, size.z) / 2;
-      addDots(radius, DOT_COUNT);
+      radiusRef.current = radius;
+      if (showDots) {
+        addDots(radius, DOT_COUNT);
+        dotIntervalRef.current = setInterval(() => addDots(radius), 1000);
+      }
       const camX = radius * 3.3 * distance;
       const camZ = radius * 2 * distance;
       camera.position.set(camX, 0, camZ);
       camera.lookAt(0, 0, 0);
       controls.update();
-      dotIntervalRef.current = setInterval(() => addDots(radius), 1000);
     };
 
     const loadObjModel = () => {
@@ -250,6 +291,8 @@ export default function GlobeScene({
       rotationRef.current.y = y;
     };
     if (onSetRotation) onSetRotation(setRotation);
+    if (onGlobeReady)
+      onGlobeReady({ setRotation, addPin, spinTo, highlightLocation });
 
     // OrbitControls handle user interaction
 
@@ -298,7 +341,7 @@ export default function GlobeScene({
       if (dotIntervalRef.current) clearInterval(dotIntervalRef.current);
       renderer.dispose();
     };
-  }, [modelUrl, mtlUrl, onSetRotation, distance, sunLight]);
+    }, [modelUrl, mtlUrl, onSetRotation, distance, sunLight, showDots, onGlobeReady]);
 
   return <div ref={mountRef} className="w-full h-full" />;
 }
