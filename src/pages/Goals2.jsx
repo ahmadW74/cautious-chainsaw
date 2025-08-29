@@ -105,52 +105,60 @@ export default function Goals2() {
           </span>
           click
         </h2>
-        <div
-          ref={searchBarRef}
-          className={`flex justify-center mt-8 w-full max-w-md transition-all duration-500 ${
-            collapsed && !graphGenerated
-              ? "fixed left-1/2 -translate-x-1/2 z-50 bg-[#FFF5EE] p-2 rounded-full shadow"
-              : ""
-          }`}
-          style={
-            collapsed && !graphGenerated ? { top: "20px" } : undefined
-          }
-        >
-          <Input
-            placeholder="type domain here to analyze"
-            value={domain}
-            onChange={(e) => setDomain(e.target.value)}
-            className="w-80 h-12 lg:h-14 text-lg rounded-l-full rounded-r-none shadow-inner text-black"
-          />
-          <Button
-            size="icon"
-            variant="secondary"
-            onClick={handleAnalyze}
-            disabled={!domain.trim()}
-            className="rounded-r-full rounded-l-none border-l-0 h-12 lg:h-14"
-            type="button"
+        {!(collapsed && !graphGenerated) && (
+          <div
+            ref={searchBarRef}
+            className="flex justify-center mt-8 w-full max-w-md transition-all duration-500"
           >
-            <Search className="h-6 w-6" />
-          </Button>
-        </div>
+            <Input
+              placeholder="type domain here to analyze"
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+              className="w-80 h-12 lg:h-14 text-lg rounded-l-full rounded-r-none shadow-inner text-black"
+            />
+            <Button
+              size="icon"
+              variant="secondary"
+              onClick={handleAnalyze}
+              disabled={!domain.trim()}
+              className="rounded-r-full rounded-l-none border-l-0 h-12 lg:h-14"
+              type="button"
+            >
+              <Search className="h-6 w-6" />
+            </Button>
+          </div>
+        )}
         {collapsed && !graphGenerated ? (
-          <div className="grid grid-cols-3 grid-rows-3 gap-4 w-full max-w-4xl mt-20 text-gray-700">
-            <div className="col-span-3 flex justify-center">
-              <p>Dummy top text</p>
-            </div>
-            <div className="row-span-2 flex items-center justify-end">
-              <p className="text-right">Dummy left text</p>
-            </div>
-            <div className="col-start-3 row-span-2 flex items-center justify-start">
-              <p>Dummy right text</p>
-            </div>
-            <div className="col-span-3 row-start-3 flex justify-center">
-              <p>Dummy bottom text</p>
-            </div>
-            <div className="col-start-2 row-start-2 flex justify-center items-center">
-              <div className="w-64 h-40 bg-white rounded-xl shadow flex items-center justify-center text-sm text-gray-500">
-                Minimized Content
-              </div>
+          <div className="relative flex justify-center mt-20 text-gray-700">
+            <div className="relative w-[24rem] h-20 bg-white rounded-xl shadow p-4 flex items-center">
+              <Input
+                placeholder="type domain here to analyze"
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+                className="flex-grow h-12 text-lg rounded-l-full rounded-r-none shadow-inner text-black"
+              />
+              <Button
+                size="icon"
+                variant="secondary"
+                onClick={handleAnalyze}
+                disabled={!domain.trim()}
+                className="rounded-r-full rounded-l-none border-l-0 h-12"
+                type="button"
+              >
+                <Search className="h-6 w-6" />
+              </Button>
+              <p className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2">
+                Dummy top text
+              </p>
+              <p className="absolute top-full mt-2 left-1/2 -translate-x-1/2">
+                Dummy bottom text
+              </p>
+              <p className="absolute top-1/2 right-full -translate-y-1/2 mr-2 text-right">
+                Dummy left text
+              </p>
+              <p className="absolute top-1/2 left-full -translate-y-1/2 ml-2">
+                Dummy right text
+              </p>
             </div>
           </div>
         ) : (
