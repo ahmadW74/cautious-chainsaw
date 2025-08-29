@@ -90,9 +90,7 @@ export default function Goals2() {
         </div>
       </section>
       <section
-        className={`flex flex-col items-center bg-[#FFF5EE] rounded-3xl mx-[10px] mb-[calc(1.5rem+10px)] transition-all duration-500 ${
-          collapsed && !graphGenerated ? "p-0 h-0 overflow-hidden" : "p-10"
-        }`}
+        className={`flex flex-col items-center bg-[#FFF5EE] rounded-3xl mx-[10px] mb-[calc(1.5rem+10px)] transition-all duration-500 p-10`}
       >
         <h2
           className={`text-black font-bold text-4xl sm:text-5xl md:text-6xl text-center transition-all duration-500 ${
@@ -135,59 +133,81 @@ export default function Goals2() {
             <Search className="h-6 w-6" />
           </Button>
         </div>
-        <div
-          className={`relative w-full mt-10 transition-all duration-500 ${
-            collapsed && !graphGenerated ? "opacity-0 max-h-0 overflow-hidden" : ""
-          }`}
-        >
-          <div
-            className={`transition-all duration-500 ${
-              graphGenerated
-                ? "opacity-0 max-h-0 overflow-hidden"
-                : "opacity-100"
-            }`}
-          >
-            <FillerContent />
-          </div>
-          <div
-            className={`transition-all duration-500 transform ${
-              graphGenerated
-                ? "opacity-100 scale-100"
-                : "opacity-0 scale-95 max-h-0 overflow-hidden"
-            }`}
-          >
-            {graphGenerated && (
-              <div className="p-6 lg:p-10 flex justify-center">
-                <div className="w-full max-w-8xl">
-                  <div className="flex items-center justify-end gap-2 mb-4">
-                    <Calendar className="w-5 h-5 text-gray-700" />
-                    <Slider
-                      min={0}
-                      max={dateOptions.length - 1}
-                      step={1}
-                      value={[timelineIndex]}
-                      onValueChange={(v) => setTimelineIndex(v[0])}
-                      className="w-48"
-                    />
-                    <span className="text-sm text-gray-700">
-                      {tooltipLabel}
-                    </span>
-                  </div>
-                  <ReactFlowProvider>
-                    <SampleGraph
-                      domain={currentDomain}
-                      refreshTrigger={refreshTrigger}
-                      onRefresh={handleRefresh}
-                      userId={null}
-                      selectedDate={selectedDate.toISOString().slice(0, 7)}
-                      viewMode="reactflow"
-                    />
-                  </ReactFlowProvider>
-                </div>
+        {collapsed && !graphGenerated ? (
+          <div className="grid grid-cols-3 grid-rows-3 gap-4 w-full max-w-4xl mt-20 text-gray-700">
+            <div className="col-span-3 flex justify-center">
+              <p>Dummy top text</p>
+            </div>
+            <div className="row-span-2 flex items-center justify-end">
+              <p className="text-right">Dummy left text</p>
+            </div>
+            <div className="col-start-3 row-span-2 flex items-center justify-start">
+              <p>Dummy right text</p>
+            </div>
+            <div className="col-span-3 row-start-3 flex justify-center">
+              <p>Dummy bottom text</p>
+            </div>
+            <div className="col-start-2 row-start-2 flex justify-center items-center">
+              <div className="w-64 h-40 bg-white rounded-xl shadow flex items-center justify-center text-sm text-gray-500">
+                Minimized Content
               </div>
-            )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div
+            className={`relative w-full mt-10 transition-all duration-500 ${
+              collapsed && !graphGenerated ? "opacity-0 max-h-0 overflow-hidden" : ""
+            }`}
+          >
+            <div
+              className={`transition-all duration-500 ${
+                graphGenerated
+                  ? "opacity-0 max-h-0 overflow-hidden"
+                  : "opacity-100"
+              }`}
+            >
+              <FillerContent />
+            </div>
+            <div
+              className={`transition-all duration-500 transform ${
+                graphGenerated
+                  ? "opacity-100 scale-100"
+                  : "opacity-0 scale-95 max-h-0 overflow-hidden"
+              }`}
+            >
+              {graphGenerated && (
+                <div className="p-6 lg:p-10 flex justify-center">
+                  <div className="w-full max-w-8xl">
+                    <div className="flex items-center justify-end gap-2 mb-4">
+                      <Calendar className="w-5 h-5 text-gray-700" />
+                      <Slider
+                        min={0}
+                        max={dateOptions.length - 1}
+                        step={1}
+                        value={[timelineIndex]}
+                        onValueChange={(v) => setTimelineIndex(v[0])}
+                        className="w-48"
+                      />
+                      <span className="text-sm text-gray-700">
+                        {tooltipLabel}
+                      </span>
+                    </div>
+                    <ReactFlowProvider>
+                      <SampleGraph
+                        domain={currentDomain}
+                        refreshTrigger={refreshTrigger}
+                        onRefresh={handleRefresh}
+                        userId={null}
+                        selectedDate={selectedDate.toISOString().slice(0, 7)}
+                        viewMode="reactflow"
+                      />
+                    </ReactFlowProvider>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );
