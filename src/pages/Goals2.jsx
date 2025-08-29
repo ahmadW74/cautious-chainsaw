@@ -22,8 +22,9 @@ export default function Goals2() {
   const [currentDomain, setCurrentDomain] = useState("");
   const [graphGenerated, setGraphGenerated] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapseProgress, setCollapseProgress] = useState(0);
   const searchBarRef = useRef(null);
+  const secondSectionWrapperRef = useRef(null);
   const thirdSectionRef = useRef(null);
   const [showStickySearch, setShowStickySearch] = useState(false);
   const dailyUsersStart = useMemo(
@@ -69,14 +70,19 @@ export default function Goals2() {
 
   useEffect(() => {
     if (graphGenerated) {
-      setCollapsed(false);
+      setCollapseProgress(0);
       return;
     }
     const handleScroll = () => {
-      setCollapsed(window.scrollY > 20);
+      const wrapper = secondSectionWrapperRef.current;
+      if (!wrapper) return;
+      const rect = wrapper.getBoundingClientRect();
+      const total = wrapper.offsetHeight - window.innerHeight;
+      const progress = Math.min(Math.max(-rect.top / total, 0), 1);
+      setCollapseProgress(progress);
     };
     handleScroll();
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [graphGenerated]);
 
@@ -142,28 +148,27 @@ export default function Goals2() {
           </span>
         </div>
       </section>
-      <section
-        className={`flex flex-col items-center bg-[#FFF5EE] rounded-3xl mx-[10px] mb-[calc(1.5rem+10px)] transition-all duration-500 p-10 ${
-          collapsed && !graphGenerated ? "min-h-screen justify-center" : ""
-        }`}
+      <div
+        ref={secondSectionWrapperRef}
+        className="h-[200vh] mx-[10px] mb-[calc(1.5rem+10px)]"
       >
-        <h2
-          className={`text-black font-bold text-4xl sm:text-5xl md:text-6xl text-center transition-all duration-500 ${
-            collapsed && !graphGenerated
-              ? "opacity-0 max-h-0 overflow-hidden"
-              : ""
-          }`}
+        <section
+          className="sticky top-0 flex flex-col items-center bg-[#FFF5EE] rounded-3xl p-10 h-screen"
         >
-          Limitless DNSSEC with
-          <span className="bg-gradient-to-r from-pink-500 via-yellow-400 to-purple-500 bg-clip-text !text-transparent animate-gradient mx-2 inline-block">
-            1
-          </span>
-          click
-        </h2>
-        {!(collapsed && !graphGenerated) && (
+          <h2
+            style={{ opacity: 1 - collapseProgress }}
+            className="text-black font-bold text-4xl sm:text-5xl md:text-6xl text-center"
+          >
+            Limitless DNSSEC with
+            <span className="bg-gradient-to-r from-pink-500 via-yellow-400 to-purple-500 bg-clip-text !text-transparent animate-gradient mx-2 inline-block">
+              1
+            </span>
+            click
+          </h2>
           <div
             ref={searchBarRef}
-            className="flex justify-center mt-8 w-full max-w-md transition-all duration-500"
+            style={{ opacity: 1 - collapseProgress }}
+            className="flex justify-center mt-8 w-full max-w-md"
           >
             <Input
               placeholder="type domain here to analyze"
@@ -182,58 +187,59 @@ export default function Goals2() {
               <Search className="h-6 w-6" />
             </Button>
           </div>
-        )}
-        {collapsed && !graphGenerated ? (
-          <div className="relative flex justify-center mt-20 text-gray-700 w-full">
-            <div className="relative w-[24rem] h-20 bg-white rounded-xl shadow p-4 flex items-center justify-center">
-              <Input
-                placeholder="type domain here to analyze"
-                value={domain}
-                onChange={(e) => setDomain(e.target.value)}
-                className="flex-grow h-12 text-lg rounded-l-full rounded-r-none shadow-inner text-black"
-              />
-              <Button
-                size="icon"
-                variant="secondary"
-                onClick={handleAnalyze}
-                disabled={!domain.trim()}
-                className="rounded-r-full rounded-l-none border-l-0 h-12"
-                type="button"
-              >
-                <Search className="h-6 w-6" />
-              </Button>
-              <div className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-40 flex flex-col items-center text-center">
-                <div className="w-40 h-40 bg-[#FFEDE5] rounded-xl flex items-center justify-center pointer-events-none">
-                  <ModelViewer modelUrl={derDenker} scale={1.2} />
+          {!graphGenerated && (
+            <div
+              style={{ opacity: collapseProgress }}
+              className="relative flex justify-center mt-20 text-gray-700 w-full"
+            >
+              <div className="relative w-[24rem] h-20 bg-white rounded-xl shadow p-4 flex items-center justify-center">
+                <Input
+                  placeholder="type domain here to analyze"
+                  value={domain}
+                  onChange={(e) => setDomain(e.target.value)}
+                  className="flex-grow h-12 text-lg rounded-l-full rounded-r-none shadow-inner text-black"
+                />
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  onClick={handleAnalyze}
+                  disabled={!domain.trim()}
+                  className="rounded-r-full rounded-l-none border-l-0 h-12"
+                  type="button"
+                >
+                  <Search className="h-6 w-6" />
+                </Button>
+                <div className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-40 flex flex-col items-center text-center">
+                  <div className="w-40 h-40 bg-[#FFEDE5] rounded-xl flex items-center justify-center pointer-events-none">
+                    <ModelViewer modelUrl={derDenker} scale={1.2} />
+                  </div>
+                  <h3 className="mt-2 text-xl font-bold">More Modren</h3>
+                  <p className="text-sm">Lorem ipsum dolor sit amet.</p>
                 </div>
-                <h3 className="mt-2 text-xl font-bold">More Modren</h3>
-                <p className="text-sm">Lorem ipsum dolor sit amet.</p>
-              </div>
-              <p className="absolute top-full mt-4 left-1/2 -translate-x-1/2 text-3xl font-bold flex items-center gap-2">
-                Still not convinced?
-                <ArrowDown className="w-16 h-16" />
-              </p>
-              <div className="absolute top-1/2 right-full -translate-y-1/2 mr-4 w-32 flex flex-col items-center text-center">
-                <div className="w-32 h-32 bg-[#FFE1D4] rounded-xl flex items-center justify-center pointer-events-none">
-                  <ModelViewer modelUrl={animatedClock} scale={1.2} />
+                <p className="absolute top-full mt-4 left-1/2 -translate-x-1/2 text-3xl font-bold flex items-center gap-2">
+                  Still not convinced?
+                  <ArrowDown className="w-16 h-16" />
+                </p>
+                <div className="absolute top-1/2 right-full -translate-y-1/2 mr-4 w-32 flex flex-col items-center text-center">
+                  <div className="w-32 h-32 bg-[#FFE1D4] rounded-xl flex items-center justify-center pointer-events-none">
+                    <ModelViewer modelUrl={animatedClock} scale={1.2} />
+                  </div>
+                  <h3 className="mt-2 text-lg font-bold">More History</h3>
+                  <p className="text-xs">Lorem ipsum dolor sit amet.</p>
                 </div>
-                <h3 className="mt-2 text-lg font-bold">More History</h3>
-                <p className="text-xs">Lorem ipsum dolor sit amet.</p>
-              </div>
-              <div className="absolute top-1/2 left-full -translate-y-1/2 ml-4 w-32 flex flex-col items-center text-center">
-                <div className="w-32 h-32 bg-[#FFD5C4] rounded-xl flex items-center justify-center pointer-events-none">
-                  <ModelViewer modelUrl={lightning} scale={1.2} />
+                <div className="absolute top-1/2 left-full -translate-y-1/2 ml-4 w-32 flex flex-col items-center text-center">
+                  <div className="w-32 h-32 bg-[#FFD5C4] rounded-xl flex items-center justify-center pointer-events-none">
+                    <ModelViewer modelUrl={lightning} scale={1.2} />
+                  </div>
+                  <h3 className="mt-2 text-lg font-bold">More Speed</h3>
+                  <p className="text-xs">Lorem ipsum dolor sit amet.</p>
                 </div>
-                <h3 className="mt-2 text-lg font-bold">More Speed</h3>
-                <p className="text-xs">Lorem ipsum dolor sit amet.</p>
               </div>
             </div>
-          </div>
-        ) : (
+          )}
           <div
-            className={`relative w-full mt-10 transition-all duration-500 ${
-              collapsed && !graphGenerated ? "opacity-0 max-h-0 overflow-hidden" : ""
-            }`}
+            style={{ opacity: 1 - collapseProgress }}
+            className="relative w-full mt-10"
           >
             <div
               className={`transition-all duration-500 ${
@@ -283,8 +289,8 @@ export default function Goals2() {
               )}
             </div>
           </div>
-        )}
-      </section>
+        </section>
+      </div>
       <section
         ref={thirdSectionRef}
         className="relative flex flex-col items-center h-screen rounded-3xl mx-[10px] mb-[10px] overflow-hidden bg-black"
