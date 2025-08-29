@@ -32,47 +32,49 @@ export default function Goals2() {
   const lastScrollY = useRef(0);
   const [showStickySearch, setShowStickySearch] = useState(false);
   const globeMethodsRef = useRef(null);
+  const randomLat = () => Math.random() * 180 - 90;
+  const randomLon = () => Math.random() * 360 - 180;
   const reviews = useMemo(
     () => [
       {
         name: "Alice",
-        text: "Amazing service and easy to use.",
+        text: "Amazing service and easy to use. The interface is intuitive and the results are always reliable for my team's projects.",
         stars: 5,
         pfp: "https://i.pravatar.cc/100?img=1",
-        lat: 37.7749,
-        lon: -122.4194,
+        lat: randomLat(),
+        lon: randomLon(),
       },
       {
         name: "Bob",
-        text: "Helped my workflow a lot.",
+        text: "Helped my workflow a lot. I can analyze domains faster than ever and share insights with my colleagues effortlessly.",
         stars: 4,
         pfp: "https://i.pravatar.cc/100?img=2",
-        lat: 51.5074,
-        lon: -0.1278,
+        lat: randomLat(),
+        lon: randomLon(),
       },
       {
         name: "Carol",
-        text: "A must-have tool for teams.",
+        text: "A must-have tool for teams. It brings clarity to complex DNS data and keeps our projects on schedule.",
         stars: 5,
         pfp: "https://i.pravatar.cc/100?img=3",
-        lat: 35.6895,
-        lon: 139.6917,
+        lat: randomLat(),
+        lon: randomLon(),
       },
       {
         name: "Dave",
-        text: "Good features and support.",
+        text: "Good features and support. Whenever we hit a snag, the documentation and community have our back.",
         stars: 4,
         pfp: "https://i.pravatar.cc/100?img=4",
-        lat: -33.8688,
-        lon: 151.2093,
+        lat: randomLat(),
+        lon: randomLon(),
       },
       {
         name: "Eve",
-        text: "Intuitive and powerful.",
+        text: "Intuitive and powerful. The visualizations make it easy to explain DNS issues to non-technical teammates.",
         stars: 5,
         pfp: "https://i.pravatar.cc/100?img=5",
-        lat: 48.8566,
-        lon: 2.3522,
+        lat: randomLat(),
+        lon: randomLon(),
       },
     ],
     []
@@ -181,7 +183,7 @@ export default function Goals2() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {showStickySearch && !graphGenerated && (
-        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50">
+        <div className="fixed top-8 left-8 z-50">
           <div className="bg-[#FFF5EE] rounded-xl shadow p-2 flex items-center">
             <Input
               placeholder="type domain here to analyze"
@@ -260,7 +262,9 @@ export default function Goals2() {
             </h2>
             <div
               ref={searchBarRef}
-              className="flex justify-center items-center mt-8 w-full max-w-md mx-auto"
+              className={`flex items-center mt-8 w-full max-w-md ${
+                collapseStage >= 1 ? "justify-start" : "justify-center mx-auto"
+              }`}
               style={{
                 transform:
                   collapseStage >= 1 ? "translateY(-120px)" : "translateY(0)",
@@ -450,23 +454,25 @@ export default function Goals2() {
         className="relative flex items-center h-screen rounded-3xl mx-[10px] mb-[10px] overflow-hidden bg-black"
       >
         <SpaceScene />
-        <h2 className="absolute top-10 right-10 z-10 text-right text-white font-bold text-4xl sm:text-5xl md:text-6xl">
+        <h2 className="absolute top-20 right-10 z-10 text-right text-white font-bold text-5xl sm:text-6xl md:text-7xl">
           See what our users have to say
         </h2>
         <div className="relative z-10 flex items-center w-full h-full">
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[60vw] h-[60vw] -translate-x-1/2 pointer-events-none">
+          <div className="absolute left-10 top-1/2 -translate-y-1/2 w-[40vw] h-[40vw] pointer-events-none">
             <GlobeScene
               modelUrl={lowPolyEarth}
               distance={1.2}
-              sunLight
+              sunLight={false}
               showDots={false}
+              autoRotate={false}
               onGlobeReady={(methods) => {
                 globeMethodsRef.current = methods;
                 methods.setRotation({ x: tilt, y: 0 });
+                methods.highlightLocation(reviews[0].lat, reviews[0].lon);
               }}
             />
           </div>
-          <div className="ml-auto mr-10">
+          <div className="ml-[45vw] mr-4">
             <ReviewCarousel reviews={reviews} onNext={handleNextReview} />
           </div>
         </div>

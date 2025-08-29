@@ -18,6 +18,7 @@ export default function GlobeScene({
   sunLight = false,
   showDots = true,
   onGlobeReady,
+  autoRotate = true,
 }) {
   const mountRef = useRef(null);
   const globeRef = useRef();
@@ -323,7 +324,9 @@ export default function GlobeScene({
       requestAnimationFrame(animate);
       if (paused) return;
       if (globeRef.current) {
-        rotationRef.current.y += 0.0005; // idle spin slowed down
+        if (autoRotate) {
+          rotationRef.current.y += 0.0005; // idle spin slowed down
+        }
         globeRef.current.rotation.x = rotationRef.current.x;
         globeRef.current.rotation.y = rotationRef.current.y;
       }
@@ -341,7 +344,7 @@ export default function GlobeScene({
       if (dotIntervalRef.current) clearInterval(dotIntervalRef.current);
       renderer.dispose();
     };
-    }, [modelUrl, mtlUrl, onSetRotation, distance, sunLight, showDots, onGlobeReady]);
+    }, [modelUrl, mtlUrl, onSetRotation, distance, sunLight, showDots, onGlobeReady, autoRotate]);
 
   return <div ref={mountRef} className="w-full h-full" />;
 }
