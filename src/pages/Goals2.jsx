@@ -355,7 +355,7 @@ export default function Goals2() {
                 marginTop: collapseStage >= 3 ? "0" : "5rem",
                 transform:
                   collapseStage >= 3
-                    ? "translateY(-80px)"
+                    ? "translateY(-200px)"
                     : "translateY(200px)",
                 opacity: collapseStage >= 3 ? 1 : 0,
                 transition: "transform 0.5s, opacity 0.5s, margin-top 0.5s",
