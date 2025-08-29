@@ -1,5 +1,9 @@
 import { useMemo, useState, useEffect, useRef } from "react";
-import GlobeScene from "@/components/GlobeScene";
+import ModelViewer from "@/components/ModelViewer";
+import lowPolyEarth from "@/assets/models/uploads_files_5480147_low_poly_earth.glb?url";
+import animatedClock from "@/assets/models/animated_clock.glb?url";
+import lightning from "@/assets/models/lightning_bolt_icons.glb?url";
+import derDenker from "@/assets/models/der_denker.glb?url";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -77,8 +81,10 @@ export default function Goals2() {
             The Better
           </span>
           <div className="w-72 h-72 md:w-96 md:h-96">
-            <GlobeScene
-              onSetRotation={(setRotation) => setRotation({ x: tilt, y: 0 })}
+            <ModelViewer
+              modelUrl={lowPolyEarth}
+              scale={1.5}
+              initialRotation={{ x: tilt, y: 0, z: 0 }}
             />
           </div>
           <span
@@ -147,18 +153,18 @@ export default function Goals2() {
               >
                 <Search className="h-6 w-6" />
               </Button>
-              <p className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2">
-                Dummy top text
-              </p>
+              <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-20 h-20 pointer-events-none">
+                <ModelViewer modelUrl={derDenker} scale={1.2} />
+              </div>
               <p className="absolute top-full mt-2 left-1/2 -translate-x-1/2">
                 Dummy bottom text
               </p>
-              <p className="absolute top-1/2 right-full -translate-y-1/2 mr-2 text-right">
-                Dummy left text
-              </p>
-              <p className="absolute top-1/2 left-full -translate-y-1/2 ml-2">
-                Dummy right text
-              </p>
+              <div className="absolute top-1/2 right-full -translate-y-1/2 mr-2 w-16 h-16 pointer-events-none">
+                <ModelViewer modelUrl={animatedClock} scale={1.2} />
+              </div>
+              <div className="absolute top-1/2 left-full -translate-y-1/2 ml-2 w-16 h-16 pointer-events-none">
+                <ModelViewer modelUrl={lightning} scale={1.2} />
+              </div>
             </div>
           </div>
         ) : (
