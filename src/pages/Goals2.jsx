@@ -27,6 +27,9 @@ export default function Goals2() {
   const searchBarRef = useRef(null);
   const secondSectionWrapperRef = useRef(null);
   const thirdSectionRef = useRef(null);
+  const secondSectionRef = useRef(null);
+  const [sectionFullyVisible, setSectionFullyVisible] = useState(false);
+  const lastScrollY = useRef(0);
   const [showStickySearch, setShowStickySearch] = useState(false);
   const globeMethodsRef = useRef(null);
   const reviews = useMemo(
@@ -123,22 +126,35 @@ export default function Goals2() {
   };
 
   useEffect(() => {
+    const section = secondSectionRef.current;
+    if (!section) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setSectionFullyVisible(entry.intersectionRatio === 1),
+      { threshold: 1 }
+    );
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
     if (graphGenerated) {
       setCollapseStage(0);
       return;
     }
-    const handleScroll = () => {
-      const wrapper = secondSectionWrapperRef.current;
-      if (!wrapper) return;
-      const rect = wrapper.getBoundingClientRect();
-      if (rect.top <= window.innerHeight * 0.2 && collapseStage === 0) {
+    const onScroll = () => {
+      const currentY = window.scrollY;
+      const direction = currentY > lastScrollY.current ? "down" : "up";
+      lastScrollY.current = currentY;
+
+      if (direction === "down" && sectionFullyVisible && collapseStage === 0) {
         setCollapseStage(1);
+      } else if (direction === "up" && collapseStage > 0) {
+        setCollapseStage((prev) => Math.max(prev - 1, 0));
       }
     };
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [graphGenerated, collapseStage]);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [sectionFullyVisible, graphGenerated, collapseStage]);
 
   useEffect(() => {
     if (collapseStage === 1) {
@@ -218,6 +234,7 @@ export default function Goals2() {
         className="h-[200vh] mx-[10px] mb-[calc(1.5rem+10px)]"
       >
         <section
+          ref={secondSectionRef}
           className="sticky top-0 flex flex-col items-center bg-[#FFF5EE] rounded-3xl p-10 h-screen"
         >
           <div
@@ -243,7 +260,7 @@ export default function Goals2() {
             </h2>
             <div
               ref={searchBarRef}
-              className="flex justify-center mt-8 w-full max-w-md"
+              className="flex justify-center items-center mt-8 w-full max-w-md mx-auto"
               style={{
                 transform: collapseStage >= 1 ? "translateY(-120px)" : "translateY(0)",
                 transition: "transform 0.5s",
@@ -326,7 +343,7 @@ export default function Goals2() {
           </div>
           {!graphGenerated && (
             <div
-              className="relative flex justify-center mt-20 text-gray-700 w-full"
+              className="relative flex justify-center items-center mt-20 text-gray-700 w-full"
               style={{
                 transform: collapseStage >= 3 ? "translateY(0)" : "translateY(100px)",
                 opacity: collapseStage >= 3 ? 1 : 0,
@@ -334,7 +351,7 @@ export default function Goals2() {
                 willChange: "transform, opacity",
               }}
             >
-              <div className="relative w-[24rem] h-20 bg-white rounded-xl shadow p-4 flex items-center justify-center">
+              <div className="relative w-[24rem] h-20 bg-white rounded-xl shadow p-4 flex items-center justify-center mx-auto">
                 <Input
                   placeholder="type domain here to analyze"
                   value={domain}
