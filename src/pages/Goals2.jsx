@@ -8,7 +8,7 @@ import derDenker from "@/assets/models/der_denker.glb?url";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Search, Calendar } from "lucide-react";
+import { Search, Calendar, ArrowDown } from "lucide-react";
 import FillerContent from "@/components/FillerContent";
 import SampleGraph from "@/SampleGraph.jsx";
 import { ReactFlowProvider } from "@xyflow/react";
@@ -157,16 +157,17 @@ export default function Goals2() {
               >
                 <Search className="h-6 w-6" />
               </Button>
-              <div className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-32 h-32 bg-[#FFEDE5] rounded-xl flex items-center justify-center pointer-events-none">
+              <div className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-40 h-40 bg-[#FFEDE5] rounded-xl flex items-center justify-center pointer-events-none">
                 <ModelViewer modelUrl={derDenker} scale={1.2} />
               </div>
-              <p className="absolute top-full mt-4 left-1/2 -translate-x-1/2 text-3xl font-bold">
+              <p className="absolute top-full mt-4 left-1/2 -translate-x-1/2 text-3xl font-bold flex items-center gap-2">
                 Still not convinced?
+                <ArrowDown className="w-16 h-16" />
               </p>
-              <div className="absolute top-1/2 right-full -translate-y-1/2 mr-4 w-24 h-24 bg-[#FFE1D4] rounded-xl flex items-center justify-center pointer-events-none">
+              <div className="absolute top-1/2 right-full -translate-y-1/2 mr-4 w-32 h-32 bg-[#FFE1D4] rounded-xl flex items-center justify-center pointer-events-none">
                 <ModelViewer modelUrl={animatedClock} scale={1.2} />
               </div>
-              <div className="absolute top-1/2 left-full -translate-y-1/2 ml-4 w-24 h-24 bg-[#FFD5C4] rounded-xl flex items-center justify-center pointer-events-none">
+              <div className="absolute top-1/2 left-full -translate-y-1/2 ml-4 w-32 h-32 bg-[#FFD5C4] rounded-xl flex items-center justify-center pointer-events-none">
                 <ModelViewer modelUrl={lightning} scale={1.2} />
               </div>
             </div>
