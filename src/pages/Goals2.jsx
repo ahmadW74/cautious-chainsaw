@@ -216,9 +216,7 @@ export default function Goals2() {
           <div className="w-72 h-72 md:w-96 md:h-96">
             <GlobeScene
               modelUrl={lowPolyEarth}
-              onSetRotation={(setRotation) =>
-                setRotation({ x: tilt, y: 0 })
-              }
+              onSetRotation={(setRotation) => setRotation({ x: tilt, y: 0 })}
             />
           </div>
           <span
@@ -240,14 +238,16 @@ export default function Goals2() {
           <div
             className="relative w-full h-full overflow-hidden"
             style={{
-              clipPath: collapseStage >= 2 ? "inset(50% 0 50% 0)" : "inset(0 0 0 0)",
+              clipPath:
+                collapseStage >= 2 ? "inset(50% 0 50% 0)" : "inset(0 0 0 0)",
               transition: "clip-path 0.5s",
             }}
           >
             <h2
               className="text-black font-bold text-4xl sm:text-5xl md:text-6xl text-center"
               style={{
-                transform: collapseStage >= 2 ? "translateY(-100px)" : "translateY(0)",
+                transform:
+                  collapseStage >= 2 ? "translateY(-100px)" : "translateY(0)",
                 transition: "transform 0.5s",
                 willChange: "transform",
               }}
@@ -262,7 +262,8 @@ export default function Goals2() {
               ref={searchBarRef}
               className="flex justify-center items-center mt-8 w-full max-w-md mx-auto"
               style={{
-                transform: collapseStage >= 1 ? "translateY(-120px)" : "translateY(0)",
+                transform:
+                  collapseStage >= 1 ? "translateY(-120px)" : "translateY(0)",
                 transition: "transform 0.5s",
                 willChange: "transform",
               }}
@@ -287,7 +288,8 @@ export default function Goals2() {
             <div
               className="relative w-full mt-10"
               style={{
-                transform: collapseStage >= 2 ? "translateY(-60px)" : "translateY(0)",
+                transform:
+                  collapseStage >= 2 ? "translateY(-60px)" : "translateY(0)",
                 transition: "transform 0.5s",
                 willChange: "transform",
               }}
@@ -349,8 +351,8 @@ export default function Goals2() {
                 marginTop: collapseStage >= 3 ? "0" : "5rem",
                 transform:
                   collapseStage >= 3
-                    ? "translateY(-40px)"
-                    : "translateY(100px)",
+                    ? "translateY(-80px)"
+                    : "translateY(200px)",
                 opacity: collapseStage >= 3 ? 1 : 0,
                 transition: "transform 0.5s, opacity 0.5s, margin-top 0.5s",
                 willChange: "transform, opacity, margin-top",
@@ -376,7 +378,10 @@ export default function Goals2() {
                 <div
                   className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-40 flex flex-col items-center text-center"
                   style={{
-                    transform: collapseStage >= 3 ? "translateY(0)" : "translateY(-20px)",
+                    transform:
+                      collapseStage >= 3
+                        ? "translateY(0)"
+                        : "translateY(-20px)",
                     opacity: collapseStage >= 3 ? 1 : 0,
                     transition: "transform 0.5s, opacity 0.5s",
                     willChange: "transform, opacity",
@@ -391,7 +396,8 @@ export default function Goals2() {
                 <p
                   className="absolute top-full mt-4 left-1/2 -translate-x-1/2 text-3xl font-bold flex items-center gap-2"
                   style={{
-                    transform: collapseStage >= 3 ? "translateY(0)" : "translateY(20px)",
+                    transform:
+                      collapseStage >= 3 ? "translateY(0)" : "translateY(20px)",
                     opacity: collapseStage >= 3 ? 1 : 0,
                     transition: "transform 0.5s, opacity 0.5s",
                     willChange: "transform, opacity",
@@ -403,7 +409,8 @@ export default function Goals2() {
                 <div
                   className="absolute top-1/2 right-full -translate-y-1/2 mr-4 w-32 flex flex-col items-center text-center"
                   style={{
-                    transform: collapseStage >= 3 ? "translateX(0)" : "translateX(20px)",
+                    transform:
+                      collapseStage >= 3 ? "translateX(0)" : "translateX(20px)",
                     opacity: collapseStage >= 3 ? 1 : 0,
                     transition: "transform 0.5s, opacity 0.5s",
                     willChange: "transform, opacity",
@@ -418,7 +425,10 @@ export default function Goals2() {
                 <div
                   className="absolute top-1/2 left-full -translate-y-1/2 ml-4 w-32 flex flex-col items-center text-center"
                   style={{
-                    transform: collapseStage >= 3 ? "translateX(0)" : "translateX(-20px)",
+                    transform:
+                      collapseStage >= 3
+                        ? "translateX(0)"
+                        : "translateX(-20px)",
                     opacity: collapseStage >= 3 ? 1 : 0,
                     transition: "transform 0.5s, opacity 0.5s",
                     willChange: "transform, opacity",
@@ -462,7 +472,9 @@ export default function Goals2() {
         </div>
         <div className="absolute bottom-10 right-10 z-10 flex gap-16">
           <div className="text-right">
-            <p className="text-white font-bold text-2xl md:text-3xl">Users Daily</p>
+            <p className="text-white font-bold text-2xl md:text-3xl">
+              Users Daily
+            </p>
             <NumberTicker
               start={dailyUsersStart}
               className="block text-white font-bold text-4xl md:text-5xl mt-2"
