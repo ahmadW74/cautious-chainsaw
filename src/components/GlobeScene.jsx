@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { gsap } from "gsap";
 import earthModel from "@/assets/models/Earth 2K.obj?url";
@@ -55,6 +56,7 @@ export default function GlobeScene({
     const textureLoader = new THREE.TextureLoader();
     const objLoader = new OBJLoader();
     const mtlLoader = new MTLLoader();
+    const gltfLoader = new GLTFLoader();
     const dots = [];
 
     const randomPointOnSphere = (radius) => {
@@ -114,48 +116,66 @@ export default function GlobeScene({
       }
     };
 
-    mtlLoader.load(mtlUrl, (materials) => {
-      materials.preload();
-      objLoader.setMaterials(materials);
-      objLoader.load(modelUrl, async (obj) => {
-        const [diffuseMap, bumpMap] = await Promise.all([
-          textureLoader.loadAsync(diffuseTexture),
-          textureLoader.loadAsync(bumpTexture),
-        ]);
+    const finishModel = (obj) => {
+      const scale = 1.5;
+      obj.scale.setScalar(scale);
+      globeRef.current = obj;
+      scene.add(globeRef.current);
+      const box = new THREE.Box3().setFromObject(obj);
+      const size = box.getSize(new THREE.Vector3());
+      const radius = Math.max(size.x, size.y, size.z) / 2;
+      addDots(radius, 20);
+      const dotInterval = setInterval(() => addDots(radius), 1000);
+      mount.__dotInterval = dotInterval;
+    };
 
-        // Create fresh material to avoid reinitializing textures
-        const earthMat = new THREE.MeshPhongMaterial({
-          map: diffuseMap,
-          bumpMap: bumpMap,
-          bumpScale: 0.005,
+    const loadObjModel = () => {
+      mtlLoader.load(mtlUrl, (materials) => {
+        materials.preload();
+        objLoader.setMaterials(materials);
+        objLoader.load(modelUrl, async (obj) => {
+          const [diffuseMap, bumpMap] = await Promise.all([
+            textureLoader.loadAsync(diffuseTexture),
+            textureLoader.loadAsync(bumpTexture),
+          ]);
+
+          // Create fresh material to avoid reinitializing textures
+          const earthMat = new THREE.MeshPhongMaterial({
+            map: diffuseMap,
+            bumpMap: bumpMap,
+            bumpScale: 0.005,
+          });
+
+          obj.traverse((child) => {
+            if (!child.isMesh || !child.material) return;
+
+            // Dispose of placeholder material and assign new one with loaded textures
+            if (child.material.name === "Earth") {
+              child.material.dispose();
+              child.material = earthMat;
+            } else if (child.material.name === "Clouds") {
+              // Remove clouds mesh to avoid using additional textures
+              child.parent.remove(child);
+            }
+          });
+
+          finishModel(obj);
         });
-
-        obj.traverse((child) => {
-          if (!child.isMesh || !child.material) return;
-
-          // Dispose of placeholder material and assign new one with loaded textures
-          if (child.material.name === "Earth") {
-            child.material.dispose();
-            child.material = earthMat;
-          } else if (child.material.name === "Clouds") {
-            // Remove clouds mesh to avoid using additional textures
-            child.parent.remove(child);
-          }
-        });
-
-        // Increase the overall scale of the globe
-        const scale = 1.5;
-        obj.scale.setScalar(scale);
-        globeRef.current = obj;
-        scene.add(globeRef.current);
-        const box = new THREE.Box3().setFromObject(obj);
-        const size = box.getSize(new THREE.Vector3());
-        const radius = Math.max(size.x, size.y, size.z) / 2;
-        addDots(radius, 20);
-        const dotInterval = setInterval(() => addDots(radius), 1000);
-        mount.__dotInterval = dotInterval;
       });
-    });
+    };
+
+    const loadGlbModel = () => {
+      gltfLoader.load(modelUrl, (gltf) => {
+        finishModel(gltf.scene);
+      });
+    };
+
+    const ext = modelUrl.split(".").pop().toLowerCase();
+    if (ext === "glb" || ext === "gltf") {
+      loadGlbModel();
+    } else {
+      loadObjModel();
+    }
 
     mount.style.position = "relative";
 
