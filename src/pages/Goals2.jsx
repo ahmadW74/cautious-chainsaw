@@ -98,7 +98,9 @@ export default function Goals2() {
         </div>
       </section>
       <section
-        className={`flex flex-col items-center bg-[#FFF5EE] rounded-3xl mx-[10px] mb-[calc(1.5rem+10px)] transition-all duration-500 p-10`}
+        className={`flex flex-col items-center bg-[#FFF5EE] rounded-3xl mx-[10px] mb-[calc(1.5rem+10px)] transition-all duration-500 p-10 ${
+          collapsed && !graphGenerated ? "min-h-screen justify-center" : ""
+        }`}
       >
         <h2
           className={`text-black font-bold text-4xl sm:text-5xl md:text-6xl text-center transition-all duration-500 ${
@@ -137,8 +139,8 @@ export default function Goals2() {
           </div>
         )}
         {collapsed && !graphGenerated ? (
-          <div className="relative flex justify-center mt-20 text-gray-700">
-            <div className="relative w-[24rem] h-20 bg-white rounded-xl shadow p-4 flex items-center">
+          <div className="relative flex justify-center mt-20 text-gray-700 w-full">
+            <div className="relative w-[24rem] h-20 bg-white rounded-xl shadow p-4 flex items-center justify-center">
               <Input
                 placeholder="type domain here to analyze"
                 value={domain}
@@ -155,16 +157,16 @@ export default function Goals2() {
               >
                 <Search className="h-6 w-6" />
               </Button>
-              <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-20 h-20 pointer-events-none">
+              <div className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-32 h-32 bg-[#FFEDE5] rounded-xl flex items-center justify-center pointer-events-none">
                 <ModelViewer modelUrl={derDenker} scale={1.2} />
               </div>
-              <p className="absolute top-full mt-2 left-1/2 -translate-x-1/2">
-                Dummy bottom text
+              <p className="absolute top-full mt-4 left-1/2 -translate-x-1/2 text-3xl font-bold">
+                Still not convinced?
               </p>
-              <div className="absolute top-1/2 right-full -translate-y-1/2 mr-2 w-16 h-16 pointer-events-none">
+              <div className="absolute top-1/2 right-full -translate-y-1/2 mr-4 w-24 h-24 bg-[#FFE1D4] rounded-xl flex items-center justify-center pointer-events-none">
                 <ModelViewer modelUrl={animatedClock} scale={1.2} />
               </div>
-              <div className="absolute top-1/2 left-full -translate-y-1/2 ml-2 w-16 h-16 pointer-events-none">
+              <div className="absolute top-1/2 left-full -translate-y-1/2 ml-4 w-24 h-24 bg-[#FFD5C4] rounded-xl flex items-center justify-center pointer-events-none">
                 <ModelViewer modelUrl={lightning} scale={1.2} />
               </div>
             </div>
