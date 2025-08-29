@@ -46,7 +46,7 @@ export default function GlobeScene({
     }
 
     const camera = new THREE.PerspectiveCamera(
-      60,
+      30,
       mount.clientWidth / mount.clientHeight,
       0.1,
       1000
@@ -155,7 +155,7 @@ export default function GlobeScene({
     };
 
     const finishModel = (obj) => {
-      const scale = 1.5;
+      const scale = 0.97;
       obj.scale.setScalar(scale);
       globeRef.current = obj;
       scene.add(globeRef.current);
