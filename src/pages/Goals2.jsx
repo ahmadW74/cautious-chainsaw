@@ -343,12 +343,13 @@ export default function Goals2() {
           </div>
           {!graphGenerated && (
             <div
-              className="relative flex justify-center items-center mt-20 text-gray-700 w-full"
+              className="relative flex justify-center items-center text-gray-700 w-full"
               style={{
+                marginTop: collapseStage >= 3 ? "0" : "5rem",
                 transform: collapseStage >= 3 ? "translateY(0)" : "translateY(100px)",
                 opacity: collapseStage >= 3 ? 1 : 0,
-                transition: "transform 0.5s, opacity 0.5s",
-                willChange: "transform, opacity",
+                transition: "transform 0.5s, opacity 0.5s, margin-top 0.5s",
+                willChange: "transform, opacity, margin-top",
               }}
             >
               <div className="relative w-[24rem] h-20 bg-white rounded-xl shadow p-4 flex items-center justify-center mx-auto">
