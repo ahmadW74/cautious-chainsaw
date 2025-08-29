@@ -275,7 +275,7 @@ export default function Goals2() {
       </section>
       <section
         ref={thirdSectionRef}
-        className="relative flex flex-col items-center h-screen rounded-3xl mx-[10px] mb-[calc(1.5rem+10px)] overflow-hidden bg-black"
+        className="relative flex flex-col items-center h-screen rounded-3xl mx-[10px] mb-[10px] overflow-hidden bg-black"
       >
         <SpaceScene />
         <h2 className="relative z-10 text-white font-bold text-4xl sm:text-5xl md:text-6xl text-center mt-10">
@@ -285,7 +285,8 @@ export default function Goals2() {
           <GlobeScene
             modelUrl={lowPolyEarth}
             onSetRotation={(setRotation) => setRotation({ x: tilt, y: 0 })}
-            distance={1.5}
+            distance={0.9}
+            sunLight
           />
         </div>
         <div className="relative z-10 mt-auto mb-10 flex gap-16">

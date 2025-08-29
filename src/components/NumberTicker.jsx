@@ -31,5 +31,7 @@ export default function NumberTicker({ start, className = "" }) {
     };
   }, [start]);
 
-  return <span className={className}>{value.toLocaleString()}</span>;
+  return (
+    <span className={`text-white ${className}`}>{value.toLocaleString()}</span>
+  );
 }

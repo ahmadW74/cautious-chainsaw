@@ -15,6 +15,7 @@ export default function GlobeScene({
   mtlUrl = earthMaterial,
   onSetRotation,
   distance = 1,
+  sunLight = false,
 }) {
   const mountRef = useRef(null);
   const globeRef = useRef();
@@ -26,15 +27,23 @@ export default function GlobeScene({
     if (!mount) return;
 
     const scene = new THREE.Scene();
-    // brighter, balanced lighting to remove dark spots
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
-    scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(5, 5, 5);
-    scene.add(directionalLight);
-    const fillLight = new THREE.DirectionalLight(0xffffff, 0.6);
-    fillLight.position.set(-5, -5, -5);
-    scene.add(fillLight);
+    if (sunLight) {
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+      scene.add(ambientLight);
+      const sun = new THREE.DirectionalLight(0xffff00, 1.5);
+      sun.position.set(5, 5, 5);
+      scene.add(sun);
+    } else {
+      // brighter, balanced lighting to remove dark spots
+      const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+      scene.add(ambientLight);
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+      directionalLight.position.set(5, 5, 5);
+      scene.add(directionalLight);
+      const fillLight = new THREE.DirectionalLight(0xffffff, 0.6);
+      fillLight.position.set(-5, -5, -5);
+      scene.add(fillLight);
+    }
 
     const camera = new THREE.PerspectiveCamera(
       60,
@@ -289,7 +298,7 @@ export default function GlobeScene({
       if (dotIntervalRef.current) clearInterval(dotIntervalRef.current);
       renderer.dispose();
     };
-  }, [modelUrl, mtlUrl, onSetRotation, distance]);
+  }, [modelUrl, mtlUrl, onSetRotation, distance, sunLight]);
 
   return <div ref={mountRef} className="w-full h-full" />;
 }
