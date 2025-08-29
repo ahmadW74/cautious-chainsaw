@@ -62,22 +62,29 @@ export default function GlobeScene({
     const gltfLoader = new GLTFLoader();
     const dots = [];
     const DOT_COUNT = 20;
-    const angleStep = (Math.PI * 2) / DOT_COUNT;
-    let currentAngle = 0;
+    const domains = [
+      "domain1.com",
+      "domain2.com",
+      "domain3.com",
+      "domain4.com",
+      "domain5.com",
+    ];
 
-    const pointOnCircle = (radius) => {
-      const angle = currentAngle;
-      currentAngle = (currentAngle + angleStep) % (Math.PI * 2);
+    const randomPointOnSphere = (radius) => {
+      const u = Math.random();
+      const v = Math.random();
+      const theta = 2 * Math.PI * u;
+      const phi = Math.acos(2 * v - 1);
       return new THREE.Vector3(
-        radius * Math.cos(angle),
-        radius * Math.sin(angle),
-        0
+        radius * Math.sin(phi) * Math.cos(theta),
+        radius * Math.sin(phi) * Math.sin(theta),
+        radius * Math.cos(phi)
       );
     };
 
     const addDots = (radius, count = 1) => {
       for (let i = 0; i < count; i++) {
-        const position = pointOnCircle(radius * 1.02);
+        const position = randomPointOnSphere(radius * 1.02);
 
         const geometry = new THREE.SphereGeometry(radius * 0.02, 8, 8);
         const material = new THREE.MeshBasicMaterial({
@@ -88,7 +95,8 @@ export default function GlobeScene({
         const dot = new THREE.Mesh(geometry, material);
         dot.scale.setScalar(0);
         dot.position.copy(position);
-        dot.userData.value = Math.floor(Math.random() * 1000);
+        const domain = domains[Math.floor(Math.random() * domains.length)];
+        dot.userData.tooltip = domain;
         globeRef.current.add(dot);
 
         // invisible larger sphere for easier hover detection
@@ -99,7 +107,7 @@ export default function GlobeScene({
         });
         const hoverDot = new THREE.Mesh(hoverGeometry, hoverMaterial);
         hoverDot.position.copy(position);
-        hoverDot.userData.value = dot.userData.value;
+        hoverDot.userData.tooltip = domain;
         globeRef.current.add(hoverDot);
         dots.push(hoverDot);
 
@@ -242,7 +250,7 @@ export default function GlobeScene({
       raycaster.setFromCamera(pointer, camera);
       const intersects = raycaster.intersectObjects(dots);
       if (intersects.length > 0) {
-        tooltip.textContent = intersects[0].object.userData.value;
+        tooltip.textContent = intersects[0].object.userData.tooltip;
         tooltip.style.display = "block";
         tooltip.style.left = `${e.clientX - rect.left + 8}px`;
         tooltip.style.top = `${e.clientY - rect.top + 8}px`;
