@@ -202,18 +202,30 @@ export default function Goals2() {
               >
                 <Search className="h-6 w-6" />
               </Button>
-              <div className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-40 h-40 bg-[#FFEDE5] rounded-xl flex items-center justify-center pointer-events-none">
-                <ModelViewer modelUrl={derDenker} scale={1.2} />
+              <div className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-40 flex flex-col items-center text-center">
+                <div className="w-40 h-40 bg-[#FFEDE5] rounded-xl flex items-center justify-center pointer-events-none">
+                  <ModelViewer modelUrl={derDenker} scale={1.2} />
+                </div>
+                <h3 className="mt-2 text-xl font-bold">More Modren</h3>
+                <p className="text-sm">Lorem ipsum dolor sit amet.</p>
               </div>
               <p className="absolute top-full mt-4 left-1/2 -translate-x-1/2 text-3xl font-bold flex items-center gap-2">
                 Still not convinced?
                 <ArrowDown className="w-16 h-16" />
               </p>
-              <div className="absolute top-1/2 right-full -translate-y-1/2 mr-4 w-32 h-32 bg-[#FFE1D4] rounded-xl flex items-center justify-center pointer-events-none">
-                <ModelViewer modelUrl={animatedClock} scale={1.2} />
+              <div className="absolute top-1/2 right-full -translate-y-1/2 mr-4 w-32 flex flex-col items-center text-center">
+                <div className="w-32 h-32 bg-[#FFE1D4] rounded-xl flex items-center justify-center pointer-events-none">
+                  <ModelViewer modelUrl={animatedClock} scale={1.2} />
+                </div>
+                <h3 className="mt-2 text-lg font-bold">More History</h3>
+                <p className="text-xs">Lorem ipsum dolor sit amet.</p>
               </div>
-              <div className="absolute top-1/2 left-full -translate-y-1/2 ml-4 w-32 h-32 bg-[#FFD5C4] rounded-xl flex items-center justify-center pointer-events-none">
-                <ModelViewer modelUrl={lightning} scale={1.2} />
+              <div className="absolute top-1/2 left-full -translate-y-1/2 ml-4 w-32 flex flex-col items-center text-center">
+                <div className="w-32 h-32 bg-[#FFD5C4] rounded-xl flex items-center justify-center pointer-events-none">
+                  <ModelViewer modelUrl={lightning} scale={1.2} />
+                </div>
+                <h3 className="mt-2 text-lg font-bold">More Speed</h3>
+                <p className="text-xs">Lorem ipsum dolor sit amet.</p>
               </div>
             </div>
           </div>
