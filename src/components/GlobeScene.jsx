@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader.js";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { gsap } from "gsap";
 import earthModel from "@/assets/models/Earth 2K.obj?url";
 import earthMaterial from "@/assets/models/Earth 2K.mtl?url";
 import diffuseTexture from "@/assets/models/Textures/Diffuse_2K.png?url";
@@ -36,7 +38,7 @@ export default function GlobeScene({
     );
     // Offset camera so about 60% of the globe is visible
     // and ensure it starts outside the globe's radius
-    camera.position.set(10, 0, 6);
+    camera.position.set(15, 0, 9);
     camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -44,6 +46,11 @@ export default function GlobeScene({
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.setClearColor("#000000", 0);
     mount.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.enablePan = true;
+    controls.enableZoom = true;
 
     const textureLoader = new THREE.TextureLoader();
     const objLoader = new OBJLoader();
@@ -62,16 +69,48 @@ export default function GlobeScene({
       );
     };
 
-    const addDots = (radius, count = 20) => {
-      const geometry = new THREE.SphereGeometry(radius * 0.02, 8, 8);
-      const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const addDots = (radius, count = 1) => {
       for (let i = 0; i < count; i++) {
+        const geometry = new THREE.SphereGeometry(radius * 0.02, 8, 8);
+        const material = new THREE.MeshBasicMaterial({
+          color: 0xffffff,
+          transparent: true,
+          opacity: 0,
+        });
         const dot = new THREE.Mesh(geometry, material);
+        dot.scale.setScalar(0);
         dot.position.copy(randomPointOnSphere(radius));
         dot.userData.value = Math.floor(Math.random() * 1000);
-        // Attach dots to the globe so they rotate together
         globeRef.current.add(dot);
         dots.push(dot);
+
+        gsap.to(dot.material, { opacity: 1, duration: 0.6 });
+        gsap.to(dot.scale, {
+          x: 1,
+          y: 1,
+          z: 1,
+          duration: 0.6,
+          ease: "back.out(2)",
+        });
+
+        gsap.to(dot.material, {
+          opacity: 0,
+          duration: 0.6,
+          delay: 5,
+          onComplete: () => {
+            globeRef.current.remove(dot);
+            dots.splice(dots.indexOf(dot), 1);
+            geometry.dispose();
+            material.dispose();
+          },
+        });
+        gsap.to(dot.scale, {
+          x: 0,
+          y: 0,
+          z: 0,
+          duration: 0.6,
+          delay: 5,
+        });
       }
     };
 
@@ -112,7 +151,9 @@ export default function GlobeScene({
         const box = new THREE.Box3().setFromObject(obj);
         const size = box.getSize(new THREE.Vector3());
         const radius = Math.max(size.x, size.y, size.z) / 2;
-        addDots(radius);
+        addDots(radius, 20);
+        const dotInterval = setInterval(() => addDots(radius), 1000);
+        mount.__dotInterval = dotInterval;
       });
     });
 
@@ -148,26 +189,7 @@ export default function GlobeScene({
     };
     if (onSetRotation) onSetRotation(setRotation);
 
-    // optional drag to rotate
-    const dragging = { active: false, x: 0, y: 0 };
-    const onPointerDown = (e) => {
-      dragging.active = true;
-      dragging.x = e.clientX;
-      dragging.y = e.clientY;
-    };
-    const onPointerMoveDrag = (e) => {
-      if (!dragging.active) return;
-      const dx = e.clientX - dragging.x;
-      const dy = e.clientY - dragging.y;
-      rotationRef.current.y += dx * 0.005;
-      rotationRef.current.x += dy * 0.005;
-      dragging.x = e.clientX;
-      dragging.y = e.clientY;
-    };
-    const onPointerUp = () => (dragging.active = false);
-    mount.addEventListener("pointerdown", onPointerDown);
-    window.addEventListener("pointermove", onPointerMoveDrag);
-    window.addEventListener("pointerup", onPointerUp);
+    // OrbitControls handle user interaction
 
     const onHover = (e) => {
       const rect = mount.getBoundingClientRect();
@@ -196,10 +218,11 @@ export default function GlobeScene({
       requestAnimationFrame(animate);
       if (paused) return;
       if (globeRef.current) {
-        rotationRef.current.y += 0.001; // idle spin
+        rotationRef.current.y += 0.0005; // idle spin slowed down
         globeRef.current.rotation.x = rotationRef.current.x;
         globeRef.current.rotation.y = rotationRef.current.y;
       }
+      controls.update();
       renderer.render(scene, camera);
     };
     animate();
@@ -208,11 +231,9 @@ export default function GlobeScene({
       document.removeEventListener("visibilitychange", visibility);
       window.removeEventListener("resize", handleResize);
       mount.removeChild(renderer.domElement);
-      mount.removeEventListener("pointerdown", onPointerDown);
-      window.removeEventListener("pointermove", onPointerMoveDrag);
-      window.removeEventListener("pointerup", onPointerUp);
       mount.removeEventListener("pointermove", onHover);
       mount.removeChild(tooltip);
+      if (mount.__dotInterval) clearInterval(mount.__dotInterval);
       renderer.dispose();
     };
   }, [modelUrl, mtlUrl, onSetRotation]);
