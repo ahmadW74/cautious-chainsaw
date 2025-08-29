@@ -10,7 +10,7 @@ export default function ReviewCarousel({ reviews = [], onNext }) {
   };
   const review = reviews[index] || {};
   return (
-    <div className="relative w-72 md:w-96 p-6 rounded-xl bg-white/30 backdrop-blur-md text-white">
+    <div className="relative w-80 md:w-[32rem] p-6 rounded-xl bg-white/30 backdrop-blur-md text-white">
       <div className="flex items-center gap-4">
         {review.pfp && (
           <img
