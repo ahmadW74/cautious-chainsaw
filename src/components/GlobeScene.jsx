@@ -101,9 +101,11 @@ export default function GlobeScene({
     };
 
     const spinTo = (lat, lon) => {
+      const targetX = THREE.MathUtils.degToRad(-lat);
+      const targetY = THREE.MathUtils.degToRad(lon);
       gsap.to(rotationRef.current, {
-        x: THREE.MathUtils.degToRad(lat),
-        y: THREE.MathUtils.degToRad(lon),
+        x: targetX,
+        y: targetY,
         duration: 1,
         onUpdate: () => {
           if (globeRef.current) {
