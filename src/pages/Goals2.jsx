@@ -209,42 +209,96 @@ export default function Goals2() {
         <section
           className="sticky top-0 flex flex-col items-center bg-[#FFF5EE] rounded-3xl p-10 h-screen"
         >
-          <h2
-            style={{ opacity: 1 - collapseProgress }}
-            className="text-black font-bold text-4xl sm:text-5xl md:text-6xl text-center"
-          >
-            Limitless DNSSEC with
-            <span className="bg-gradient-to-r from-pink-500 via-yellow-400 to-purple-500 bg-clip-text !text-transparent animate-gradient mx-2 inline-block">
-              1
-            </span>
-            click
-          </h2>
           <div
-            ref={searchBarRef}
-            style={{ opacity: 1 - collapseProgress }}
-            className="flex justify-center mt-8 w-full max-w-md"
+            className="relative w-full h-full overflow-hidden transition-[clip-path] duration-500"
+            style={{ clipPath: `inset(${collapseProgress * 50}% 0 ${collapseProgress * 50}% 0)` }}
           >
-            <Input
-              placeholder="type domain here to analyze"
-              value={domain}
-              onChange={(e) => setDomain(e.target.value)}
-              className="w-80 h-12 lg:h-14 text-lg rounded-l-full rounded-r-none shadow-inner text-black"
-            />
-            <Button
-              size="icon"
-              variant="secondary"
-              onClick={handleAnalyze}
-              disabled={!domain.trim()}
-              className="rounded-r-full rounded-l-none border-l-0 h-12 lg:h-14"
-              type="button"
+            <h2
+              className="text-black font-bold text-4xl sm:text-5xl md:text-6xl text-center transition-transform"
+              style={{ transform: `translateY(-${collapseProgress * 100}px)` }}
             >
-              <Search className="h-6 w-6" />
-            </Button>
+              Limitless DNSSEC with
+              <span className="bg-gradient-to-r from-pink-500 via-yellow-400 to-purple-500 bg-clip-text !text-transparent animate-gradient mx-2 inline-block">
+                1
+              </span>
+              click
+            </h2>
+            <div
+              ref={searchBarRef}
+              className="flex justify-center mt-8 w-full max-w-md transition-transform"
+              style={{ transform: `translateY(-${collapseProgress * 120}px)` }}
+            >
+              <Input
+                placeholder="type domain here to analyze"
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+                className="w-80 h-12 lg:h-14 text-lg rounded-l-full rounded-r-none shadow-inner text-black"
+              />
+              <Button
+                size="icon"
+                variant="secondary"
+                onClick={handleAnalyze}
+                disabled={!domain.trim()}
+                className="rounded-r-full rounded-l-none border-l-0 h-12 lg:h-14"
+                type="button"
+              >
+                <Search className="h-6 w-6" />
+              </Button>
+            </div>
+            <div className="relative w-full mt-10 transition-transform" style={{ transform: `translateY(-${collapseProgress * 60}px)` }}>
+              <div
+                className={`transition-all duration-500 ${
+                  graphGenerated
+                    ? "opacity-0 max-h-0 overflow-hidden"
+                    : "opacity-100"
+                }`}
+              >
+                <FillerContent />
+              </div>
+              <div
+                className={`transition-all duration-500 transform ${
+                  graphGenerated
+                    ? "opacity-100 scale-100"
+                    : "opacity-0 scale-95 max-h-0 overflow-hidden"
+                }`}
+              >
+                {graphGenerated && (
+                  <div className="p-6 lg:p-10 flex justify-center">
+                    <div className="w-full max-w-8xl">
+                      <div className="flex items-center justify-end gap-2 mb-4">
+                        <Calendar className="w-5 h-5 text-gray-700" />
+                        <Slider
+                          min={0}
+                          max={dateOptions.length - 1}
+                          step={1}
+                          value={[timelineIndex]}
+                          onValueChange={(v) => setTimelineIndex(v[0])}
+                          className="w-48"
+                        />
+                        <span className="text-sm text-gray-700">
+                          {tooltipLabel}
+                        </span>
+                      </div>
+                      <ReactFlowProvider>
+                        <SampleGraph
+                          domain={currentDomain}
+                          refreshTrigger={refreshTrigger}
+                          onRefresh={handleRefresh}
+                          userId={null}
+                          selectedDate={selectedDate.toISOString().slice(0, 7)}
+                          viewMode="reactflow"
+                        />
+                      </ReactFlowProvider>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
           {!graphGenerated && (
             <div
-              style={{ opacity: collapseProgress }}
-              className="relative flex justify-center mt-20 text-gray-700 w-full"
+              className="relative flex justify-center mt-20 text-gray-700 w-full transition-transform"
+              style={{ transform: `translateY(${(1 - collapseProgress) * 100}px)` }}
             >
               <div className="relative w-[24rem] h-20 bg-white rounded-xl shadow p-4 flex items-center justify-center">
                 <Input
@@ -291,58 +345,6 @@ export default function Goals2() {
               </div>
             </div>
           )}
-          <div
-            style={{ opacity: 1 - collapseProgress }}
-            className="relative w-full mt-10"
-          >
-            <div
-              className={`transition-all duration-500 ${
-                graphGenerated
-                  ? "opacity-0 max-h-0 overflow-hidden"
-                  : "opacity-100"
-              }`}
-            >
-              <FillerContent />
-            </div>
-            <div
-              className={`transition-all duration-500 transform ${
-                graphGenerated
-                  ? "opacity-100 scale-100"
-                  : "opacity-0 scale-95 max-h-0 overflow-hidden"
-              }`}
-            >
-              {graphGenerated && (
-                <div className="p-6 lg:p-10 flex justify-center">
-                  <div className="w-full max-w-8xl">
-                    <div className="flex items-center justify-end gap-2 mb-4">
-                      <Calendar className="w-5 h-5 text-gray-700" />
-                      <Slider
-                        min={0}
-                        max={dateOptions.length - 1}
-                        step={1}
-                        value={[timelineIndex]}
-                        onValueChange={(v) => setTimelineIndex(v[0])}
-                        className="w-48"
-                      />
-                      <span className="text-sm text-gray-700">
-                        {tooltipLabel}
-                      </span>
-                    </div>
-                    <ReactFlowProvider>
-                      <SampleGraph
-                        domain={currentDomain}
-                        refreshTrigger={refreshTrigger}
-                        onRefresh={handleRefresh}
-                        userId={null}
-                        selectedDate={selectedDate.toISOString().slice(0, 7)}
-                        viewMode="reactflow"
-                      />
-                    </ReactFlowProvider>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
         </section>
       </div>
       <section
