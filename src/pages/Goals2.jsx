@@ -23,7 +23,7 @@ export default function Goals2() {
   const [currentDomain, setCurrentDomain] = useState("");
   const [graphGenerated, setGraphGenerated] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [collapseProgress, setCollapseProgress] = useState(0);
+  const [collapseStage, setCollapseStage] = useState(0);
   const searchBarRef = useRef(null);
   const secondSectionWrapperRef = useRef(null);
   const thirdSectionRef = useRef(null);
@@ -124,21 +124,32 @@ export default function Goals2() {
 
   useEffect(() => {
     if (graphGenerated) {
-      setCollapseProgress(0);
+      setCollapseStage(0);
       return;
     }
     const handleScroll = () => {
       const wrapper = secondSectionWrapperRef.current;
       if (!wrapper) return;
       const rect = wrapper.getBoundingClientRect();
-      const total = wrapper.offsetHeight - window.innerHeight;
-      const progress = Math.min(Math.max(-rect.top / total, 0), 1);
-      setCollapseProgress(progress);
+      if (rect.top <= window.innerHeight * 0.2 && collapseStage === 0) {
+        setCollapseStage(1);
+      }
     };
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [graphGenerated]);
+  }, [graphGenerated, collapseStage]);
+
+  useEffect(() => {
+    if (collapseStage === 1) {
+      const t = setTimeout(() => setCollapseStage(2), 500);
+      return () => clearTimeout(t);
+    }
+    if (collapseStage === 2) {
+      const t = setTimeout(() => setCollapseStage(3), 500);
+      return () => clearTimeout(t);
+    }
+  }, [collapseStage]);
 
   useEffect(() => {
     const section = thirdSectionRef.current;
@@ -210,12 +221,19 @@ export default function Goals2() {
           className="sticky top-0 flex flex-col items-center bg-[#FFF5EE] rounded-3xl p-10 h-screen"
         >
           <div
-            className="relative w-full h-full overflow-hidden transition-[clip-path] duration-500"
-            style={{ clipPath: `inset(${collapseProgress * 50}% 0 ${collapseProgress * 50}% 0)` }}
+            className="relative w-full h-full overflow-hidden"
+            style={{
+              clipPath: collapseStage >= 2 ? "inset(50% 0 50% 0)" : "inset(0 0 0 0)",
+              transition: "clip-path 0.5s",
+            }}
           >
             <h2
-              className="text-black font-bold text-4xl sm:text-5xl md:text-6xl text-center transition-transform"
-              style={{ transform: `translateY(-${collapseProgress * 100}px)` }}
+              className="text-black font-bold text-4xl sm:text-5xl md:text-6xl text-center"
+              style={{
+                transform: collapseStage >= 2 ? "translateY(-100px)" : "translateY(0)",
+                transition: "transform 0.5s",
+                willChange: "transform",
+              }}
             >
               Limitless DNSSEC with
               <span className="bg-gradient-to-r from-pink-500 via-yellow-400 to-purple-500 bg-clip-text !text-transparent animate-gradient mx-2 inline-block">
@@ -225,8 +243,12 @@ export default function Goals2() {
             </h2>
             <div
               ref={searchBarRef}
-              className="flex justify-center mt-8 w-full max-w-md transition-transform"
-              style={{ transform: `translateY(-${collapseProgress * 120}px)` }}
+              className="flex justify-center mt-8 w-full max-w-md"
+              style={{
+                transform: collapseStage >= 1 ? "translateY(-120px)" : "translateY(0)",
+                transition: "transform 0.5s",
+                willChange: "transform",
+              }}
             >
               <Input
                 placeholder="type domain here to analyze"
@@ -245,7 +267,14 @@ export default function Goals2() {
                 <Search className="h-6 w-6" />
               </Button>
             </div>
-            <div className="relative w-full mt-10 transition-transform" style={{ transform: `translateY(-${collapseProgress * 60}px)` }}>
+            <div
+              className="relative w-full mt-10"
+              style={{
+                transform: collapseStage >= 2 ? "translateY(-60px)" : "translateY(0)",
+                transition: "transform 0.5s",
+                willChange: "transform",
+              }}
+            >
               <div
                 className={`transition-all duration-500 ${
                   graphGenerated
@@ -297,8 +326,13 @@ export default function Goals2() {
           </div>
           {!graphGenerated && (
             <div
-              className="relative flex justify-center mt-20 text-gray-700 w-full transition-transform"
-              style={{ transform: `translateY(${(1 - collapseProgress) * 100}px)` }}
+              className="relative flex justify-center mt-20 text-gray-700 w-full"
+              style={{
+                transform: collapseStage >= 3 ? "translateY(0)" : "translateY(100px)",
+                opacity: collapseStage >= 3 ? 1 : 0,
+                transition: "transform 0.5s, opacity 0.5s",
+                willChange: "transform, opacity",
+              }}
             >
               <div className="relative w-[24rem] h-20 bg-white rounded-xl shadow p-4 flex items-center justify-center">
                 <Input
@@ -317,25 +351,57 @@ export default function Goals2() {
                 >
                   <Search className="h-6 w-6" />
                 </Button>
-                <div className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-40 flex flex-col items-center text-center">
+                <div
+                  className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-40 flex flex-col items-center text-center"
+                  style={{
+                    transform: collapseStage >= 3 ? "translateY(0)" : "translateY(-20px)",
+                    opacity: collapseStage >= 3 ? 1 : 0,
+                    transition: "transform 0.5s, opacity 0.5s",
+                    willChange: "transform, opacity",
+                  }}
+                >
                   <div className="w-40 h-40 bg-[#FFEDE5] rounded-xl flex items-center justify-center pointer-events-none">
                     <ModelViewer modelUrl={derDenker} scale={1.2} />
                   </div>
                   <h3 className="mt-2 text-xl font-bold">More Modren</h3>
                   <p className="text-sm">Lorem ipsum dolor sit amet.</p>
                 </div>
-                <p className="absolute top-full mt-4 left-1/2 -translate-x-1/2 text-3xl font-bold flex items-center gap-2">
+                <p
+                  className="absolute top-full mt-4 left-1/2 -translate-x-1/2 text-3xl font-bold flex items-center gap-2"
+                  style={{
+                    transform: collapseStage >= 3 ? "translateY(0)" : "translateY(20px)",
+                    opacity: collapseStage >= 3 ? 1 : 0,
+                    transition: "transform 0.5s, opacity 0.5s",
+                    willChange: "transform, opacity",
+                  }}
+                >
                   Still not convinced?
                   <ArrowDown className="w-16 h-16" />
                 </p>
-                <div className="absolute top-1/2 right-full -translate-y-1/2 mr-4 w-32 flex flex-col items-center text-center">
+                <div
+                  className="absolute top-1/2 right-full -translate-y-1/2 mr-4 w-32 flex flex-col items-center text-center"
+                  style={{
+                    transform: collapseStage >= 3 ? "translateX(0)" : "translateX(20px)",
+                    opacity: collapseStage >= 3 ? 1 : 0,
+                    transition: "transform 0.5s, opacity 0.5s",
+                    willChange: "transform, opacity",
+                  }}
+                >
                   <div className="w-32 h-32 bg-[#FFE1D4] rounded-xl flex items-center justify-center pointer-events-none">
                     <ModelViewer modelUrl={animatedClock} scale={1.2} />
                   </div>
                   <h3 className="mt-2 text-lg font-bold">More History</h3>
                   <p className="text-xs">Lorem ipsum dolor sit amet.</p>
                 </div>
-                <div className="absolute top-1/2 left-full -translate-y-1/2 ml-4 w-32 flex flex-col items-center text-center">
+                <div
+                  className="absolute top-1/2 left-full -translate-y-1/2 ml-4 w-32 flex flex-col items-center text-center"
+                  style={{
+                    transform: collapseStage >= 3 ? "translateX(0)" : "translateX(-20px)",
+                    opacity: collapseStage >= 3 ? 1 : 0,
+                    transition: "transform 0.5s, opacity 0.5s",
+                    willChange: "transform, opacity",
+                  }}
+                >
                   <div className="w-32 h-32 bg-[#FFD5C4] rounded-xl flex items-center justify-center pointer-events-none">
                     <ModelViewer modelUrl={lightning} scale={1.2} />
                   </div>
