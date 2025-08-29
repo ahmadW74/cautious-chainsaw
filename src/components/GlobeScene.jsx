@@ -14,6 +14,7 @@ export default function GlobeScene({
   modelUrl = earthModel,
   mtlUrl = earthMaterial,
   onSetRotation,
+  distance = 1,
 }) {
   const mountRef = useRef(null);
   const globeRef = useRef();
@@ -153,8 +154,8 @@ export default function GlobeScene({
       const size = box.getSize(new THREE.Vector3());
       const radius = Math.max(size.x, size.y, size.z) / 2;
       addDots(radius, DOT_COUNT);
-      const camX = radius * 3.3;
-      const camZ = radius * 2;
+      const camX = radius * 3.3 * distance;
+      const camZ = radius * 2 * distance;
       camera.position.set(camX, 0, camZ);
       camera.lookAt(0, 0, 0);
       controls.update();
@@ -288,7 +289,7 @@ export default function GlobeScene({
       if (dotIntervalRef.current) clearInterval(dotIntervalRef.current);
       renderer.dispose();
     };
-  }, [modelUrl, mtlUrl, onSetRotation]);
+  }, [modelUrl, mtlUrl, onSetRotation, distance]);
 
   return <div ref={mountRef} className="w-full h-full" />;
 }

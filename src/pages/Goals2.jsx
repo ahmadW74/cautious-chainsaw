@@ -12,6 +12,8 @@ import { Search, Calendar, ArrowDown } from "lucide-react";
 import FillerContent from "@/components/FillerContent";
 import SampleGraph from "@/SampleGraph.jsx";
 import { ReactFlowProvider } from "@xyflow/react";
+import SpaceScene from "@/components/SpaceScene";
+import NumberTicker from "@/components/NumberTicker";
 
 export default function Goals2() {
   const tilt = (23.5 * Math.PI) / 180;
@@ -22,6 +24,16 @@ export default function Goals2() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [collapsed, setCollapsed] = useState(false);
   const searchBarRef = useRef(null);
+  const thirdSectionRef = useRef(null);
+  const [showStickySearch, setShowStickySearch] = useState(false);
+  const dailyUsersStart = useMemo(
+    () => Math.floor(Math.random() * 9000000) + 1000000,
+    []
+  );
+  const graphsGeneratedStart = useMemo(
+    () => Math.floor(Math.random() * 90000000) + 10000000,
+    []
+  );
   const dateOptions = useMemo(() => {
     const dates = [];
     const now = new Date();
@@ -68,8 +80,41 @@ export default function Goals2() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [graphGenerated]);
 
+  useEffect(() => {
+    const section = thirdSectionRef.current;
+    if (!section) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowStickySearch(entry.isIntersecting),
+      { threshold: 0.3 }
+    );
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
+      {showStickySearch && !graphGenerated && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50">
+          <div className="bg-[#FFF5EE] rounded-xl shadow p-2 flex items-center">
+            <Input
+              placeholder="type domain here to analyze"
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+              className="w-80 h-12 text-lg rounded-l-full rounded-r-none shadow-inner text-black"
+            />
+            <Button
+              size="icon"
+              variant="secondary"
+              onClick={handleAnalyze}
+              disabled={!domain.trim()}
+              className="rounded-r-full rounded-l-none border-l-0 h-12"
+              type="button"
+            >
+              <Search className="h-6 w-6" />
+            </Button>
+          </div>
+        </div>
+      )}
       <section
         className="relative flex flex-col items-center justify-center h-[calc(100vh-1.5rem-20px)] rounded-3xl overflow-hidden pt-6 pl-6 pr-8 mt-[10px] mx-[10px] mb-[calc(1.5rem+10px)]"
         style={{ backgroundColor: "#8F00FF" }}
@@ -227,6 +272,42 @@ export default function Goals2() {
             </div>
           </div>
         )}
+      </section>
+      <section
+        ref={thirdSectionRef}
+        className="relative flex flex-col items-center h-screen rounded-3xl mx-[10px] mb-[calc(1.5rem+10px)] overflow-hidden bg-black"
+      >
+        <SpaceScene />
+        <h2 className="relative z-10 text-white font-bold text-4xl sm:text-5xl md:text-6xl text-center mt-10">
+          See what our users have to say
+        </h2>
+        <div className="relative z-10 w-72 h-72 md:w-96 md:h-96 mt-10">
+          <GlobeScene
+            modelUrl={lowPolyEarth}
+            onSetRotation={(setRotation) => setRotation({ x: tilt, y: 0 })}
+            distance={1.5}
+          />
+        </div>
+        <div className="relative z-10 mt-auto mb-10 flex gap-16">
+          <div className="text-center">
+            <p className="text-white font-bold text-2xl md:text-3xl">
+              Users Daily
+            </p>
+            <NumberTicker
+              start={dailyUsersStart}
+              className="block text-white font-bold text-4xl md:text-5xl mt-2"
+            />
+          </div>
+          <div className="text-center">
+            <p className="text-white font-bold text-2xl md:text-3xl">
+              Graphs generated so far
+            </p>
+            <NumberTicker
+              start={graphsGeneratedStart}
+              className="block text-white font-bold text-4xl md:text-5xl mt-2"
+            />
+          </div>
+        </div>
       </section>
     </div>
   );
