@@ -18,18 +18,22 @@ export default function GlobeScene({
   const mountRef = useRef(null);
   const globeRef = useRef();
   const rotationRef = useRef({ x: 0, y: 0 });
+  const dotIntervalRef = useRef();
 
   useEffect(() => {
     const mount = mountRef.current;
     if (!mount) return;
 
     const scene = new THREE.Scene();
-    // basic lighting so the globe isn't rendered black
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    // brighter, balanced lighting to remove dark spots
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
     scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(5, 5, 5);
     scene.add(directionalLight);
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    fillLight.position.set(-5, -5, -5);
+    scene.add(fillLight);
 
     const camera = new THREE.PerspectiveCamera(
       60,
@@ -37,9 +41,8 @@ export default function GlobeScene({
       0.1,
       1000
     );
-    // Offset camera so about 60% of the globe is visible
-    // and ensure it starts outside the globe's radius
-    camera.position.set(15, 0, 9);
+    // Initial camera position; updated after model load for size-based framing
+    camera.position.set(5, 0, 3);
     camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -58,21 +61,24 @@ export default function GlobeScene({
     const mtlLoader = new MTLLoader();
     const gltfLoader = new GLTFLoader();
     const dots = [];
+    const DOT_COUNT = 20;
+    const angleStep = (Math.PI * 2) / DOT_COUNT;
+    let currentAngle = 0;
 
-    const randomPointOnSphere = (radius) => {
-      const u = Math.random();
-      const v = Math.random();
-      const theta = 2 * Math.PI * u;
-      const phi = Math.acos(2 * v - 1);
+    const pointOnCircle = (radius) => {
+      const angle = currentAngle;
+      currentAngle = (currentAngle + angleStep) % (Math.PI * 2);
       return new THREE.Vector3(
-        radius * Math.sin(phi) * Math.cos(theta),
-        radius * Math.sin(phi) * Math.sin(theta),
-        radius * Math.cos(phi)
+        radius * Math.cos(angle),
+        radius * Math.sin(angle),
+        0
       );
     };
 
     const addDots = (radius, count = 1) => {
       for (let i = 0; i < count; i++) {
+        const position = pointOnCircle(radius * 1.02);
+
         const geometry = new THREE.SphereGeometry(radius * 0.02, 8, 8);
         const material = new THREE.MeshBasicMaterial({
           color: 0xffffff,
@@ -81,10 +87,21 @@ export default function GlobeScene({
         });
         const dot = new THREE.Mesh(geometry, material);
         dot.scale.setScalar(0);
-        dot.position.copy(randomPointOnSphere(radius));
+        dot.position.copy(position);
         dot.userData.value = Math.floor(Math.random() * 1000);
         globeRef.current.add(dot);
-        dots.push(dot);
+
+        // invisible larger sphere for easier hover detection
+        const hoverGeometry = new THREE.SphereGeometry(radius * 0.05, 8, 8);
+        const hoverMaterial = new THREE.MeshBasicMaterial({
+          transparent: true,
+          opacity: 0,
+        });
+        const hoverDot = new THREE.Mesh(hoverGeometry, hoverMaterial);
+        hoverDot.position.copy(position);
+        hoverDot.userData.value = dot.userData.value;
+        globeRef.current.add(hoverDot);
+        dots.push(hoverDot);
 
         gsap.to(dot.material, { opacity: 1, duration: 0.6 });
         gsap.to(dot.scale, {
@@ -101,9 +118,12 @@ export default function GlobeScene({
           delay: 5,
           onComplete: () => {
             globeRef.current.remove(dot);
-            dots.splice(dots.indexOf(dot), 1);
+            globeRef.current.remove(hoverDot);
+            dots.splice(dots.indexOf(hoverDot), 1);
             geometry.dispose();
             material.dispose();
+            hoverGeometry.dispose();
+            hoverMaterial.dispose();
           },
         });
         gsap.to(dot.scale, {
@@ -124,9 +144,13 @@ export default function GlobeScene({
       const box = new THREE.Box3().setFromObject(obj);
       const size = box.getSize(new THREE.Vector3());
       const radius = Math.max(size.x, size.y, size.z) / 2;
-      addDots(radius, 20);
-      const dotInterval = setInterval(() => addDots(radius), 1000);
-      mount.__dotInterval = dotInterval;
+      addDots(radius, DOT_COUNT);
+      const camX = radius * 3.3;
+      const camZ = radius * 2;
+      camera.position.set(camX, 0, camZ);
+      camera.lookAt(0, 0, 0);
+      controls.update();
+      dotIntervalRef.current = setInterval(() => addDots(radius), 1000);
     };
 
     const loadObjModel = () => {
@@ -253,7 +277,7 @@ export default function GlobeScene({
       mount.removeChild(renderer.domElement);
       mount.removeEventListener("pointermove", onHover);
       mount.removeChild(tooltip);
-      if (mount.__dotInterval) clearInterval(mount.__dotInterval);
+      if (dotIntervalRef.current) clearInterval(dotIntervalRef.current);
       renderer.dispose();
     };
   }, [modelUrl, mtlUrl, onSetRotation]);
