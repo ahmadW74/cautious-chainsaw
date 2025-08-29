@@ -181,7 +181,7 @@ export default function Goals2() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {showStickySearch && !graphGenerated && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50">
+        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50">
           <div className="bg-[#FFF5EE] rounded-xl shadow p-2 flex items-center">
             <Input
               placeholder="type domain here to analyze"
