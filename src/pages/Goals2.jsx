@@ -14,6 +14,7 @@ import SampleGraph from "@/SampleGraph.jsx";
 import { ReactFlowProvider } from "@xyflow/react";
 import SpaceScene from "@/components/SpaceScene";
 import ReviewCarousel from "@/components/ReviewCarousel";
+import NumberTicker from "@/components/NumberTicker";
 
 export default function Goals2() {
   const tilt = (23.5 * Math.PI) / 180;
@@ -71,6 +72,15 @@ export default function Goals2() {
         lon: 2.3522,
       },
     ],
+    []
+  );
+
+  const dailyUsersStart = useMemo(
+    () => Math.floor(Math.random() * 9000000) + 1000000,
+    []
+  );
+  const graphsGeneratedStart = useMemo(
+    () => Math.floor(Math.random() * 90000000) + 10000000,
     []
   );
 
@@ -340,14 +350,14 @@ export default function Goals2() {
         className="relative flex items-center h-screen rounded-3xl mx-[10px] mb-[10px] overflow-hidden bg-black"
       >
         <SpaceScene />
-        <h2 className="absolute top-10 left-1/2 -translate-x-1/2 z-10 text-white font-bold text-4xl sm:text-5xl md:text-6xl">
+        <h2 className="absolute top-10 right-10 z-10 text-right text-white font-bold text-4xl sm:text-5xl md:text-6xl">
           See what our users have to say
         </h2>
         <div className="relative z-10 flex items-center w-full h-full">
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[60vw] h-[60vw] -translate-x-1/2 pointer-events-none">
             <GlobeScene
               modelUrl={lowPolyEarth}
-              distance={0.9}
+              distance={1.2}
               sunLight
               showDots={false}
               onGlobeReady={(methods) => {
@@ -358,6 +368,24 @@ export default function Goals2() {
           </div>
           <div className="ml-auto mr-10">
             <ReviewCarousel reviews={reviews} onNext={handleNextReview} />
+          </div>
+        </div>
+        <div className="absolute bottom-10 right-10 z-10 flex gap-16">
+          <div className="text-right">
+            <p className="text-white font-bold text-2xl md:text-3xl">Users Daily</p>
+            <NumberTicker
+              start={dailyUsersStart}
+              className="block text-white font-bold text-4xl md:text-5xl mt-2"
+            />
+          </div>
+          <div className="text-right">
+            <p className="text-white font-bold text-2xl md:text-3xl">
+              Graphs generated so far
+            </p>
+            <NumberTicker
+              start={graphsGeneratedStart}
+              className="block text-white font-bold text-4xl md:text-5xl mt-2"
+            />
           </div>
         </div>
       </section>
