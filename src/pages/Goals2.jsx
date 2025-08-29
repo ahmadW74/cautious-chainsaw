@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import ModelViewer from "@/components/ModelViewer";
+import GlobeScene from "@/components/GlobeScene";
 import lowPolyEarth from "@/assets/models/uploads_files_5480147_low_poly_earth.glb?url";
 import animatedClock from "@/assets/models/animated_clock.glb?url";
 import lightning from "@/assets/models/lightning_bolt_icons.glb?url";
@@ -81,10 +82,11 @@ export default function Goals2() {
             The Better
           </span>
           <div className="w-72 h-72 md:w-96 md:h-96">
-            <ModelViewer
+            <GlobeScene
               modelUrl={lowPolyEarth}
-              scale={1.5}
-              initialRotation={{ x: tilt, y: 0, z: 0 }}
+              onSetRotation={(setRotation) =>
+                setRotation({ x: tilt, y: 0 })
+              }
             />
           </div>
           <span
