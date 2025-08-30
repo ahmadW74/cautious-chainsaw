@@ -300,5 +300,6 @@ span {
 
 .animate-gradient {
   background-size: 200% 200%;
+  background-position: 0% 50%;
   animation: gradient-shift 3s ease-in-out infinite;
 }

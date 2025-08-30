@@ -393,8 +393,9 @@ export default function GlobeScene({
     };
     document.addEventListener("visibilitychange", visibility);
 
+    let animationFrameId;
     const animate = () => {
-      requestAnimationFrame(animate);
+      animationFrameId = requestAnimationFrame(animate);
       if (paused) return;
       if (globeRef.current) {
         if (autoRotate) {
@@ -404,11 +405,14 @@ export default function GlobeScene({
         globeRef.current.rotation.y = rotationRef.current.y;
       }
       controls.update();
-      renderer.render(scene, camera);
+      if (renderer) {
+        renderer.render(scene, camera);
+      }
     };
     animate();
 
     return () => {
+      cancelAnimationFrame(animationFrameId);
       document.removeEventListener("visibilitychange", visibility);
       window.removeEventListener("resize", handleResize);
       mount.removeChild(renderer.domElement);
