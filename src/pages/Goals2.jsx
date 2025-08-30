@@ -181,7 +181,10 @@ export default function Goals2() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div
+      className="min-h-screen bg-white flex flex-col"
+      style={{ fontFamily: '"Anonymous Pro", monospace' }}
+      >
       {showStickySearch && !graphGenerated && (
         <div className="fixed top-8 left-8 z-50">
           <div className="bg-[#FFF5EE] rounded-xl shadow p-2 flex items-center">
@@ -341,14 +344,33 @@ export default function Goals2() {
                     <div className="w-full max-w-8xl overflow-auto">
                       <div className="flex items-center justify-end gap-2 mb-4">
                         <Calendar className="w-5 h-5 text-gray-700" />
-                        <Slider
-                          min={0}
-                          max={dateOptions.length - 1}
-                          step={1}
-                          value={[timelineIndex]}
-                          onValueChange={(v) => setTimelineIndex(v[0])}
-                          className="w-48"
-                        />
+                        <div className="relative w-48">
+                          <Slider
+                            min={0}
+                            max={dateOptions.length - 1}
+                            step={1}
+                            value={[timelineIndex]}
+                            onValueChange={(v) => setTimelineIndex(v[0])}
+                            className="w-full"
+                          />
+                          <div className="absolute left-0 top-full mt-1 w-full pointer-events-none">
+                            {dateOptions.map((date, idx) => (
+                              <div
+                                key={idx}
+                                className="absolute flex flex-col items-center"
+                                style={{
+                                  left: `${(idx / (dateOptions.length - 1)) * 100}%`,
+                                  transform: "translateX(-50%)",
+                                }}
+                              >
+                                <div className="h-2 w-px bg-gray-400"></div>
+                                <span className="mt-1 text-[10px] text-gray-600">
+                                  {date.toLocaleDateString(undefined, { month: "short" })}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                         <span className="text-sm text-gray-700">
                           {tooltipLabel}
                         </span>
