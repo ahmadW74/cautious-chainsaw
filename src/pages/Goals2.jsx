@@ -366,7 +366,10 @@ export default function Goals2() {
                             onValueChange={(v) => setTimelineIndex(v[0])}
                             className="w-full"
                           />
-                          <div className="absolute left-0 bottom-full mb-1 w-full pointer-events-none">
+                          <div
+                            className="absolute left-0 w-full pointer-events-none mb-1"
+                            style={{ bottom: "100%" }}
+                          >
                             {dateOptions.map((date, idx) => (
                               <div
                                 key={idx}
