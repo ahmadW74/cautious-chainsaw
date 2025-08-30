@@ -480,7 +480,7 @@ export default function Goals2() {
           See what our users have to say
         </h2>
         <div className="relative z-10 flex items-center w-full h-full">
-          <div className="absolute -left-[10vw] top-1/2 -translate-y-1/2 w-[50vw] h-[50vw] pointer-events-none">
+          <div className="absolute -left-[15vw] top-1/2 -translate-y-1/2 w-[50vw] h-[50vw] pointer-events-none">
             <GlobeScene
               modelUrl={lowPolyEarth}
               distance={1.2}
@@ -494,7 +494,7 @@ export default function Goals2() {
               }}
             />
           </div>
-          <div className="ml-[45vw] mr-4">
+          <div className="ml-[40vw] mr-4">
             <ReviewCarousel reviews={reviews} onNext={handleNextReview} />
           </div>
         </div>

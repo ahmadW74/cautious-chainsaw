@@ -25,10 +25,12 @@ export default function GlobeScene({
   const rotationRef = useRef({ x: 0, y: 0 });
   const dotIntervalRef = useRef();
   const radiusRef = useRef(1);
+  const pinsRef = useRef(new Map());
 
   useEffect(() => {
     const mount = mountRef.current;
     if (!mount) return;
+    const pins = pinsRef.current;
 
     const scene = new THREE.Scene();
     if (sunLight) {
@@ -87,17 +89,29 @@ export default function GlobeScene({
     const pinMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 
     const addPin = (lat, lon) => {
-      if (!globeRef.current) return;
+      if (!globeRef.current) return null;
       const radius = radiusRef.current * 1.02;
       const latRad = THREE.MathUtils.degToRad(lat);
       const lonRad = THREE.MathUtils.degToRad(lon);
       const x = radius * Math.cos(latRad) * Math.cos(lonRad);
       const y = radius * Math.sin(latRad);
       const z = radius * Math.cos(latRad) * Math.sin(lonRad);
-      const geometry = new THREE.SphereGeometry(radiusRef.current * 0.03, 8, 8);
+      const height = radiusRef.current * 0.2;
+      const geometry = new THREE.ConeGeometry(
+        radiusRef.current * 0.04,
+        height,
+        8
+      );
+      geometry.translate(0, -height / 2, 0);
       const pin = new THREE.Mesh(geometry, pinMaterial.clone());
       pin.position.set(x, y, z);
+      const dir = new THREE.Vector3(x, y, z).normalize();
+      pin.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), dir);
+      pin.visible = false;
       globeRef.current.add(pin);
+      const key = `${lat},${lon}`;
+      pinsRef.current.set(key, pin);
+      return pin;
     };
 
     const spinTo = (lat, lon) => {
@@ -117,7 +131,13 @@ export default function GlobeScene({
     };
 
     const highlightLocation = (lat, lon) => {
-      addPin(lat, lon);
+      const key = `${lat},${lon}`;
+      pinsRef.current.forEach((p) => (p.visible = false));
+      let pin = pinsRef.current.get(key);
+      if (!pin) {
+        pin = addPin(lat, lon);
+      }
+      if (pin) pin.visible = true;
       spinTo(lat, lon);
     };
 
@@ -344,6 +364,12 @@ export default function GlobeScene({
       mount.removeEventListener("pointermove", onHover);
       mount.removeChild(tooltip);
       if (dotIntervalRef.current) clearInterval(dotIntervalRef.current);
+      pins.forEach((pin) => {
+        globeRef.current?.remove(pin);
+        pin.geometry.dispose();
+        pin.material.dispose();
+      });
+      pins.clear();
       renderer.dispose();
     };
     }, [modelUrl, mtlUrl, onSetRotation, distance, sunLight, showDots, onGlobeReady, autoRotate]);
