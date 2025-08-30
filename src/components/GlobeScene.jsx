@@ -85,6 +85,15 @@ export default function GlobeScene({
       "domain4.com",
       "domain5.com",
     ];
+    const names = ["Alice", "Bob", "Carol", "Dave", "Eve", "Frank"];
+    const randomDate = () => {
+      const start = new Date();
+      start.setFullYear(start.getFullYear() - 1);
+      const end = new Date();
+      return new Date(
+        start.getTime() + Math.random() * (end.getTime() - start.getTime())
+      ).toLocaleDateString();
+    };
 
     const pinMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 
@@ -167,18 +176,21 @@ export default function GlobeScene({
         dot.scale.setScalar(0);
         dot.position.copy(position);
         const domain = domains[Math.floor(Math.random() * domains.length)];
-        dot.userData.tooltip = domain;
+        const name = names[Math.floor(Math.random() * names.length)];
+        const date = randomDate();
+        const tooltipInfo = { name, domain, date };
+        dot.userData.tooltip = tooltipInfo;
         globeRef.current.add(dot);
 
         // invisible larger sphere for easier hover detection
-        const hoverGeometry = new THREE.SphereGeometry(radius * 0.05, 8, 8);
+        const hoverGeometry = new THREE.SphereGeometry(radius * 0.08, 8, 8);
         const hoverMaterial = new THREE.MeshBasicMaterial({
           transparent: true,
           opacity: 0,
         });
         const hoverDot = new THREE.Mesh(hoverGeometry, hoverMaterial);
         hoverDot.position.copy(position);
-        hoverDot.userData.tooltip = domain;
+        hoverDot.userData.tooltip = tooltipInfo;
         globeRef.current.add(hoverDot);
         dots.push(hoverDot);
 
@@ -324,9 +336,12 @@ export default function GlobeScene({
       pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
       raycaster.setFromCamera(pointer, camera);
-      const intersects = raycaster.intersectObjects(dots);
-      if (intersects.length > 0) {
-        tooltip.textContent = intersects[0].object.userData.tooltip;
+      const objs = globeRef.current ? globeRef.current.children : [];
+      const intersects = raycaster.intersectObjects(objs, true);
+      const hit = intersects.find((i) => i.object.userData.tooltip);
+      if (hit) {
+        const { name, domain, date } = hit.object.userData.tooltip;
+        tooltip.innerHTML = `${name}<br/>${domain}<br/>${date}`;
         tooltip.style.display = "block";
         tooltip.style.left = `${e.clientX - rect.left + 8}px`;
         tooltip.style.top = `${e.clientY - rect.top + 8}px`;
