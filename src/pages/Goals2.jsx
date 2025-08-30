@@ -231,26 +231,42 @@ export default function Goals2() {
       </section>
       <div
         ref={secondSectionWrapperRef}
-        className="h-[200vh] mx-[10px] mb-[calc(1.5rem+10px)]"
+        className={`${
+          graphGenerated ? "h-auto" : "h-[200vh]"
+        } mx-[10px] mb-[calc(1.5rem+10px)]`}
       >
         <section
           ref={secondSectionRef}
-          className="sticky top-0 flex flex-col items-center bg-[#FFF5EE] rounded-3xl p-10 h-screen"
+          className={`${
+            graphGenerated ? "relative" : "sticky top-0"
+          } flex flex-col items-center bg-[#FFF5EE] rounded-3xl p-10 ${
+            graphGenerated ? "min-h-screen" : "h-screen"
+          }`}
         >
           <div
-            className="relative w-full h-full overflow-hidden"
+            className={`relative w-full ${
+              graphGenerated
+                ? "h-auto overflow-visible"
+                : "h-full overflow-hidden"
+            }`}
             style={{
-              clipPath:
-                collapseStage >= 2 ? "inset(50% 0 50% 0)" : "inset(0 0 0 0)",
-              transition: "clip-path 0.5s",
+              clipPath: graphGenerated
+                ? "inset(0 0 0 0)"
+                : collapseStage >= 2
+                ? "inset(50% 0 50% 0)"
+                : "inset(0 0 0 0)",
+              transition: graphGenerated ? "none" : "clip-path 0.5s",
             }}
           >
             <h2
               className="text-black font-bold text-4xl sm:text-5xl md:text-6xl text-center"
               style={{
-                transform:
-                  collapseStage >= 2 ? "translateY(-100px)" : "translateY(0)",
-                transition: "transform 0.5s",
+                transform: graphGenerated
+                  ? "translateY(0)"
+                  : collapseStage >= 2
+                  ? "translateY(-100px)"
+                  : "translateY(0)",
+                transition: graphGenerated ? "none" : "transform 0.5s",
                 willChange: "transform",
               }}
             >
@@ -266,9 +282,12 @@ export default function Goals2() {
                 collapseStage >= 1 ? "justify-start" : "justify-center mx-auto"
               }`}
               style={{
-                transform:
-                  collapseStage >= 1 ? "translateY(-120px)" : "translateY(0)",
-                transition: "transform 0.5s",
+                transform: graphGenerated
+                  ? "translateY(0)"
+                  : collapseStage >= 1
+                  ? "translateY(-120px)"
+                  : "translateY(0)",
+                transition: graphGenerated ? "none" : "transform 0.5s",
                 willChange: "transform",
               }}
             >
@@ -292,31 +311,34 @@ export default function Goals2() {
             <div
               className="relative w-full mt-10"
               style={{
-                transform:
-                  collapseStage >= 2 ? "translateY(-60px)" : "translateY(0)",
-                transition: "transform 0.5s",
+                transform: graphGenerated
+                  ? "translateY(0)"
+                  : collapseStage >= 2
+                  ? "translateY(-60px)"
+                  : "translateY(0)",
+                transition: graphGenerated ? "none" : "transform 0.5s",
                 willChange: "transform",
               }}
             >
               <div
-                className={`transition-all duration-500 ${
+                className={`${
                   graphGenerated
                     ? "opacity-0 max-h-0 overflow-hidden"
-                    : "opacity-100"
+                    : "transition-all duration-500 opacity-100"
                 }`}
               >
                 <FillerContent />
               </div>
               <div
-                className={`transition-all duration-500 transform ${
+                className={`${
                   graphGenerated
                     ? "opacity-100 scale-100"
-                    : "opacity-0 scale-95 max-h-0 overflow-hidden"
+                    : "transition-all duration-500 transform opacity-0 scale-95 max-h-0 overflow-hidden"
                 }`}
               >
                 {graphGenerated && (
                   <div className="p-6 lg:p-10 flex justify-center">
-                    <div className="w-full max-w-8xl">
+                    <div className="w-full max-w-8xl overflow-auto">
                       <div className="flex items-center justify-end gap-2 mb-4">
                         <Calendar className="w-5 h-5 text-gray-700" />
                         <Slider
