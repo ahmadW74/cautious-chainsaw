@@ -279,15 +279,20 @@ export default function Goals2() {
               }}
             >
               Limitless DNSSEC with
-              <span className="bg-gradient-to-r from-pink-500 via-yellow-400 to-purple-500 bg-clip-text !text-transparent animate-gradient mx-2 inline-block">
-                1
+              <span
+                className="bg-clip-text text-transparent animate-gradient mx-2 inline-block"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(90deg,#ec4899,#f97316,#facc15,#10b981,#3b82f6,#8b5cf6)",
+                }}
+              >
+                1 click
               </span>
-              click
             </h2>
             <div
               ref={searchBarRef}
               className={`flex items-center mt-8 w-full max-w-md ${
-                collapseStage >= 1 ? "justify-start" : "justify-center mx-auto"
+                collapseStage >= 2 ? "justify-start" : "justify-center mx-auto"
               }`}
               style={{
                 transform: graphGenerated
