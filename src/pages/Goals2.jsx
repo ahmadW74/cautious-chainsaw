@@ -280,10 +280,13 @@ export default function Goals2() {
             >
               Limitless DNSSEC with
               <span
-                className="bg-clip-text text-transparent animate-gradient mx-2 inline-block"
+                className="mx-2 inline-block animate-gradient"
                 style={{
                   backgroundImage:
                     "linear-gradient(90deg,#ec4899,#f97316,#facc15,#10b981,#3b82f6,#8b5cf6)",
+                  backgroundClip: "text",
+                  WebkitBackgroundClip: "text",
+                  color: "transparent",
                 }}
               >
                 1 click
