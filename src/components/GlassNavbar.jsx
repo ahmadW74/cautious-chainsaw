@@ -97,10 +97,7 @@ export default function GlassNavbar({ isSignedIn, onSignIn }) {
               key={item.to}
               to={item.to}
               label={item.label}
-              hidden={
-                pathname !== item.to &&
-                !(item.to === "/" && pathname === "/goals2")
-              }
+              hidden={pathname !== item.to}
               textColor={textColor}
               hoverColor={hoverColor}
             />

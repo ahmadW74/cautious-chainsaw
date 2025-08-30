@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
 import {
   Dialog,
   DialogContent,
@@ -10,9 +8,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import SampleGraph from "./SampleGraph.jsx";
-import { ReactFlowProvider } from "@xyflow/react";
-import FillerContent from "@/components/FillerContent.jsx";
 import { Routes, Route, Link, useLocation } from "react-router-dom";
 import Blog from "@/pages/Blog.jsx";
 import BlogPost from "@/pages/BlogPost.jsx";
@@ -27,7 +22,6 @@ import History from "@/pages/History.jsx";
 import Stats from "@/pages/Stats.jsx";
 import GlassNavbar from "@/components/GlassNavbar.jsx";
 import Profile from "@/pages/Profile.jsx";
-import GlobeScene from "@/components/GlobeScene.jsx";
 
 const getCache = (key) => {
   try {
@@ -45,120 +39,8 @@ const setCache = (key, value) => {
   }
 };
 
-function HomePage({
-  domain,
-  setDomain,
-  handleAnalyze,
-  timelineIndex,
-  setTimelineIndex,
-  dateOptions,
-  tooltipLabel,
-  graphGenerated,
-  currentDomain,
-  refreshTrigger,
-  theme,
-  viewMode,
-  handleRefresh,
-  userId,
-  selectedDate,
-  limitReached,
-}) {
-  return (
-    <>
-      {/* Hero Section */}
-      <section className="relative py-20 px-4 overflow-hidden min-h-[92vh] hero-gradient flex flex-col items-center justify-center text-center">
-        <div className="relative z-10 flex w-full max-w-4xl items-center justify-between">
-          <h1 className="text-6xl font-extrabold text-white">The Better</h1>
-          <div className="w-64 h-64">
-            <GlobeScene />
-          </div>
-          <h1 className="text-6xl font-extrabold text-white">Dnsviz.</h1>
-        </div>
-        <p className="relative z-10 mt-6 mb-10 text-white">Visualize and understand domain security chains.</p>
-        <div className="relative z-10 w-full flex flex-col items-center">
-          <div className="flex justify-center mb-6 w-full">
-            <Input
-              placeholder="type domain here to analyze"
-              value={domain}
-              onChange={(e) => setDomain(e.target.value)}
-              className="w-80 h-12 lg:h-14 text-lg rounded-l-full rounded-r-none shadow-inner text-black"
-            />
-            <Button
-              size="icon"
-              variant="secondary"
-              onClick={handleAnalyze}
-              disabled={!(domain || "").trim() || limitReached}
-              className="rounded-r-full rounded-l-none border-l-0 h-12 lg:h-14"
-              type="button"
-            >
-              <Search className="h-6 w-6" />
-            </Button>
-          </div>
-          <div className="relative mb-6 h-6 lg:h-8 max-w-3xl w-full mx-auto">
-            <div className="absolute -top-10 left-0 w-full pointer-events-none">
-              <div
-                style={{ left: `${(timelineIndex / (dateOptions.length - 1)) * 100}%` }}
-                className="absolute transform -translate-x-1/2 bg-white text-black text-sm lg:text-base px-3 py-2 rounded shadow"
-              >
-                {tooltipLabel}
-              </div>
-            </div>
-            <div className="relative h-full">
-              <Slider
-                min={0}
-                max={dateOptions.length - 1}
-                step={1}
-                value={[timelineIndex]}
-                onValueChange={(v) => setTimelineIndex(v[0])}
-                className="h-full"
-              />
-              {dateOptions.map((_, i) => (
-                <div
-                  key={i}
-                  style={{ left: `${(i / (dateOptions.length - 1)) * 100}%` }}
-                  className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-full bg-white/50 pointer-events-none"
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-      {/* Filler content or graph */}
-      <div className="relative">
-        <div
-          className={`transition-all duration-500 ${
-            graphGenerated ? "opacity-0 max-h-0 overflow-hidden" : "opacity-100"
-          }`}
-        >
-          <FillerContent />
-        </div>
-        <div
-          className={`transition-opacity duration-500 ${
-            graphGenerated ? "opacity-100" : "opacity-0 max-h-0 overflow-hidden"
-          }`}
-        >
-          {graphGenerated && (
-            <div className="p-6 lg:p-10 flex justify-center">
-              <div className="w-full max-w-[100rem]">
-                <ReactFlowProvider>
-                  <SampleGraph
-                    domain={currentDomain}
-                    refreshTrigger={refreshTrigger}
-                    theme={theme}
-                    viewMode={viewMode}
-                    onRefresh={handleRefresh}
-                    userId={userId}
-                    selectedDate={selectedDate.toISOString().slice(0, 7)}
-                    limitReached={limitReached}
-                  />
-                </ReactFlowProvider>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </>
-  );
+function HomePage() {
+  return <Goals2 />;
 }
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -668,7 +550,6 @@ export default function App() {
             }
           />
           <Route path="/goals" element={<Goals />} />
-          <Route path="/goals2" element={<Goals2 />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:id" element={<BlogPost />} />
           <Route path="/writeblog" element={<WriteBlog />} />
@@ -694,7 +575,7 @@ export default function App() {
           <Route path="/stats" element={<Stats />} />
         </Routes>
       </main>
-      {location.pathname !== "/goals" && location.pathname !== "/goals2" && (
+      {location.pathname !== "/goals" && location.pathname !== "/" && (
         <footer className="border-t border-border bg-card text-card-foreground p-4 text-sm">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between gap-4">
             <div>
