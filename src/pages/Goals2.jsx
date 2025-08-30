@@ -379,6 +379,7 @@ export default function Goals2() {
                                     (idx / (dateOptions.length - 1)) * 100
                                   }%`,
                                   transform: "translateX(-50%)",
+                                  transform: "translateY(-50%)",
                                 }}
                               >
                                 <span className="mb-1 text-[10px] text-gray-600">
