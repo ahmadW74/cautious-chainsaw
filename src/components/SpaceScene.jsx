@@ -23,29 +23,28 @@ export default function SpaceScene() {
       r: Math.random() * 1.5 + 0.5,
     }));
 
-    const comets = [];
-    const asteroids = [];
+    const streaks = [];
 
     const spawnObject = () => {
       if (Math.random() < 0.5) {
-        comets.push({
+        streaks.push({
           x: -50,
           y: Math.random() * canvas.height,
-          vx: 2 + Math.random() * 3,
-          vy: (Math.random() - 0.5) * 1,
-          radius: 2 + Math.random() * 3,
+          vx: 8 + Math.random() * 12,
+          vy: (Math.random() - 0.5) * 2,
+          length: 40,
         });
       } else {
-        asteroids.push({
+        streaks.push({
           x: Math.random() * canvas.width,
           y: -50,
-          vx: (Math.random() - 0.5) * 0.5,
-          vy: 1 + Math.random() * 2,
-          radius: 3 + Math.random() * 4,
+          vx: (Math.random() - 0.5) * 2,
+          vy: 8 + Math.random() * 12,
+          length: 40,
         });
       }
     };
-    const spawnInterval = setInterval(spawnObject, 1500);
+    const spawnInterval = setInterval(spawnObject, 700);
 
     const drawStars = () => {
       ctx.fillStyle = "black";
@@ -61,69 +60,25 @@ export default function SpaceScene() {
     const animate = () => {
       drawStars();
 
-      comets.forEach((c, index) => {
-        c.x += c.vx;
-        c.y += c.vy;
-        const angle = Math.atan2(c.vy, c.vx);
-        const tailLength = c.radius * 8;
-        const baseAngle1 = angle + Math.PI / 2;
-        const baseAngle2 = angle - Math.PI / 2;
-        const tipX = c.x - Math.cos(angle) * tailLength;
-        const tipY = c.y - Math.sin(angle) * tailLength;
-        const base1X = c.x + Math.cos(baseAngle1) * c.radius;
-        const base1Y = c.y + Math.sin(baseAngle1) * c.radius;
-        const base2X = c.x + Math.cos(baseAngle2) * c.radius;
-        const base2Y = c.y + Math.sin(baseAngle2) * c.radius;
-        ctx.fillStyle = "rgba(255,255,255,0.8)";
+      streaks.forEach((s, index) => {
+        s.x += s.vx;
+        s.y += s.vy;
+        const angle = Math.atan2(s.vy, s.vx);
+        const tailX = s.x - Math.cos(angle) * s.length;
+        const tailY = s.y - Math.sin(angle) * s.length;
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(base1X, base1Y);
-        ctx.lineTo(base2X, base2Y);
-        ctx.lineTo(tipX, tipY);
-        ctx.closePath();
-        ctx.fill();
-        ctx.fillStyle = "blue";
-        ctx.beginPath();
-        ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(s.x, s.y);
+        ctx.lineTo(tailX, tailY);
+        ctx.stroke();
         if (
-          c.x > canvas.width + 50 ||
-          c.y < -50 ||
-          c.y > canvas.height + 50
+          s.x > canvas.width + 50 ||
+          s.y > canvas.height + 50 ||
+          s.x < -50 ||
+          s.y < -50
         ) {
-          comets.splice(index, 1);
-        }
-      });
-
-      asteroids.forEach((a, index) => {
-        a.x += a.vx;
-        a.y += a.vy;
-        const angle = Math.atan2(a.vy, a.vx);
-        const tailLength = a.radius * 6;
-        const baseAngle1 = angle + Math.PI / 2;
-        const baseAngle2 = angle - Math.PI / 2;
-        const tipX = a.x - Math.cos(angle) * tailLength;
-        const tipY = a.y - Math.sin(angle) * tailLength;
-        const base1X = a.x + Math.cos(baseAngle1) * a.radius;
-        const base1Y = a.y + Math.sin(baseAngle1) * a.radius;
-        const base2X = a.x + Math.cos(baseAngle2) * a.radius;
-        const base2Y = a.y + Math.sin(baseAngle2) * a.radius;
-        ctx.fillStyle = "rgba(255,69,0,0.8)";
-        ctx.beginPath();
-        ctx.moveTo(base1X, base1Y);
-        ctx.lineTo(base2X, base2Y);
-        ctx.lineTo(tipX, tipY);
-        ctx.closePath();
-        ctx.fill();
-        ctx.fillStyle = "#888";
-        ctx.beginPath();
-        ctx.arc(a.x, a.y, a.radius, 0, Math.PI * 2);
-        ctx.fill();
-        if (
-          a.y > canvas.height + 50 ||
-          a.x < -50 ||
-          a.x > canvas.width + 50
-        ) {
-          asteroids.splice(index, 1);
+          streaks.splice(index, 1);
         }
       });
 

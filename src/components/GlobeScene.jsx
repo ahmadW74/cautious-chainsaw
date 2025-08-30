@@ -23,6 +23,7 @@ export default function GlobeScene({
   const mountRef = useRef(null);
   const globeRef = useRef();
   const rotationRef = useRef({ x: 0, y: 0 });
+  const baseRotationRef = useRef({ x: 0, y: 0 });
   const dotIntervalRef = useRef();
   const radiusRef = useRef(1);
   const pinsRef = useRef(new Map());
@@ -124,8 +125,10 @@ export default function GlobeScene({
     };
 
     const spinTo = (lat, lon) => {
-      const targetX = THREE.MathUtils.degToRad(-lat);
-      const targetY = THREE.MathUtils.degToRad(lon);
+      const targetX =
+        baseRotationRef.current.x + THREE.MathUtils.degToRad(-lat);
+      const targetY =
+        baseRotationRef.current.y + THREE.MathUtils.degToRad(lon);
       gsap.to(rotationRef.current, {
         x: targetX,
         y: targetY,
@@ -324,6 +327,8 @@ export default function GlobeScene({
     }) => {
       rotationRef.current.x = x;
       rotationRef.current.y = y;
+      baseRotationRef.current.x = x;
+      baseRotationRef.current.y = y;
     };
     if (onSetRotation) onSetRotation(setRotation);
     if (onGlobeReady)
