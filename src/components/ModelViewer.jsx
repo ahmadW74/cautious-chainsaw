@@ -7,6 +7,7 @@ export default function ModelViewer({
   autoRotate = true,
   scale = 1,
   initialRotation = { x: 0, y: 0, z: 0 },
+  offset = { x: 0, y: 0, z: 0 },
 }) {
   const mountRef = useRef(null);
 
@@ -44,6 +45,7 @@ export default function ModelViewer({
         camera.position.z = cameraZ * 1.2;
         const center = box.getCenter(new THREE.Vector3());
         model.position.sub(center);
+        model.position.add(new THREE.Vector3(offset.x, offset.y, offset.z));
         model.scale.setScalar(scale);
         model.rotation.set(
           initialRotation.x,
@@ -79,7 +81,7 @@ export default function ModelViewer({
       window.removeEventListener("resize", handleResize);
       mount.removeChild(renderer.domElement);
     };
-  }, [modelUrl, autoRotate, scale, initialRotation]);
+  }, [modelUrl, autoRotate, scale, initialRotation, offset]);
 
   return <div ref={mountRef} className="w-full h-full" />;
 }
