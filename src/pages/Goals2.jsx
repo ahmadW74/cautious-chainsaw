@@ -505,7 +505,7 @@ export default function Goals2() {
             </p>
             <NumberTicker
               start={dailyUsersStart}
-              className="block text-white font-bold text-4xl md:text-5xl mt-2"
+              className="block font-bold text-4xl md:text-5xl mt-2 !text-white"
             />
           </div>
           <div className="text-right">
@@ -514,7 +514,7 @@ export default function Goals2() {
             </p>
             <NumberTicker
               start={graphsGeneratedStart}
-              className="block text-white font-bold text-4xl md:text-5xl mt-2"
+              className="block font-bold text-4xl md:text-5xl mt-2 !text-white"
             />
           </div>
         </div>
