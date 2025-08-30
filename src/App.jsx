@@ -87,7 +87,7 @@ function HomePage({
               size="icon"
               variant="secondary"
               onClick={handleAnalyze}
-              disabled={!domain.trim() || limitReached}
+              disabled={!(domain || "").trim() || limitReached}
               className="rounded-r-full rounded-l-none border-l-0 h-12 lg:h-14"
               type="button"
             >
@@ -444,7 +444,7 @@ export default function App() {
 
   //graph logic
   const handleAnalyze = () => {
-    const cleaned = domain.trim().toLowerCase();
+    const cleaned = (domain || "").trim().toLowerCase();
     if (!cleaned) return;
     if (!isSignedIn) {
       if (limitReached) {

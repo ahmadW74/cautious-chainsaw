@@ -116,7 +116,7 @@ export default function Goals2() {
         });
 
   const handleAnalyze = () => {
-    const cleaned = domain.trim().toLowerCase();
+    const cleaned = (domain || "").trim().toLowerCase();
     if (!cleaned) return;
     setCurrentDomain(cleaned);
     setGraphGenerated(true);
@@ -198,7 +198,7 @@ export default function Goals2() {
               size="icon"
               variant="secondary"
               onClick={handleAnalyze}
-              disabled={!domain.trim()}
+              disabled={!(domain || "").trim()}
               className="rounded-r-full rounded-l-none border-l-0 h-12"
               type="button"
             >
@@ -314,7 +314,7 @@ export default function Goals2() {
                 size="icon"
                 variant="secondary"
                 onClick={handleAnalyze}
-                disabled={!domain.trim()}
+                disabled={!(domain || "").trim()}
                 className="rounded-r-full rounded-l-none border-l-0 h-12 lg:h-14"
                 type="button"
               >
@@ -434,7 +434,7 @@ export default function Goals2() {
                   size="icon"
                   variant="secondary"
                   onClick={handleAnalyze}
-                  disabled={!domain.trim()}
+                  disabled={!(domain || "").trim()}
                   className="rounded-r-full rounded-l-none border-l-0 h-12"
                   type="button"
                 >
