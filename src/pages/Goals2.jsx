@@ -357,7 +357,7 @@ export default function Goals2() {
                     <div className="w-full max-w-8xl overflow-auto">
                       <div className="flex items-center justify-end gap-2 mb-4">
                         <Calendar className="w-5 h-5 text-gray-700" />
-                        <div className="relative w-48">
+                        <div className="relative w-64">
                           <Slider
                             min={0}
                             max={dateOptions.length - 1}
@@ -366,7 +366,7 @@ export default function Goals2() {
                             onValueChange={(v) => setTimelineIndex(v[0])}
                             className="w-full"
                           />
-                          <div className="absolute left-0 top-full mt-1 w-full pointer-events-none">
+                          <div className="absolute left-0 bottom-full mb-1 w-full pointer-events-none">
                             {dateOptions.map((date, idx) => (
                               <div
                                 key={idx}
@@ -378,12 +378,12 @@ export default function Goals2() {
                                   transform: "translateX(-50%)",
                                 }}
                               >
-                                <div className="h-2 w-px bg-gray-400"></div>
-                                <span className="mt-1 text-[10px] text-gray-600">
+                                <span className="mb-1 text-[10px] text-gray-600">
                                   {date.toLocaleDateString(undefined, {
                                     month: "short",
                                   })}
                                 </span>
+                                <div className="h-2 w-px bg-gray-400"></div>
                               </div>
                             ))}
                           </div>
@@ -526,7 +526,7 @@ export default function Goals2() {
           Look what our users say
         </h2>
         <div className="relative z-10 flex items-center w-full h-full">
-          <div className="absolute -left-[15vw] top-1/2 -translate-y-1/2 w-[50vw] h-[50vw] pointer-events-none">
+          <div className="absolute -left-[15vw] top-1/2 -translate-y-1/2 w-[50vw] h-[50vw]">
             <GlobeScene
               modelUrl={lowPolyEarth}
               distance={1.2}
