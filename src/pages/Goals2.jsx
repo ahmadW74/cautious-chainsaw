@@ -218,11 +218,16 @@ export default function Goals2() {
           >
             The Better
           </span>
-          <div className="w-72 h-72 md:w-96 md:h-96">
-            <GlobeScene
-              modelUrl={lowPolyEarth}
-              onSetRotation={(setRotation) => setRotation({ x: tilt, y: 0 })}
-            />
+          <div className="flex flex-col items-center">
+            <div className="w-72 h-72 md:w-96 md:h-96">
+              <GlobeScene
+                modelUrl={lowPolyEarth}
+                onSetRotation={(setRotation) => setRotation({ x: tilt, y: 0 })}
+              />
+            </div>
+            <p className="text-white text-xs mt-2">
+              (Hover on white dots to view requests)
+            </p>
           </div>
           <span
             className="text-white font-bold text-7xl sm:text-7xl md:text-8xl"
