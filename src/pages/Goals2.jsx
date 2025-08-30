@@ -376,7 +376,10 @@ export default function Goals2() {
                             ))}
                           </div>
                         </div>
-                        <span className="text-sm text-gray-700">
+                        <span
+                          className="text-sm text-gray-700"
+                          style={{ fontFamily: '"Roboto Mono", monospace' }}
+                        >
                           {tooltipLabel}
                         </span>
                       </div>
