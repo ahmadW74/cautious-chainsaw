@@ -125,13 +125,44 @@ export default function GlobeScene({
     };
 
     const spinTo = (lat, lon) => {
-      const targetX =
-        baseRotationRef.current.x + THREE.MathUtils.degToRad(-lat);
-      const targetY =
-        baseRotationRef.current.y + THREE.MathUtils.degToRad(lon);
+      // Convert latitude/longitude to a vector on the unit sphere
+      const latRad = THREE.MathUtils.degToRad(lat);
+      const lonRad = THREE.MathUtils.degToRad(lon);
+      const target = new THREE.Vector3(
+        Math.cos(latRad) * Math.cos(lonRad),
+        Math.sin(latRad),
+        Math.cos(latRad) * Math.sin(lonRad)
+      );
+
+      // Base orientation of the globe (e.g. axial tilt)
+      const baseQuat = new THREE.Quaternion().setFromEuler(
+        new THREE.Euler(
+          baseRotationRef.current.x,
+          baseRotationRef.current.y,
+          0,
+          "XYZ"
+        )
+      );
+
+      // Direction in world space for this point after applying base rotation
+      const worldTarget = target.clone().applyQuaternion(baseQuat);
+
+      // Camera direction – where the globe should orient the pin
+      const viewDir = camera.position.clone().normalize();
+
+      // Rotation that moves the worldTarget to the camera direction
+      const rotateToCamera = new THREE.Quaternion().setFromUnitVectors(
+        worldTarget.normalize(),
+        viewDir
+      );
+
+      // Desired final orientation
+      const finalQuat = rotateToCamera.multiply(baseQuat);
+      const finalEuler = new THREE.Euler().setFromQuaternion(finalQuat, "XYZ");
+
       gsap.to(rotationRef.current, {
-        x: targetX,
-        y: targetY,
+        x: finalEuler.x,
+        y: finalEuler.y,
         duration: 1,
         onUpdate: () => {
           if (globeRef.current) {
