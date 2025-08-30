@@ -25,6 +25,7 @@ export default function GlobeScene({
   const rotationRef = useRef({ x: 0, y: 0 });
   const dotIntervalRef = useRef();
   const radiusRef = useRef(1);
+  const pinRef = useRef();
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -88,16 +89,31 @@ export default function GlobeScene({
 
     const addPin = (lat, lon) => {
       if (!globeRef.current) return;
+      if (pinRef.current) {
+        globeRef.current.remove(pinRef.current);
+        pinRef.current.geometry.dispose();
+        pinRef.current.material.dispose();
+        pinRef.current = null;
+      }
       const radius = radiusRef.current * 1.02;
       const latRad = THREE.MathUtils.degToRad(lat);
       const lonRad = THREE.MathUtils.degToRad(lon);
       const x = radius * Math.cos(latRad) * Math.cos(lonRad);
       const y = radius * Math.sin(latRad);
       const z = radius * Math.cos(latRad) * Math.sin(lonRad);
-      const geometry = new THREE.SphereGeometry(radiusRef.current * 0.03, 8, 8);
+      const height = radiusRef.current * 0.2;
+      const geometry = new THREE.ConeGeometry(
+        radiusRef.current * 0.04,
+        height,
+        8
+      );
+      geometry.translate(0, -height / 2, 0);
       const pin = new THREE.Mesh(geometry, pinMaterial.clone());
       pin.position.set(x, y, z);
+      const dir = new THREE.Vector3(x, y, z).normalize();
+      pin.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), dir);
       globeRef.current.add(pin);
+      pinRef.current = pin;
     };
 
     const spinTo = (lat, lon) => {
