@@ -184,7 +184,7 @@ export default function Goals2() {
     <div
       className="min-h-screen bg-white flex flex-col"
       style={{ fontFamily: '"Anonymous Pro", monospace' }}
-      >
+    >
       {showStickySearch && !graphGenerated && (
         <div className="fixed top-8 left-8 z-50">
           <div className="bg-[#FFF5EE] rounded-xl shadow p-2 flex items-center">
@@ -369,13 +369,17 @@ export default function Goals2() {
                                 key={idx}
                                 className="absolute flex flex-col items-center"
                                 style={{
-                                  left: `${(idx / (dateOptions.length - 1)) * 100}%`,
+                                  left: `${
+                                    (idx / (dateOptions.length - 1)) * 100
+                                  }%`,
                                   transform: "translateX(-50%)",
                                 }}
                               >
                                 <div className="h-2 w-px bg-gray-400"></div>
                                 <span className="mt-1 text-[10px] text-gray-600">
-                                  {date.toLocaleDateString(undefined, { month: "short" })}
+                                  {date.toLocaleDateString(undefined, {
+                                    month: "short",
+                                  })}
                                 </span>
                               </div>
                             ))}
@@ -478,7 +482,11 @@ export default function Goals2() {
                   }}
                 >
                   <div className="w-48 h-48 bg-[#FFE1D4] rounded-xl flex items-center justify-center pointer-events-none">
-                    <ModelViewer modelUrl={animatedClock} scale={1.2} offset={{ x: 0, y: -0.5, z: 0 }} />
+                    <ModelViewer
+                      modelUrl={animatedClock}
+                      scale={1.2}
+                      offset={{ x: 0, y: -0.5, z: 0 }}
+                    />
                   </div>
                   <h3 className="mt-2 text-lg font-bold">More History</h3>
                   <p className="text-xs">Lorem ipsum dolor sit amet.</p>
@@ -512,7 +520,7 @@ export default function Goals2() {
       >
         <SpaceScene />
         <h2 className="absolute top-20 right-10 z-10 text-right text-white font-bold text-5xl sm:text-6xl md:text-7xl">
-          See what our users have to say
+          Look what our users say
         </h2>
         <div className="relative z-10 flex items-center w-full h-full">
           <div className="absolute -left-[15vw] top-1/2 -translate-y-1/2 w-[50vw] h-[50vw] pointer-events-none">
